@@ -1,4 +1,9 @@
 //index.js
+
+
+
+var crypto = require('../lib/cryptojs/cryptojs.js');
+
 //获取应用实例
 const app = getApp()
 const coordtransform = require('../lib/coordtransform.js');
@@ -12,6 +17,7 @@ Page({
     motto: 'Hello World',
     userInfo: {},
     hasUserInfo: false,
+    ocrSign:null,
     canIUse: wx.canIUse('button.open-type.getUserInfo'),
     //控件
     controls: [],
@@ -39,8 +45,11 @@ Page({
       url: '../menu/menu',
     })
   },
-  onLoad: function () {
 
+
+  /******************* */
+  onLoad: function () {
+    this.getBaiduAuth();
     //获取定位
     this.getLocation();
 
@@ -73,7 +82,7 @@ Page({
         }
       })
     }
-
+  
     //获取设备信息
     wx.getSystemInfo({
       success: res =>  {
@@ -124,7 +133,23 @@ Page({
       }
     })
   },
-  //视野变化
+
+  /**********百度api鉴权********* */
+  getBaiduAuth:function() {
+    var url = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=o0Isb2RSfURvMxEWaUcGEQF5&client_secret=xYRC3tZHBEaju7LPfk0Wwsg93PzW8RxZ"
+    wx.request({
+      url: url,
+      method:'get',
+      success:function(res){
+        console.log(res);
+      },
+      fail:function(res){
+        console.log('百度授权失败');
+      },
+    })
+  },
+
+   /**********视野变化********* */
   regionchange(e){
     var mapCtx = wx.createMapContext("map", this);
 
@@ -135,7 +160,11 @@ Page({
       }
     }) 
   },
-  // 控件处理程序
+
+
+
+
+  /**********地图控件处理********* */
   controltap(e) {
     // 定位
     if (e.controlId == 0) {
@@ -143,27 +172,21 @@ Page({
     };
     //借
     if (e.controlId == 1) {
-      wx.scanCode({
-        success: (res) => {
-        },
-        fail: (res) => {
-          this.setData({
-            lockhidden: false
-          });
+      //相机拍照
+      wx.chooseImage({
+        count: 1, // 默认9
+        sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+        sourceType: ['camera'], // 可以指定来源是相册还是相机，默认二者都有
+        success: function (res) {
+          // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
+          var tempFilePaths = res.tempFilePaths
+
         }
       })
     };
     //还
     if (e.controlId == 2) {
-      wx.scanCode({
-        success: (res) => {
-        },
-        fail: (res) => {
-          this.setData({
-            lockhidden: false
-          });
-        }
-      })
+      console.log('还设备')
     }
   },
 

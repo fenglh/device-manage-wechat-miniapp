@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/device/device",
     "pages/index/index",
     "pages/logs/logs",
     "pages/menu/menu",

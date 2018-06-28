@@ -1,4 +1,7 @@
 // pages/menu/menu.js
+
+
+
 Page({
 
   /**
@@ -28,7 +31,7 @@ Page({
       },
       {
         name: '设备管理',
-        url: '',
+        url: '../device/device',
         icon: '../images/device.png'
       },
       {

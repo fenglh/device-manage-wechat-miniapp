@@ -1,0 +1,120 @@
+<view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
+
+      <view class="page__hd" >
+
+      <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">错误提示</view>
+      
+        <view class='container'>
+          <view  >          
+            <view class="page__title">资产识别</view>
+            <view class="page__desc">点击扫描设备背后黄色标签</view>
+          </view>
+          <image style='width:60px; height:60px' src='../images/scan3.png'>
+          </image>
+          <image style='width:30px; height:30px' src='../images/right.png'>
+          </image>
+
+        </view>
+    </view>
+
+  <view class="page__bd">
+
+    <view class="weui-cells__title">设备属性</view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">设备编号</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入设备编号" />
+        </view>
+      </view>
+
+
+       <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <view class="weui-label">设备型号</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindCountryChange" value="{{brandIndex}}" range="{{brands}}">
+            <view class="weui-select weui-select_in-select-after">{{brands[brandIndex]}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <view class="weui-label">系统版本</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindCountryChange" value="{{systemVersionIndex}}" range="{{systemVersions}}">
+            <view class="weui-select weui-select_in-select-after">{{systemVersions[systemVersionIndex]}}</view>
+          </picker>
+        </view>
+      </view>
+
+      
+          <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <view class="weui-label">公司代码</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindCountryChange" value="{{countryIndex}}" range="{{countries}}">
+            <view class="weui-select weui-select_in-select-after">{{countries[countryIndex]}}</view>
+          </picker>
+        </view>
+      </view>
+
+
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">贴标日期</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker mode="date" value="{{date}}" start="2015-09-01" end="2017-09-01" bindchange="bindDateChange">
+            <view class="weui-input">{{date}}</view>
+          </picker>
+        </view>
+      </view>
+
+
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell weui-cell_switch">
+                <view class="weui-cell__bd">已借出</view>
+                <view class="weui-cell__ft">
+                    <switch  />
+                </view>
+            </view>
+        </view>
+    </view>
+
+    <!-- <view class="weui-cells__tips">请务填写精确方便索检</view> -->
+    <view class="weui-cells__title">设备归属</view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">姓名</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入姓名" />
+        </view>
+      </view>
+    </view>
+    
+
+
+    <view class="weui-cells__title">备注</view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell">
+        <view class="weui-cell__bd">
+          <textarea class="weui-textarea" placeholder="请输入文本" style="height: 3.3em" />
+          <view class="weui-textarea-counter">0/200</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="weui-btn-area">
+      <button class="weui-btn" type="primary" bindtap="showTopTips">确定</button>
+    </view>
+  </view>
+</view>
