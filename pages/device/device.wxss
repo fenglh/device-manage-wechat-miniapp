@@ -1,1 +1,14 @@
 /* pages/Device/device.wxss */
+
+.hd_scan {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+   vertical-align: middle; 
+   justify-content: space-between; 
+  padding:0;
+  margin: 0;
+  box-sizing: border-box;
+} 

@@ -2,7 +2,8 @@
 
 
 
-var crypto = require('../lib/cryptojs/cryptojs.js');
+
+
 
 //获取应用实例
 const app = getApp()
@@ -187,6 +188,8 @@ Page({
     //还
     if (e.controlId == 2) {
       console.log('还设备')
+
+
     }
   },
 

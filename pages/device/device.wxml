@@ -4,10 +4,10 @@
 
       <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">错误提示</view>
       
-        <view class='container'>
+        <view class='hd_scan' bindtap='bindScanClick'>
           <view  >          
             <view class="page__title">资产识别</view>
-            <view class="page__desc">点击扫描设备背后黄色标签</view>
+            <view class="page__desc">点击扫描设备黄色标签</view>
           </view>
           <image style='width:60px; height:60px' src='../images/scan3.png'>
           </image>
@@ -20,13 +20,35 @@
   <view class="page__bd">
 
     <view class="weui-cells__title">设备属性</view>
+
     <view class="weui-cells weui-cells_after-title">
       <view class="weui-cell weui-cell_input">
         <view class="weui-cell__hd">
           <view class="weui-label">设备编号</view>
         </view>
         <view class="weui-cell__bd">
-          <input class="weui-input" placeholder="请输入设备编号" />
+          <input class="weui-input" value="{{deviceCode}}" placeholder="请输入设备编号" />
+        </view>
+      </view>
+
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">公司编号</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" value="{{companyCode}}" placeholder="请输入公司编号" />
+        </view>
+      </view>
+
+
+        <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <view class="weui-label">设备类型</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindCountryChange" value="{{deveceTypeIndex}}" range="{{deveceTypes}}">
+            <view class="weui-select weui-select_in-select-after">{{deveceTypes[deveceTypeIndex]}}</view>
+          </picker>
         </view>
       </view>
 
@@ -54,16 +76,7 @@
       </view>
 
       
-          <view class="weui-cell weui-cell_select">
-        <view class="weui-cell__hd weui-cell__hd_in-select-after">
-          <view class="weui-label">公司代码</view>
-        </view>
-        <view class="weui-cell__bd">
-          <picker bindchange="bindCountryChange" value="{{countryIndex}}" range="{{countries}}">
-            <view class="weui-select weui-select_in-select-after">{{countries[countryIndex]}}</view>
-          </picker>
-        </view>
-      </view>
+
 
 
       <view class="weui-cell weui-cell_input">

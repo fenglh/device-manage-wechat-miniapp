@@ -1,11 +1,12 @@
 {
   "pages": [
-    "pages/device/device",
+    
     "pages/index/index",
     "pages/logs/logs",
     "pages/menu/menu",
     "pages/search/search",
-    "pages/user/user"
+    "pages/user/user",
+    "pages/device/device"
   ],
   "window": {
     "backgroundTextStyle": "light",
