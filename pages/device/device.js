@@ -10,22 +10,33 @@ Page({
    */
   data: {
     showTopTips: false,
+    topTips: '',
     radioItems: [
       { name: '蓝月亮', value: '0' },
       { name: '月亮小屋', value: '1', checked: true }
     ],
-    brands: ["iPhone 5", "iPhone 5s", "iPhone 6", "iPhone 6s", "iPhone 7", "iPhone 7s"],
+    brands: [["iPhone 5", "iPhone 5s", "iPhone 6", "iPhone 6s", "iPhone 7", "iPhone 7s"],
+      ["GALAXY S7", "GALAXY S8", "GALAXY S9", "GALAXY A7", "GALAXY A8", "GALAXY A9"],
+      ["小米8", "小米7", "小米红米7"],
+      ["华为 P20", "华为 P21"],
+      ["vivo Z1", "vivo NEX", "vivo Y85", "vivo Y83", "vivo Y75", "vivo Y67"],
+      ["联想 A5860", "联想 A3900", "联想 A3860", "联想 A3500", "联想 S5", "联想 Z5"],
+      ["锤子 cm33", "锤子 P10", "锤子 NX1", "锤子 坚果 Pro2"]
+    ],
     brandIndex:0,
 
-    deveceTypes: ["诺基亚", "三星", "苹果", "小米", "华为", "vivo"],
-    deveceTypeIndex: 0,
+    deviceTypes: ["苹果", "三星",  "小米", "华为", "vivo", "联想", "锤子"],
+    deviceTypeIndex: 0,
 
-    deveceCode:null,
-    systemVersions: ["8.3.1", "9.0", "10.1.1", "11.1.1"],
+    systemVersions: [["8.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["4.3", "4.2.0", "4.1.1", "11.1.1"],
+      ["2.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["2.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["1.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["10.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["20.3.1", "9.0", "10.1.1", "11.1.1"]],
+
     systemVersionIndex: 0,
-
-
-    date: "2016-09-01",
 
     companyCode:null,
     deviceCode:null,
@@ -42,6 +53,10 @@ Page({
     })
     console.log("签名:%s", this.data.ocrSign)
   },
+
+
+
+
   //生成腾讯orc签名
   generateOCRSign:function() {
     var secretId = 'AKIDENL7i9LZVFpV6XoqqsBOTObhhTBlpEZp',
@@ -61,6 +76,19 @@ Page({
     return sign;
   },
 
+  bindDeviceCodeInput: function (e) {
+    this.setData({
+      deviceCode: e.detail.value
+    })
+  },
+
+  bindCompanyCodeInput: function (e) {
+    this.setData({
+      companyCode: e.detail.value
+    })
+  },
+
+
   radioChange: function (e) {
     console.log('radio发生change事件，携带value值为：', e.detail.value);
 
@@ -74,21 +102,54 @@ Page({
     });
   },
 
-  bindDateChange: function (e) {
+
+  bindDeviceTypesChange:function(e) {
     this.setData({
-      date: e.detail.value
+      deviceTypeIndex: e.detail.value
     })
   },
-  showTopTips: function () {
+
+  bindDeviceBrandChange: function (e) {
+    this.setData({
+      brandIndex: e.detail.value
+    })
+  },
+
+  showTips:function(content) {
     var that = this;
     this.setData({
-      showTopTips: true
+      showTopTips: true,
+      topTips: content
     });
     setTimeout(function () {
       that.setData({
-        showTopTips: false
+        showTopTips: false,
+        topTips: ''
       });
     }, 3000);
+  },
+
+  bindSubmit: function () {
+
+    if (!this.data.deviceCode){
+      this.showTips('请输入设备编号');
+    } else if (!this.data.companyCode){
+      this.showTips('请输入公司编号');
+    }else{
+      wx.showModal({
+        title: '提示',
+        content: '我确定填写信息无误',
+        success: function (res) {
+          if (res.confirm) {
+            console.log('用户点击确定')
+          } else if (res.cancel) {
+            console.log('用户点击取消')
+          }
+        }
+      })
+    }
+
+
   },
 
   bindScanClick:function() {
@@ -118,42 +179,67 @@ Page({
             "appid":"1256097546",
           },
           success: function (res) {
+            wx.hideLoading();
             var result = JSON.parse(res.data)
             var items = result['data']['items']
-            var srotXItems = items.sort(function (a, b){
-              console.log(a.itemcoord.x)
-              return a.itemcoord.x - b.itemcoord.x
-            })
 
+            //按照x轴升序排序
             var srotYItems = items.sort(function (a, b) {
-              console.log(a.itemcoord.x)
               return a.itemcoord.y - b.itemcoord.y
             })
 
-            items.forEach(function(item, index){
-
+            var flagIndex=null;
+            srotYItems.forEach(function(item, index){
               var str = item['itemstring'];
               var iscontain = str.indexOf("蓝月亮") == -1 ? false : true;
-              if(iscontain){
-                console.log(str)
+              if(iscontain){  
+                flagIndex = index;
               }
             });
-            // var data = result['result_list'][0]['data']
-            // var company=data[0]['value'];
-            // var deviceType = data[1]['value'];
-            // var deviceCode = data[3]['value'];
-            // var date = data[4]['value'];
-            // console.log("公司名称:%s", company);
-            // console.log("设备类型:%s", deviceType);
-            // console.log("设备编码:%s", deviceCode);
-            // console.log("贴标时间:%s", date);
-            // that.setData({
-            //   date: date,
-            //   deviceCode: deviceCode
-            // })
+
+            if(flagIndex !== null){
+              //设备编码标签索引
+              var deviceCodeIndex = 0
+              if (flagIndex == 0) {
+                deviceCodeIndex = flagIndex + 1
+              } else {
+                deviceCodeIndex = flagIndex - 1
+              }
+              //得到设备编码，去掉所有空格
+              var deviceCode = srotYItems[deviceCodeIndex]["itemstring"].replace(/[ ]/g, "");
+              //公司编码
+              var companyCodeIndex = deviceCodeIndex > flagIndex ? deviceCodeIndex + 1 : flagIndex + 1;
+              var companyCode = srotYItems[companyCodeIndex]["itemstring"].replace(/[ ]/g, "");
+              //型号描述
+              var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
+              var deviceTypeIndex = 0;
+              console.log("deviceDesc :%s", deviceDesc)
+              that.data.deviceTypes.forEach(function (item, index) {
+                console.log(item);
+                var iscontain = deviceDesc.indexOf(item) == -1 ? false : true;
+                if (iscontain) {
+                  deviceTypeIndex = index;
+                }
+              });
+
+              that.setData({
+                deviceCode: deviceCode,
+                companyCode: companyCode,
+                deviceTypeIndex: deviceTypeIndex
+              })
+            }else{
+              wx.showToast({
+                title: '资产识别失败,请手动填写或重新识别',
+                icon:'none'
+              })
+            }
+
           },
-          complete:function(res){
+          fail:function(){
             wx.hideLoading();
+            wx.showToast({
+              title: '资产识别出错，请重新识别',
+            })
           }
         })
       }
@@ -163,3 +249,5 @@ Page({
 
 
 })
+
+

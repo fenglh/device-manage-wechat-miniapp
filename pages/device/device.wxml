@@ -2,7 +2,7 @@
 
       <view class="page__hd" >
 
-      <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">错误提示</view>
+      <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">{{topTips}}</view>
       
         <view class='hd_scan' bindtap='bindScanClick'>
           <view  >          
@@ -27,7 +27,7 @@
           <view class="weui-label">设备编号</view>
         </view>
         <view class="weui-cell__bd">
-          <input class="weui-input" value="{{deviceCode}}" placeholder="请输入设备编号" />
+          <input class="weui-input" bindinput='bindDeviceCodeInput' value="{{deviceCode}}" placeholder="请输入设备编号" />
         </view>
       </view>
 
@@ -36,7 +36,7 @@
           <view class="weui-label">公司编号</view>
         </view>
         <view class="weui-cell__bd">
-          <input class="weui-input" value="{{companyCode}}" placeholder="请输入公司编号" />
+          <input class="weui-input" bindinput='bindCompanyCodeInput' value="{{companyCode}}" placeholder="请输入公司编号" />
         </view>
       </view>
 
@@ -46,8 +46,8 @@
           <view class="weui-label">设备类型</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindCountryChange" value="{{deveceTypeIndex}}" range="{{deveceTypes}}">
-            <view class="weui-select weui-select_in-select-after">{{deveceTypes[deveceTypeIndex]}}</view>
+          <picker bindchange="bindDeviceTypesChange" value="{{deviceTypeIndex}}" range="{{deviceTypes}}">
+            <view class="weui-select weui-select_in-select-after">{{deviceTypes[deviceTypeIndex]}}</view>
           </picker>
         </view>
       </view>
@@ -58,8 +58,8 @@
           <view class="weui-label">设备型号</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindCountryChange" value="{{brandIndex}}" range="{{brands}}">
-            <view class="weui-select weui-select_in-select-after">{{brands[brandIndex]}}</view>
+          <picker bindchange="bindDeviceBrandChange" value="{{brandIndex}}" range="{{brands[deviceTypeIndex]}}">
+            <view class="weui-select weui-select_in-select-after">{{brands[deviceTypeIndex][brandIndex]}}</view>
           </picker>
         </view>
       </view>
@@ -69,51 +69,16 @@
           <view class="weui-label">系统版本</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindCountryChange" value="{{systemVersionIndex}}" range="{{systemVersions}}">
-            <view class="weui-select weui-select_in-select-after">{{systemVersions[systemVersionIndex]}}</view>
-          </picker>
-        </view>
-      </view>
-
-      
-
-
-
-      <view class="weui-cell weui-cell_input">
-        <view class="weui-cell__hd">
-          <view class="weui-label">贴标日期</view>
-        </view>
-        <view class="weui-cell__bd">
-          <picker mode="date" value="{{date}}" start="2015-09-01" end="2017-09-01" bindchange="bindDateChange">
-            <view class="weui-input">{{date}}</view>
+          <picker bindchange="bindCountryChange" value="{{systemVersionIndex}}" range="{{systemVersions[deviceTypeIndex]}}">
+            <view class="weui-select weui-select_in-select-after">{{systemVersions[deviceTypeIndex][systemVersionIndex]}}</view>
           </picker>
         </view>
       </view>
 
 
-        <view class="weui-cells weui-cells_after-title">
-            <view class="weui-cell weui-cell_switch">
-                <view class="weui-cell__bd">已借出</view>
-                <view class="weui-cell__ft">
-                    <switch  />
-                </view>
-            </view>
-        </view>
     </view>
 
-    <!-- <view class="weui-cells__tips">请务填写精确方便索检</view> -->
-    <view class="weui-cells__title">设备归属</view>
-    <view class="weui-cells weui-cells_after-title">
-      <view class="weui-cell weui-cell_input">
-        <view class="weui-cell__hd">
-          <view class="weui-label">姓名</view>
-        </view>
-        <view class="weui-cell__bd">
-          <input class="weui-input" placeholder="请输入姓名" />
-        </view>
-      </view>
-    </view>
-    
+
 
 
     <view class="weui-cells__title">备注</view>
@@ -127,7 +92,7 @@
     </view>
 
     <view class="weui-btn-area">
-      <button class="weui-btn" type="primary" bindtap="showTopTips">确定</button>
+      <button class="weui-btn" type="primary" bindtap="bindSubmit">确定</button>
     </view>
   </view>
 </view>
