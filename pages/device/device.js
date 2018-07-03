@@ -137,7 +137,7 @@ Page({
       this.showTips('请输入公司编号');
     }else{
       wx.showModal({
-        title: '提示',
+        title: '',
         content: '我确定填写信息无误',
         success: function (res) {
           if (res.confirm) {
@@ -187,7 +187,7 @@ Page({
             var srotYItems = items.sort(function (a, b) {
               return a.itemcoord.y - b.itemcoord.y
             })
-
+            console.log(srotYItems)
             var flagIndex=null;
             srotYItems.forEach(function(item, index){
               var str = item['itemstring'];
@@ -203,13 +203,20 @@ Page({
               if (flagIndex == 0) {
                 deviceCodeIndex = flagIndex + 1
               } else {
-                deviceCodeIndex = flagIndex - 1
+                //取出距离y轴距离最近的元素的索引
+                var offsetToPrev = Math.abs(srotYItems[flagIndex - 1]['itemcoord']['y'] - srotYItems[flagIndex]['itemcoord']['y']);
+                var offsetToNext = Math.abs(srotYItems[flagIndex + 1]['itemcoord']['y'] - srotYItems[flagIndex]['itemcoord']['y']);
+                deviceCodeIndex = offsetToPrev < offsetToNext ? flagIndex - 1 : flagIndex + 1;
               }
               //得到设备编码，去掉所有空格
               var deviceCode = srotYItems[deviceCodeIndex]["itemstring"].replace(/[ ]/g, "");
+              //去除非数字
+              deviceCode = deviceCode.replace(/[^\d.]/g, "");
               //公司编码
               var companyCodeIndex = deviceCodeIndex > flagIndex ? deviceCodeIndex + 1 : flagIndex + 1;
               var companyCode = srotYItems[companyCodeIndex]["itemstring"].replace(/[ ]/g, "");
+              //将I、l换成1
+              companyCode = companyCode.replace(/[Il]/g, "1");
               //型号描述
               var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
               var deviceTypeIndex = 0;
