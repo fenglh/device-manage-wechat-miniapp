@@ -43,11 +43,11 @@
 
         <view class="weui-cell weui-cell_select">
         <view class="weui-cell__hd weui-cell__hd_in-select-after">
-          <view class="weui-label">设备类型</view>
+          <view class="weui-label">设备品牌</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindDeviceTypesChange" value="{{deviceTypeIndex}}" range="{{deviceTypes}}">
-            <view class="weui-select weui-select_in-select-after">{{deviceTypes[deviceTypeIndex]}}</view>
+          <picker bindchange="bindBrandChange" value="{{brandIndex}}" range="{{brands}}">
+            <view class="weui-select weui-select_in-select-after">{{brands[brandIndex]}}</view>
           </picker>
         </view>
       </view>
@@ -58,8 +58,8 @@
           <view class="weui-label">设备型号</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindDeviceBrandChange" value="{{brandIndex}}" range="{{brands[deviceTypeIndex]}}">
-            <view class="weui-select weui-select_in-select-after">{{brands[deviceTypeIndex][brandIndex]}}</view>
+          <picker bindchange="bindModelChange" value="{{modelIndex}}" range="{{models[brandIndex]}}">
+            <view class="weui-select weui-select_in-select-after">{{models[brandIndex][modelIndex]}}</view>
           </picker>
         </view>
       </view>
@@ -69,28 +69,13 @@
           <view class="weui-label">系统版本</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindCountryChange" value="{{systemVersionIndex}}" range="{{systemVersions[deviceTypeIndex]}}">
-            <view class="weui-select weui-select_in-select-after">{{systemVersions[deviceTypeIndex][systemVersionIndex]}}</view>
+          <picker bindchange="bindSystemVersionChange" value="{{systemVersionIndex}}" range="{{systemVersions[brandIndex]}}">
+            <view class="weui-select weui-select_in-select-after">{{systemVersions[brandIndex][systemVersionIndex]}}</view>
           </picker>
         </view>
       </view>
-
-
     </view>
-
-
-
-
-    <view class="weui-cells__title">备注</view>
-    <view class="weui-cells weui-cells_after-title">
-      <view class="weui-cell">
-        <view class="weui-cell__bd">
-          <textarea class="weui-textarea" placeholder="请输入文本" style="height: 3.3em" />
-          <view class="weui-textarea-counter">0/200</view>
-        </view>
-      </view>
-    </view>
-
+    
     <view class="weui-btn-area">
       <button class="weui-btn" type="primary" bindtap="bindSubmit">确定</button>
     </view>

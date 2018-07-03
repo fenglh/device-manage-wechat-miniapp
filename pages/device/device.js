@@ -11,11 +11,7 @@ Page({
   data: {
     showTopTips: false,
     topTips: '',
-    radioItems: [
-      { name: '蓝月亮', value: '0' },
-      { name: '月亮小屋', value: '1', checked: true }
-    ],
-    brands: [["iPhone 5", "iPhone 5s", "iPhone 6", "iPhone 6s", "iPhone 7", "iPhone 7s"],
+    models: [["iPhone 5", "iPhone 5s", "iPhone 6", "iPhone 6s", "iPhone 7", "iPhone 7s"],
       ["GALAXY S7", "GALAXY S8", "GALAXY S9", "GALAXY A7", "GALAXY A8", "GALAXY A9"],
       ["小米8", "小米7", "小米红米7"],
       ["华为 P20", "华为 P21"],
@@ -23,20 +19,19 @@ Page({
       ["联想 A5860", "联想 A3900", "联想 A3860", "联想 A3500", "联想 S5", "联想 Z5"],
       ["锤子 cm33", "锤子 P10", "锤子 NX1", "锤子 坚果 Pro2"]
     ],
-    brandIndex:0,
+    modelIndex:null,
 
-    deviceTypes: ["苹果", "三星",  "小米", "华为", "vivo", "联想", "锤子"],
-    deviceTypeIndex: 0,
+    brands: ["苹果", "三星",  "小米", "华为", "vivo", "联想", "锤子"],
+    brandIndex: null,
 
     systemVersions: [["8.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["4.3", "4.2.0", "4.1.1", "11.1.1"],
+      ["1.3", "4.2.0", "4.1.1", "11.1.1"],
       ["2.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["2.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["1.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["10.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["20.3.1", "9.0", "10.1.1", "11.1.1"]],
-
-    systemVersionIndex: 0,
+      ["3.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["4.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["5.3.1", "9.0", "10.1.1", "11.1.1"],
+      ["6.3.1", "9.0", "10.1.1", "11.1.1"]],
+    systemVersionIndex: null,
 
     companyCode:null,
     deviceCode:null,
@@ -88,30 +83,21 @@ Page({
     })
   },
 
-
-  radioChange: function (e) {
-    console.log('radio发生change事件，携带value值为：', e.detail.value);
-
-    var radioItems = this.data.radioItems;
-    for (var i = 0, len = radioItems.length; i < len; ++i) {
-      radioItems[i].checked = radioItems[i].value == e.detail.value;
-    }
-
+  bindSystemVersionChange:function(e) {
     this.setData({
-      radioItems: radioItems
-    });
-  },
-
-
-  bindDeviceTypesChange:function(e) {
-    this.setData({
-      deviceTypeIndex: e.detail.value
+      systemVersionIndex: e.detail.value
     })
   },
 
-  bindDeviceBrandChange: function (e) {
+  bindBrandChange:function(e) {
     this.setData({
       brandIndex: e.detail.value
+    })
+  },
+
+  bindModelChange: function (e) {
+    this.setData({
+      modelIndex: e.detail.value
     })
   },
 
@@ -133,22 +119,31 @@ Page({
 
     if (!this.data.deviceCode){
       this.showTips('请输入设备编号');
-    } else if (!this.data.companyCode){
-      this.showTips('请输入公司编号');
-    }else{
-      wx.showModal({
-        title: '',
-        content: '我确定填写信息无误',
-        success: function (res) {
-          if (res.confirm) {
-            console.log('用户点击确定')
-          } else if (res.cancel) {
-            console.log('用户点击取消')
-          }
-        }
-      })
+      return;
     }
 
+    if (!this.data.companyCode){
+      this.showTips('请输入公司编号');
+      return ;
+    }
+
+    if (!this.data.brandIndex) {
+      this.showTips('请选择设备品牌');
+      return;
+    }
+
+    if (!this.data.modelIndex) {
+      this.showTips('请选择设备型号');
+      return;
+    }
+
+    if (!this.data.systemVersionIndex) {
+      this.showTips('请选择系统版本');
+      return;
+    }
+
+    var deviceObject = AV.Object.extend('Devices');
+    deviceObject.set('',)
 
   },
 
@@ -219,21 +214,26 @@ Page({
               companyCode = companyCode.replace(/[Il]/g, "1");
               //型号描述
               var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
-              var deviceTypeIndex = 0;
+              var brandIndex = 0;
               console.log("deviceDesc :%s", deviceDesc)
-              that.data.deviceTypes.forEach(function (item, index) {
+              that.data.brands.forEach(function (item, index) {
                 console.log(item);
                 var iscontain = deviceDesc.indexOf(item) == -1 ? false : true;
                 if (iscontain) {
-                  deviceTypeIndex = index;
+                  brandIndex = index;
                 }
               });
 
               that.setData({
                 deviceCode: deviceCode,
                 companyCode: companyCode,
-                deviceTypeIndex: deviceTypeIndex
+                brandIndex: brandIndex
               })
+              // wx.showToast({
+              //   title: '资产识成功!',
+              //   icon:'success',
+              // })
+
             }else{
               wx.showToast({
                 title: '资产识别失败,请手动填写或重新识别',
