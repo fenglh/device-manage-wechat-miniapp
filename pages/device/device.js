@@ -117,22 +117,24 @@ Page({
 
   bindSubmit: function () {
 
-    if (!this.data.deviceCode){
+    console.log(this.data.brandIndex)
+
+    if (this.data.deviceCode == null){
       this.showTips('请输入设备编号');
       return;
     }
 
-    if (!this.data.companyCode){
+    if (this.data.companyCode == null){
       this.showTips('请输入公司编号');
       return ;
     }
 
-    if (!this.data.brandIndex) {
+    if (this.data.brandIndex == null) {
       this.showTips('请选择设备品牌');
       return;
     }
 
-    if (!this.data.modelIndex) {
+    if (this.data.modelIndex == null) {
       this.showTips('请选择设备型号');
       return;
     }
@@ -141,9 +143,53 @@ Page({
       this.showTips('请选择系统版本');
       return;
     }
+    
 
-    var deviceObject = AV.Object.extend('Devices');
-    deviceObject.set('',)
+
+    var DevicesObject = AV.Object.extend('Devices');
+    var that = this;
+    new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).find().then(function (results) {
+      console.log(results);
+      console.log(results.length);
+      if (results.length > 0){
+        wx.showToast({
+        title: '该设备已存在!',
+        icon:'none'
+        });
+      }else{
+        var deviceObject = new DevicesObject();
+        deviceObject.set('deviceBrand', that.data.brands[that.data.brandIndex]);
+        deviceObject.set('deviceModel', that.data.models[that.data.brandIndex][that.data.modelIndex])
+        deviceObject.set('OSVersion', that.data.systemVersions[that.data.brandIndex][that.data.systemVersionIndex])
+        deviceObject.set('deviceID', that.data.deviceCode )
+        deviceObject.set('companyCode', that.data.companyCode)
+        deviceObject.set('ownerID', "暂时空");
+        deviceObject.save().then(function (deviceObject) {
+          wx.hideLoading();
+          wx.showToast({
+            title: '添加成功！',
+            icon:'success'
+          })
+
+          // 成功
+        }, function (error) {
+          wx.hideLoading();
+          console.log(error)
+          // 失败
+          wx.showToast({
+            title: '添加设备失败！',
+            icon: 'success'
+          })
+        });
+
+      }
+    },function(error){
+      wx.showToast({
+        title: '服务器错误!',
+        icon: 'none'
+      });
+    });
+
 
   },
 
@@ -214,7 +260,7 @@ Page({
               companyCode = companyCode.replace(/[Il]/g, "1");
               //型号描述
               var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
-              var brandIndex = 0;
+              var brandIndex = null;
               console.log("deviceDesc :%s", deviceDesc)
               that.data.brands.forEach(function (item, index) {
                 console.log(item);
