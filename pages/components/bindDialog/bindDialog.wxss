@@ -1,0 +1,80 @@
+/*content*/ 
+.drawer_box { 
+  width: 600rpx;  
+  overflow: hidden;  
+   position: fixed;   
+  top: 200rpx;
+  left:75rpx;
+  /* left: 75; */
+  z-index: 1001;  
+  background: white;  
+  border-radius: 8rpx;  
+  box-shadow: 0 2px 5px #ccc;
+} 
+   
+.drawer_title{ 
+  padding:30rpx;  
+  font: 40rpx "microsoft yahei";  
+  text-align: center;  
+} 
+.drawer_content { 
+  height: 220rpx;  
+  overflow-y: scroll; /*超出父盒子高度可滚动*/ 
+} 
+   
+.btn_ok{ 
+  padding: 20rpx;  
+  font: 40rpx "microsoft yahei";  
+  text-align: center;  
+  border-top: 1px solid #E8E8EA;  
+  color: #3CC51F;
+  background-color:   
+} 
+   
+.top{ 
+    padding-top:16rpx;  
+} 
+.bottom { 
+    padding-bottom:16rpx;  
+} 
+.title { 
+    height: 60rpx;  
+    line-height: 60rpx;  
+    width: 160rpx;  
+    text-align: center;  
+    display: inline-block;  
+    font: 300 28rpx/30px "microsoft yahei";  
+} 
+   
+.input_base { 
+    border-bottom: 2rpx solid #ccc;  
+    padding-left: 20rpx;
+    margin-left: 80rpx;  
+    margin-right: 80rpx;  
+} 
+.input_h30{ 
+    height: 60rpx;  
+    line-height: 60rpx;  
+} 
+
+
+ 
+input { 
+    font: 16px "microsoft yahei";  
+    background: #fff;  
+    color:#000 ;  
+} 
+
+.grid { display: -webkit-box; display: box; } 
+.col-0 {-webkit-box-flex:0;box-flex:0;} 
+.col-1 {-webkit-box-flex:1;box-flex:1;} 
+.fl { float: left;} 
+.fr { float: right;} 
+
+.close {
+  position: absolute;
+  height: 30rpx;
+  width: 30rpx;
+  top: 8rpx;
+  right: 8rpx;
+}

@@ -37,6 +37,18 @@
   border-radius: 50%;
   margin: 20rpx 10rpx 0 20rpx;
 }
+
+.menu .avatar-btn {
+  position: absolute;
+  opacity: 0;
+  float: left;
+  display: block;
+  height: 60rpx;
+  width: 60rpx;
+  border-radius: 50%;
+  margin: 20rpx 10rpx 0 20rpx;
+}
+
 .menu .vertical-line {
   float: left;
   background-color: #eeeeee;
@@ -45,11 +57,11 @@
   width: 3rpx;
 }
 
-.menu .search-text {
-   /* background-color: rebeccapurple;  */
+.menu .search {
+  /* background-color: rebeccapurple;   */
   color: #666666;
   font-size: 30rpx;
-  line-height: 100rpx;
+  height: 100rpx;
 }
 .menu .line-left{
   float: left;
@@ -75,3 +87,17 @@
   height: 40rpx;
   width: 40rpx;
 }
+
+
+.btn { 
+  width: 80%;  
+  padding: 20rpx 0;  
+  border-radius: 10rpx;  
+  text-align: center;  
+  margin: 40rpx 10%;  
+  background: #000;  
+  color: #fff;  
+} 
+   
+
+   

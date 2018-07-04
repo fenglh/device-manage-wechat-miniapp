@@ -1,20 +1,22 @@
 <!--index.wxml-->
 <view class="container">
 
-  <!--map模块-->
-  <map id="map" class="map" longitude="{{longitude}}" latitude="{{latitude}}" scale="{{scale}}" controls="{{controls}}" markers="{{markers}}" bindcontroltap="controltap" bindregionchange="regionchange" />
 
-  <!--newm模块-->
 
-  <cover-view class="menu" >
-    <cover-image class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover" bindtap='bindAvatarEvent'>
-    </cover-image>
-    <cover-view class="vertical-line line-left"></cover-view>
-    <cover-image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent' ></cover-image>
-    <cover-view class="vertical-line line-right"></cover-view>
-    <cover-view class='search-text' bindtap='bindSearchEvent'>搜索设备名称/系统版本/型号</cover-view>
-  </cover-view>
+    <bindDialog showModalStatus="{{showModalStatus}}" > </bindDialog>
 
-  <cover-image class='cneter-locate-market' src="../images/locate1.png"></cover-image>
+    <view class="menu">
+      <image  class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover" ></image>
+
+      <button open-type="getUserInfo" class='avatar-btn' bindtap='bindAvatarEvent'>
+      </button>
+
+      <view class="vertical-line line-left"></view>
+      <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>
+      <view class="vertical-line line-right"></view>
+
+      <input class='search'  placeholder='索设备名称/系统版本/型号'></input>
+    </view>
+
 
 </view>
