@@ -3,10 +3,10 @@
     <view class="drawer_title">绑定员工编号和姓名</view>
     <view class="drawer_content">
       <view class="top grid">
-        <input class="input_base input_h30 col-1" type='number' placeholder='员工编号' name="rName" value="80474124"></input>
+        <input class="input_base input_h30 col-1" type='number' placeholder='员工编号' name="rName" ></input>
       </view>
       <view class="top grid">
-        <input class="input_base input_h30 col-1" placeholder='姓名' name="mobile" value="冯立海"></input>
+        <input class="input_base input_h30 col-1" placeholder='姓名' name="mobile" ></input>
       </view>
     </view>
     <view class="btn_ok" bindtap="bindOKEvent" data-statu="close">确定</view>

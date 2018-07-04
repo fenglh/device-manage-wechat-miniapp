@@ -18,7 +18,7 @@
   text-align: center;  
 } 
 .drawer_content { 
-  height: 220rpx;  
+  height: 320rpx;  
   overflow-y: scroll; /*超出父盒子高度可滚动*/ 
 } 
    
@@ -32,7 +32,7 @@
 } 
    
 .top{ 
-    padding-top:16rpx;  
+    padding-top:40rpx;  
 } 
 .bottom { 
     padding-bottom:16rpx;  
