@@ -3,12 +3,12 @@
 
 
 
-    <bindDialog showModalStatus="{{showModalStatus}}" > </bindDialog>
+    <bindDialog showModalStatus="{{showModalStatus}}" openid="{{openIdInfo.openid}}"  bind:bindEmployee="bindEmployee"> </bindDialog>
 
     <view class="menu">
       <image  class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover" ></image>
 
-      <button open-type="getUserInfo" class='avatar-btn' bindtap='bindAvatarEvent'>
+      <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='bindgetuserinfo'>
       </button>
 
       <view class="vertical-line line-left"></view>

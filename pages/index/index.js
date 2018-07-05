@@ -7,33 +7,14 @@ const app = getApp()
 
 Page({
   data: {
-    appid: 'wx2fc1b68058a04d90',//appid需自己提供，此处的appid我随机编写
-    secret: 'ece9a679463eb37126b3c5fb3df0073e',//secret需自己提供，此处的secret我随机编写
+
     showModalStatus:false,
     userInfo: wx.getStorageSync('userInfo') || {},
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
   },
 
 
-
-  bindAvatarEvent:function(){
-    wx.navigateTo({
-      url: '../user/user',
-    })
-  },
-  bindSearchEvent: function () {
-    wx.navigateTo({
-      url: '../search/search',
-    })
-  },
-  bindMoreEvent: function () {
-    wx.navigateTo({
-      url: '../menu/menu',
-    })
-  },
-
-  
-
+ 
   /******************* */
   onLoad: function () {
 
@@ -46,66 +27,85 @@ Page({
 
     console.log("缓存openid信息：",this.data.openIdInfo)
     console.log("缓存userInfo信息：",this.data.userInfo)
-    if ( !this.data.userInfo.avatarUrl || !this.data.userInfo.nickName) {
+    if (!this.data.openIdInfo.openid || !this.data.userInfo.avatarUrl || !this.data.userInfo.nickName) {
+      console.log("头像或者昵称不存在");
       wx.login({
         success: function (res) {
           if (res.code) {
             //获取用户信息
             wx.getUserInfo({
               success: function (res) {
-                var objz = {};
-                objz.avatarUrl = res.userInfo.avatarUrl;
-                objz.nickName = res.userInfo.nickName;
-                that.setData({
-                  userInfo:objz,                
-                })
-                app.globalData.userInfo = objz;
-                wx.setStorageSync('userInfo', objz);//存储userInfo
-
+                that.saveUserInfo(res.userInfo);
               }, fail(error) {
                 console.log("获取用户信息失败，原因:",error.errMsg);
+                // that.showToast("请点击左上角\"头像\"进行授权!");
               }
             });
+            //获取openid
             if (!that.data.openIdInfo.openid) {
-              //获取openid
-              var data = that.globalData;//这里存储了appid、secret、token串  
-              var url = 'https://api.weixin.qq.com/sns/jscode2session';
-              wx.request({
-                url: url,
-                data: {
-                  appid: that.data.appid,
-                  secret: that.data.secret,
-                  js_code: res.code,
-                  grant_type: 'authorization_code'
-
-                },
-                method: 'GET',
-                success: function (res) {
-                  var obj = {};
-                  obj.openid = res.data.openid;
-                  wx.setStorageSync('openIdInfo', obj);//存储openid
-                  that.setData({
-                    openIdInfo: obj,
-                  })
-                  console.log('获取openid成功:', obj.openid);
-                  that.checkBindEmployeeInfo(obj.openid);
-
-                }, fail(error) {
-                  console.log(error);
-                }
-              })
+              that.getOpenId(res.code,function(openid){
+                  if(openid){
+                    var obj = {};
+                    obj.openid = openid;
+                    wx.setStorageSync('openIdInfo', obj);//存储openid
+                    that.setData({
+                      openIdInfo: obj,
+                    })
+                    that.checkBindEmployeeInfo(obj.openid);
+                  }
+              });
             }else{
               that.checkBindEmployeeInfo(that.data.openIdInfo.openid);
             }
             
           } else {
-            console.log('获取用户登录状态失败' + res.errMsg);
+            that.showToast('获取登录用户身份标识失败');
           }
         }
       });
+    }else{
+      that.checkBindEmployeeInfo(that.data.openIdInfo.openid);
     }
 
   },
+
+
+
+
+
+
+  getOpenId: function (code, callback = ((string) => (Void))){
+    //获取openid
+    var data = app.globalData;//这里存储了appid、secret、token串  
+    var url = 'https://api.weixin.qq.com/sns/jscode2session';
+    wx.request({
+      url: url,
+      data: {
+        appid: data.appid,
+        secret: data.secret,
+        js_code: code,
+        grant_type: 'authorization_code'
+
+      },
+      method: 'GET',
+      success: function (res) {
+        callback(res.data.openid);
+      }, fail(error) {
+        console.log(error);
+        callback(null);
+      }
+    });
+  },
+  
+  showToast:function(content, duration=3000) {
+    wx.showToast({
+      title: content,
+      icon: "none",
+      duration: duration,
+    })
+  },
+
+
 
   checkBindEmployeeInfo: function (openid){
   //在获取了openid的情况下，检查绑定关系
@@ -117,30 +117,81 @@ Page({
     var employeeInfo = wx.getStorageSync('employeeInfo') || {};
     var that = this;
     var now = Date.parse(new Date())
-    if (!employeeInfo.employeeID || !employeeInfo.employeeName || (now - employeeInfo.expiredDate > 0)) {
-      var query = new AV.Query('Users');
-      query.equalTo('openID', openid);
-      query.first().then(function (result) {
-        if (!result) {
-          console.log("还没有绑定员工信息")
-          that.setData({
-            showModalStatus: true
-          })
-        } else {
-          console.log("已没有绑定员工信息")
-          var employeeInfo = {};
-          employeeInfo.employeeID = result.attributes["employeeID"];
-          employeeInfo.employeeName = result.attributes["employeeName"];
-          employeeInfo.expiredDate = Date.parse(new Date()) + 600 * 1000; //10分钟有效期 
-          wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
-          console.log("从服务器获取绑定的员工信息:", employeeInfo);
-        }
-      }, function (error) {
-      })
+    var query = new AV.Query('Users');
+    query.equalTo('openID', openid);
+    query.first().then(function (result) {
+      if (!result) {
+        console.log("还没有绑定员工信息")
+        that.setData({
+          showModalStatus: true
+        })
+      } else {
+        console.log("已没有绑定员工信息")
+        var employeeInfo = {};
+        employeeInfo.employeeID = result.attributes["employeeID"];
+        employeeInfo.employeeName = result.attributes["employeeName"];
+        employeeInfo.expiredDate = Date.parse(new Date()) + 600 * 1000; //10分钟有效期 
+        wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
+        console.log("从服务器获取绑定的员工信息:", employeeInfo);
+      }
+    }, function (error) {
+    })
+
+  },
+
+  //事件
+  bindgetuserinfo: function (e) {
+    console.log(e);
+    if (!e.detail.rawData) {
+      this.showToast('授权失败!请点击右上角“更多-关于-更多-设置”中开启权限', 5000);
     } else {
-      console.log("从缓存获取绑定的员工信息:", employeeInfo);
+      this.saveUserInfo(e.detail.userInfo);
+      //跳转
+      wx.navigateTo({
+        url: '../user/user',
+      })
     }
-  }
+
+  },
+  bindSearchEvent: function () {
+    wx.navigateTo({
+      url: '../search/search',
+    })
+  },
+  bindMoreEvent: function () {
+    wx.navigateTo({
+      url: '../menu/menu',
+    })
+  },
+
+  bindEmployee:function(e) {
+    
+
+    var employeeInfo = {};
+    employeeInfo.employeeID = e.detail.employeeID;
+    employeeInfo.employeeName = e.detail.employeeName;
+    employeeInfo.expiredDate = e.detail.expiredDate;
+    wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
+    console.log("更新绑定结果:", employeeInfo);
+
+  },
+
+  //保存用户信息
+  saveUserInfo: function (userInfo) {
+    if (userInfo) {
+      var objz = {};
+      objz.avatarUrl = userInfo.avatarUrl;
+      objz.nickName = userInfo.nickName;
+      this.setData({
+        userInfo: objz,
+      })
+      app.globalData.userInfo = objz;
+      wx.setStorageSync('userInfo', objz);//存储userInfo
+      console.log("保存用户信息:", userInfo);
+      console.log('保存app.globalData:', app.globalData);
+    }
+
+  },
 
  
 

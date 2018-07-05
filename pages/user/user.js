@@ -1,28 +1,51 @@
 // pages/user/user.js
 
 const app = getApp()
-Page({
 
+const userInfo = wx.getStorageSync('userInfo');
+
+Page({
+  
   /**
    * 页面的初始数据
    */
   data: {
-    employeeInfo: wx.getStorageSync('employeeInfo') || {},
-    userInfo: app.globalData.userInfo
+    employeeInfo:  {},
+    userInfo:{},
+    binBtnHide:true,
+    focus:false
   },
 
+
+  
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-
+      this.setData({
+        employeeInfo: wx.getStorageSync('employeeInfo'),
+        userInfo: wx.getStorageSync('userInfo')
+      })
   },
 
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {
-  
+    if (!this.data.employeeInfo){
+      var that = this;
+      wx.showModal({
+        title: '提示',
+        content: '请绑定员工信息',
+        showCancel:false,
+        success:function(){
+          that.setData({
+            binBtnHide:false,
+            focus:true
+          })
+        }
+      })
+    }
   },
 
   /**

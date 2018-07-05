@@ -19,10 +19,7 @@
                     <view class="weui-label">编号</view>
                 </view>
                 <view class="weui-cell__bd">
-                    <input class="weui-input" value='{{employeeInfo.employeeID}}' placeholder="请输入员工编号"/>
-                </view>
-                <view class="weui-cell__ft">
-                    <view class="edit_btn">保存</view>
+                    <input class="weui-input" value='{{employeeInfo.employeeID}}' focus="{{focus}}" placeholder="请输入员工编号"/>
                 </view>
             </view>
             <view class="weui-cell weui-cell_input">
@@ -32,9 +29,9 @@
                 <view class="weui-cell__bd">
                     <input class="weui-input" value='{{employeeInfo.employeeName}}' placeholder="请输入员工姓名"/>
                 </view>
-                
-                <view class="weui-cell__ft">
-                    <view class="edit_btn">保存</view>
-                </view>
             </view>  
         </view>
+
+            <view class="weui-btn-area">
+      <button class="weui-btn" type="primary" hidden='{{binBtnHide}}' bindtap="bindSubmit">绑定</button>
+    </view>
