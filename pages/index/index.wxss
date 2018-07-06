@@ -28,6 +28,7 @@
   left: 0rpx;
   box-shadow: 0 2px 5px #ccc;
   line-height: 100rpx;
+  /* opacity: 0.75; */
 }
 .menu .avatar {
   float: left;
@@ -99,5 +100,18 @@
   color: #fff;  
 } 
    
+
+.margin-top40 {
+  top: 40px;
+}
+.kind-list__item {
+  margin: 10px 0;
+  background-color: #fff;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+
+
 
    

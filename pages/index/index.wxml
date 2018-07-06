@@ -1,22 +1,56 @@
 <!--index.wxml-->
-<view class="container">
+<view style='  display: flex; flex-direction: column;'>
+
+  <bindDialog showModalStatus="{{showModalStatus}}" openid="{{openIdInfo.openid}}" bind:bindEmployee="bindEmployee"> </bindDialog>
+  <view class="menu">
+    <image class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
+
+    <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='bindgetuserinfo'>
+    </button>
+
+    <view class="vertical-line line-left"></view>
+    <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>
+    <view class="vertical-line line-right"></view>
+
+    <input class='search' placeholder='索设备名称/系统版本/型号'></input>
+  </view>
+
+  <view class='page__bd_spacing ' style=' margin-top:40px'>
+    <block wx:for="{{list}}" wx:key="id">
+      <view class="kind-list__item">
+
+        <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
+          
+
+          <view style='display: flex;flex-direction: column;'>
+            <view style='display: flex;flex-direction: row; '>
+              <image src='../images/huawei.png' style='margin-top:6px; width:20px; height:20px; '></image>
+              <view style='font-size:22px;margin-left:10px;'>iPhoen 6s</view>
+              <view style='margin-left:10px;font-size:18px;color:#666'>8.2.1</view>
+            </view>
+            <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666'>
+              
+               <view >归属：冯立海</view> 
+            
+            </view>
+
+          </view>
+
+          <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
+            <view style='width:1px;height:80%;background:#eee;'></view>
+            <view style='margin-left:20px;margin-right:16px;font-size:14px;'>闲置</view>
+          </view>
+
+
+        </view>
+
+
+      </view>
+    </block>
+  </view>
 
 
 
-    <bindDialog showModalStatus="{{showModalStatus}}" openid="{{openIdInfo.openid}}"  bind:bindEmployee="bindEmployee"> </bindDialog>
-
-    <view class="menu">
-      <image  class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover" ></image>
-
-      <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='bindgetuserinfo'>
-      </button>
-
-      <view class="vertical-line line-left"></view>
-      <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>
-      <view class="vertical-line line-right"></view>
-
-      <input class='search'  placeholder='索设备名称/系统版本/型号'></input>
-    </view>
 
 
 </view>

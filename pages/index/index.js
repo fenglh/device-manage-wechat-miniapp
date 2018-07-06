@@ -12,6 +12,7 @@ Page({
     userInfo: wx.getStorageSync('userInfo') || {},
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
+    list: [1,2,3,4,5,6,7,8,9,10],
   },
 
 
