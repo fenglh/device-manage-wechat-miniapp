@@ -11,26 +11,13 @@ Page({
   data: {
     showTopTips: false,
     topTips: '',
-    models: [["iPhone 5", "iPhone 5s", "iPhone 6", "iPhone 6s", "iPhone 7", "iPhone 7s"],
-      ["GALAXY S7", "GALAXY S8", "GALAXY S9", "GALAXY A7", "GALAXY A8", "GALAXY A9"],
-      ["小米8", "小米7", "小米红米7"],
-      ["华为 P20", "华为 P21"],
-      ["vivo Z1", "vivo NEX", "vivo Y85", "vivo Y83", "vivo Y75", "vivo Y67"],
-      ["联想 A5860", "联想 A3900", "联想 A3860", "联想 A3500", "联想 S5", "联想 Z5"],
-      ["锤子 cm33", "锤子 P10", "锤子 NX1", "锤子 坚果 Pro2"]
-    ],
+    models: wx.getStorageSync('modelsInfo').models || {},
     modelIndex:null,
 
-    brands: ["苹果", "三星",  "小米", "华为", "vivo", "联想", "锤子"],
+    brands: wx.getStorageSync('brandsInfo').brands || [],
     brandIndex: null,
 
-    systemVersions: [["8.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["1.3", "4.2.0", "4.1.1", "11.1.1"],
-      ["2.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["3.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["4.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["5.3.1", "9.0", "10.1.1", "11.1.1"],
-      ["6.3.1", "9.0", "10.1.1", "11.1.1"]],
+    OSVersions: wx.getStorageSync('OSVersionsInfo').OSVersions || {},
     systemVersionIndex: null,
 
     companyCode:null,
@@ -49,8 +36,128 @@ Page({
     console.log("签名:%s", this.data.ocrSign)
   },
 
+  onReady: function () {
+
+    //同步品牌列表
+    if (this.data.brands.length == 0){
+      this.syncBrands();
+    }else{
+      console.log("从缓存同步设备品牌列表:", this.data.brands);
+    }
+    if (Object.keys(this.data.models).length == 0){
+      this.syncModels();
+    }else {
+      console.log("从缓存同步设备型号列表:", this.data.models);
+    }
+
+    if (Object.keys(this.data.OSVersions).length == 0) {
+      this.syncOSVersion();
+    } else {
+      console.log("从缓存同步设备系统版本列表:", this.data.OSVersions);
+    }
+    
+
+    //同步设备型号
+
+  },
+
+  syncOSVersion:function(){
+    var that = this;
+    var query = new AV.Query('OSVersion');
+    query.ascending('brandID');
+    query.find().then(function (results) {
+      if (results) {
+        var OSVersions = {};
+        results.forEach(function (item, index) {
+          var brandID = item.attributes.brandID;
+          if (!OSVersions[brandID]) {
+            OSVersions[brandID] = [];
+          }
+          OSVersions[brandID].push(item.attributes.version);
+        });
+
+        that.setData({
+          OSVersions: OSVersions,
+        })
+
+        var obj = {};
+        obj.OSVersions = OSVersions;
+        obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+        wx.setStorageSync('OSVersionsInfo', obj);//存储openid
+
+        console.log("从服务器同步设备系统版本列表:", OSVersions);
+      } else {
+        console.log('无法从服务器同步设备系统版本列表');
+      }
+
+    }, function (error) {
+    });
+  },
 
 
+  //同步型号
+  syncModels:function(){
+    var that = this;
+    var query = new AV.Query('Models');
+    query.ascending('brandID');
+    query.find().then(function (results) {
+      if (results) {
+        var models={};
+        results.forEach(function (item, index) {
+          var brandID = item.attributes.brandID;
+          if (!models[brandID]){
+            models[brandID] = [];
+          }
+          models[brandID].push(item.attributes.model);
+        });
+
+        that.setData({
+          models: models,
+        })
+
+        var obj = {};
+        obj.models = models;
+        obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+        wx.setStorageSync('modelsInfo', obj);//存储openid
+
+        console.log("从服务器同步设备型号列表:", models);
+      } else {
+        console.log('无法从服务器同步设备型号列表');
+      }
+
+    }, function (error) {
+    });
+  },
+  //同步品牌
+  syncBrands:function(){
+    var that = this;
+    var query = new AV.Query('Brands');
+    query.ascending('brandID');
+    query.find().then(function (results) {
+      if (results) {
+
+        var brands = [];
+        results.forEach(function (item, index) {
+          var obj = {};
+          obj.brandID = item.attributes.brandID;
+          obj.brand = item.attributes.brand;
+          brands.push(obj);
+        });
+        that.setData({
+          brands: brands,
+        })
+        var obj = {};
+        obj.brands = brands;
+        obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+        wx.setStorageSync('brandsInfo', obj);//存储openid
+        console.log("从服务器同步设备品牌列表:", brands);
+      } else {
+        console.log('无法从服务器同步设备品牌列表');
+      }
+
+    }, function (error) {
+    });
+  },
 
   //生成腾讯orc签名
   generateOCRSign:function() {
@@ -83,21 +190,28 @@ Page({
     })
   },
 
-  bindSystemVersionChange:function(e) {
-    this.setData({
-      systemVersionIndex: e.detail.value
-    })
-  },
+
 
   bindBrandChange:function(e) {
-    this.setData({
-      brandIndex: e.detail.value
-    })
+
+    if (e.detail.value !== this.data.brandIndex){
+      this.setData({
+        brandIndex: e.detail.value,
+        modelIndex: null,
+        systemVersionIndex: null,
+      })
+    }
   },
 
   bindModelChange: function (e) {
     this.setData({
-      modelIndex: e.detail.value
+      modelIndex: e.detail.value,
+    })
+  },
+  
+  bindSystemVersionChange: function (e) {
+    this.setData({
+      systemVersionIndex: e.detail.value
     })
   },
 

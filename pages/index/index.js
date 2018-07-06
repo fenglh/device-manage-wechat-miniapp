@@ -11,6 +11,7 @@ Page({
     showModalStatus:false,
     userInfo: wx.getStorageSync('userInfo') || {},
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
+    employeeInfo: wx.getStorageSync('employeeInfo') || {},
   },
 
 
@@ -51,11 +52,13 @@ Page({
                     that.setData({
                       openIdInfo: obj,
                     })
-                    that.checkBindEmployeeInfo(obj.openid);
+                    //获取绑定的员工信息
+                    that.getBindEmployeeInfo(obj.openid);
                   }
               });
             }else{
-              that.checkBindEmployeeInfo(that.data.openIdInfo.openid);
+              //获取绑定的员工信息
+              that.getBindEmployeeInfo(that.data.openIdInfo.openid);
             }
             
           } else {
@@ -64,7 +67,8 @@ Page({
         }
       });
     }else{
-      that.checkBindEmployeeInfo(that.data.openIdInfo.openid);
+      //获取绑定的员工信息
+      that.getBindEmployeeInfo(that.data.openIdInfo.openid);
     }
 
   },
@@ -107,37 +111,47 @@ Page({
 
 
 
-  checkBindEmployeeInfo: function (openid){
+  getBindEmployeeInfo: function (openid){
   //在获取了openid的情况下，检查绑定关系
     if (!openid) {
       console.log('openid还没有获取到');
       return;
     }
    
-    var employeeInfo = wx.getStorageSync('employeeInfo') || {};
-    var that = this;
-    var now = Date.parse(new Date())
-    var query = new AV.Query('Users');
-    query.equalTo('openID', openid);
-    query.first().then(function (result) {
-      if (!result) {
-        console.log("还没有绑定员工信息")
-        that.setData({
-          showModalStatus: true
-        })
-      } else {
-        console.log("已没有绑定员工信息")
-        var employeeInfo = {};
-        employeeInfo.employeeID = result.attributes["employeeID"];
-        employeeInfo.employeeName = result.attributes["employeeName"];
-        employeeInfo.expiredDate = Date.parse(new Date()) + 600 * 1000; //10分钟有效期 
-        wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
-        console.log("从服务器获取绑定的员工信息:", employeeInfo);
-      }
-    }, function (error) {
-    })
+
+    var now = Date.parse(new Date());//当前时间
+
+    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName || (now - this.data.employeeInfo.expiredDate >0)){
+      var that = this;
+      var query = new AV.Query('Users');
+      query.equalTo('openID', openid);
+      query.first().then(function (result) {
+        if (!result) {
+          console.log("还没有绑定员工信息")
+          that.setData({
+            showModalStatus: true
+          })
+        } else {
+          console.log("已有绑定员工信息")
+          var employeeInfo = {};
+          employeeInfo.employeeID = result.attributes["employeeID"];
+          employeeInfo.employeeName = result.attributes["employeeName"];
+          employeeInfo.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+          wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
+          console.log("从服务器获取绑定的员工信息:", employeeInfo);
+        }
+      }, function (error) {
+      })
+    }else{
+      console.log('从缓存中获取到绑定员工信息:', this.data.employeeInfo);
+    }
+    
+
+
 
   },
+
+
 
   //事件
   bindgetuserinfo: function (e) {
@@ -170,7 +184,6 @@ Page({
     var employeeInfo = {};
     employeeInfo.employeeID = e.detail.employeeID;
     employeeInfo.employeeName = e.detail.employeeName;
-    employeeInfo.expiredDate = e.detail.expiredDate;
     wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
     console.log("更新绑定结果:", employeeInfo);
 
