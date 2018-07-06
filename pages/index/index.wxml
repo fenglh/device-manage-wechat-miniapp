@@ -16,22 +16,17 @@
   </view>
 
   <view class='page__bd_spacing ' style=' margin-top:40px'>
-    <block wx:for="{{list}}" wx:key="id">
+    <block wx:for="{{devices}}" wx:key="id">
       <view class="kind-list__item">
-
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
-          
-
-          <view style='display: flex;flex-direction: column;'>
+          <view style='display: flex;flex-direction: column;width:100%;padding:10px;'>
             <view style='display: flex;flex-direction: row; '>
               <image src='../images/huawei.png' style='margin-top:6px; width:20px; height:20px; '></image>
-              <view style='font-size:22px;margin-left:10px;'>iPhoen 6s</view>
-              <view style='margin-left:10px;font-size:18px;color:#666'>8.2.1</view>
-            </view>
-            <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666'>
+              <view style='font-size:22px;margin-left:10px;'>{{item.deviceModel}}</view>
               
-               <view >归属：冯立海</view> 
-            
+            </view>
+            <view style='margin-top:8px;font-size:18px; display: flex;flex-direction: row;color:#666;justify-content: space-between;'>
+               <view >{{item.OSVersion}}</view> 
             </view>
 
           </view>

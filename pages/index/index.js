@@ -12,7 +12,7 @@ Page({
     userInfo: wx.getStorageSync('userInfo') || {},
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
-    list: [1,2,3,4,5,6,7,8,9,10],
+    devices: [],
   },
 
 
@@ -23,6 +23,9 @@ Page({
   },
 
   onReady:function(){
+
+
+    this.getDevices();
 
     var that = this;
     //获取用户信息和openid
@@ -76,7 +79,28 @@ Page({
 
 
 
+  getDevices:function(){
+    var that = this;
+    var query = new AV.Query('Devices');
+    query.find().then(function (results) {
 
+      if (results) {
+        var devices = [];
+        results.forEach(function(item, index){
+          devices.push(item.attributes);
+        });
+        that.setData({
+          devices: devices
+        })
+        console.log("获取设备列表:", devices);
+
+      } else {
+        console.log('无法从服务器同步设备系统版本列表');
+      }
+
+    }, function (error) {
+    });
+  },
 
 
   getOpenId: function (code, callback = ((string) => (Void))){
