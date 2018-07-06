@@ -118,7 +118,7 @@ Page({
         var obj = {};
         obj.models = models;
         obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-        wx.setStorageSync('modelsInfo', obj);//存储openid
+        wx.setStorageSync('modelsInfo', obj);
 
         console.log("从服务器同步设备型号列表:", models);
       } else {
@@ -149,7 +149,7 @@ Page({
         var obj = {};
         obj.brands = brands;
         obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-        wx.setStorageSync('brandsInfo', obj);//存储openid
+        wx.setStorageSync('brandsInfo', obj);
         console.log("从服务器同步设备品牌列表:", brands);
       } else {
         console.log('无法从服务器同步设备品牌列表');
@@ -271,13 +271,15 @@ Page({
         icon:'none'
         });
       }else{
+        var openIdInfo = wx.getStorageSync('openIdInfo');
+        
         var deviceObject = new DevicesObject();
-        deviceObject.set('deviceBrand', that.data.brands[that.data.brandIndex]);
-        deviceObject.set('deviceModel', that.data.models[that.data.brandIndex][that.data.modelIndex])
-        deviceObject.set('OSVersion', that.data.systemVersions[that.data.brandIndex][that.data.systemVersionIndex])
+        deviceObject.set('brandID', that.data.brands[that.data.brandIndex].brandID);
+        deviceObject.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
+        deviceObject.set('OSVersion', that.data.OSVersions[that.data.brands[that.data.brandIndex].brandID][that.data.systemVersionIndex])
         deviceObject.set('deviceID', that.data.deviceCode )
         deviceObject.set('companyCode', that.data.companyCode)
-        deviceObject.set('ownerID', "暂时空");
+        deviceObject.set('ownerID', openIdInfo.openid);
         deviceObject.save().then(function (deviceObject) {
           wx.hideLoading();
           wx.showToast({
@@ -378,7 +380,7 @@ Page({
               console.log("deviceDesc :%s", deviceDesc)
               that.data.brands.forEach(function (item, index) {
                 console.log(item);
-                var iscontain = deviceDesc.indexOf(item) == -1 ? false : true;
+                var iscontain = deviceDesc.indexOf(item.brand) == -1 ? false : true;
                 if (iscontain) {
                   brandIndex = index;
                 }
