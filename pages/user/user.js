@@ -12,8 +12,10 @@ Page({
   data: {
     employeeInfo:  {},
     userInfo:{},
-    binBtnHide:true,
-    focus:false
+    binBtnHide:false,
+    focus:false,
+    showModalStatus: false,
+    openIdInfo:  {},
   },
 
 
@@ -23,8 +25,9 @@ Page({
    */
   onLoad: function (options) {
       this.setData({
-        employeeInfo: wx.getStorageSync('employeeInfo'),
-        userInfo: wx.getStorageSync('userInfo')
+        employeeInfo: wx.getStorageSync('employeeInfo') || {},
+        userInfo: wx.getStorageSync('userInfo') || {},
+        openIdInfo: wx.getStorageSync('openIdInfo') || {},
       })
   },
 
@@ -47,6 +50,27 @@ Page({
       })
     }
   },
+
+  bindSubmit:function(){
+    this.setData({
+      showModalStatus: true
+    });
+
+  },
+  bindEmployee: function (e) {
+
+    var employeeInfo = {};
+    employeeInfo.employeeID = e.detail.employeeID;
+    employeeInfo.employeeName = e.detail.employeeName;
+    employeeInfo.expiredDate = e.detail.expiredDate;
+    this.setData({
+      employeeInfo: employeeInfo,
+    })
+    wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
+    console.log("更新绑定结果:", employeeInfo);
+
+  },
+
 
   /**
    * 生命周期函数--监听页面显示
