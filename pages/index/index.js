@@ -13,6 +13,8 @@ Page({
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
     devices: [],
+    users:{},
+    status:{},
   },
 
 
@@ -81,14 +83,44 @@ Page({
 
   getDevices:function(){
     var that = this;
+  
     var query = new AV.Query('Devices');
     query.find().then(function (results) {
 
       if (results) {
         var devices = [];
+        var users = {};
+        var status = {};
         results.forEach(function(item, index){
+          var queryUser = new AV.Query('Users');
+          queryUser.equalTo("openID", item.attributes.ownerID);
+          queryUser.first().then(function(result){
+            var obj = {};
+            obj.employeeID = result.attributes.employeeID;
+            obj.employeeName = result.attributes.employeeName;
+            users[result.attributes.openID]=obj;
+            that.setData({
+              users: users,
+            })
+          },function(error){
+            console.log(error);
+          });
+          //获取设备状态
+          var queryStatus = new AV.Query('DevicesStatus');
+          queryStatus.equalTo("deviceID", item.attributes.deviceID);
+          queryStatus.first().then(function (result) {
+            var obj = {};
+            obj.status = result.attributes.status;
+            status[result.attributes.deviceID] = obj;
+            that.setData({
+              status: status,
+            })
+          }, function (error) {
+            console.log(error);
+          });
           devices.push(item.attributes);
         });
+        
         that.setData({
           devices: devices
         })

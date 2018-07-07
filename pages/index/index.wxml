@@ -15,25 +15,27 @@
     <input class='search' placeholder='索设备名称/系统版本/型号'></input>
   </view>
 
-  <view class='page__bd_spacing ' style=' margin-top:40px'>
+  <view class='page__bd_spacing ' style=' margin-top:100rpx;'>
     <block wx:for="{{devices}}" wx:key="id">
       <view class="kind-list__item">
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
           <view style='display: flex;flex-direction: column;width:100%;padding:10px;'>
             <view style='display: flex;flex-direction: row; '>
               <image src='../images/huawei.png' style='margin-top:6px; width:20px; height:20px; '></image>
-              <view style='font-size:22px;margin-left:10px;'>{{item.deviceModel}}</view>
+              <view style='font-size:20px;margin-left:10px;'>{{item.deviceModel}}</view>
               
             </view>
-            <view style='margin-top:8px;font-size:18px; display: flex;flex-direction: row;color:#666;justify-content: space-between;'>
-               <view >{{item.OSVersion}}</view> 
+            <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
+               <view class='label'>{{users[item.ownerID].employeeName}}</view> 
+               <!-- <view class='label'>{{users[item.ownerID].employeeID}}</view>  -->
+               <view class='label' style='width:70rpx;'>{{item.OSVersion}}</view> 
             </view>
 
           </view>
 
           <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
-            <view style='width:1px;height:80%;background:#eee;'></view>
-            <view style='margin-left:20px;margin-right:16px;font-size:14px;'>闲置</view>
+             <view style='width:2rpx;height:80%;background:#eee;'></view> 
+            <view class='status-base {{status[item.deviceID].status == 0 ? "status-normal" : "status-borrowed"}}'>{{status[item.deviceID].status == 0 ? "闲置" : "借出"}}</view>
           </view>
 
 

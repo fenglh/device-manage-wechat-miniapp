@@ -14,16 +14,16 @@
 
 <view class="weui-cells__title">绑定员工信息</view>
 <view class="weui-cells weui-cells_after-title">
-  <view class="weui-cell weui-cell_input">
+  <view class="weui-cell weui-cell_input" style='height:40px;'>
     <view class="weui-cell__hd">
-      <view class="weui-label">编号</view>
+      <view class="weui-label ">编号</view>
     </view>
     <view class="weui-cell__bd">
       <!-- <input class="weui-input" disabled='true' value='{{employeeInfo.employeeID}}' focus="{{focus}}" placeholder="请输入员工编号" /> -->
-      <label class="weui-input">{{employeeInfo.employeeID}}</label>
+      <label class="weui-input " >{{employeeInfo.employeeID}}</label>
     </view>
   </view>
-  <view class="weui-cell weui-cell_input">
+  <view class="weui-cell weui-cell_input" style='height:40px;'>
     <view class="weui-cell__hd">
       <view class="weui-label">姓名</view>
     </view>

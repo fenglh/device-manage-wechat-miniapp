@@ -332,7 +332,7 @@ Page({
           title: '资产识别中...',
         })
         wx.uploadFile({
-          url: 'http://recognition.image.myqcloud.com/ocr/general',
+          url: 'https://recognition.image.myqcloud.com/ocr/general',
           filePath: tempFilePaths[0],
           name: 'image',
           header:{

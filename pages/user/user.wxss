@@ -5,3 +5,6 @@
   color:#3cc51f;
   white-space:nowrap;
 }
+.label {
+  height: 80rpx;
+}
