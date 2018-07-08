@@ -18,12 +18,16 @@
   <view class='page__bd_spacing ' style=' margin-top:100rpx;'>
     <view style=';display: flex;flex-direction: row;margin-top:10px;'>
       <view class='item-base'>
-        我的设备
+      <image style="width:20px;height:20px;" src='../images/my1.png'></image>
+        <view style='margin-left:8px;'>我的设备</view>
       </view>
+      
       <view class='item-base'>
-        借入设备
+        <image style="width:20px;height:20px;" src='../images/borrowed1.png'></image>
+          <view style='margin-left:8px;'>借入设备</view>
       </view>
     </view>
+    <view class="weui-cells__title" style='margin-top:20px;font-size:12px;'>所有设备</view>
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
       <view class="kind-list__item" bindtap='bindSpread' data-index="{{index}}">
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
