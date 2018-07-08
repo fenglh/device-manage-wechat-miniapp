@@ -4,7 +4,7 @@ const AV = require('../../utils/av-live-query-weapp-min');
 //获取应用实例
 const app = getApp()
 
-
+const  now = Date.parse(new Date());//当前时间
 Page({
   data: {
 
@@ -15,6 +15,8 @@ Page({
     devices: [],
     users:{},
     status:{},
+    brands: wx.getStorageSync('brandsInfo') || {},
+    hiddens:{},
   },
 
 
@@ -23,17 +25,58 @@ Page({
   onLoad: function () {
 
   },
+  bindSpread:function(e){
+    var tapIndex = e.currentTarget.dataset.index;
+    var hiddens = this.data.hiddens;
+    if (!this.data.hiddens[tapIndex] ){
+      hiddens[tapIndex] = true;
+    }else{
+      hiddens[tapIndex] = false;
+
+    }
+    this.setData({
+      hiddens: hiddens
+    });
+
+    console.log('当前点击:', this.data.hiddens);
+
+  },
+
+  getBrands:function(){
+    var that =  this;
+    var query = new AV.Query('Brands');
+    query.find().then(function (results) {
+      console.log(results);
+      var brands = {};
+      brands.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24
+      results.forEach(function(item, index) {
+        brands[item.attributes.brandID] = item.attributes.brand;
+      });
+      console.log("获取品牌列表：",brands);
+      wx.setStorageSync('brandsInfo', brands);//存储品牌信息
+      that.setData({
+        brands: brands,
+      });
+    },function(error){
+      
+    });
+  },
 
   onReady:function(){
 
 
-    this.getDevices();
+    console.log("获取缓存openid信息：", this.data.openIdInfo);
+    console.log("获取缓存userInfo信息：", this.data.userInfo);
+    console.log("获取缓存brands信息：", this.data.brands);
 
+    this.getDevices();
+    if (!this.data.brands.expiredDate || now - this.data.brands.expiredDate > 0) {
+      console.log('更新brands信息');
+      this.getBrands();
+    }
+    
     var that = this;
     //获取用户信息和openid
-
-    console.log("缓存openid信息：",this.data.openIdInfo)
-    console.log("缓存userInfo信息：",this.data.userInfo)
     if (!this.data.openIdInfo.openid || !this.data.userInfo.avatarUrl || !this.data.userInfo.nickName) {
       console.log("头像或者昵称不存在");
       wx.login({
@@ -45,7 +88,6 @@ Page({
                 that.saveUserInfo(res.userInfo);
               }, fail(error) {
                 console.log("获取用户信息失败，原因:",error.errMsg);
-                // that.showToast("请点击左上角\"头像\"进行授权!");
               }
             });
             //获取openid
@@ -54,6 +96,7 @@ Page({
                   if(openid){
                     var obj = {};
                     obj.openid = openid;
+                    obj.expiredDate = now + 1000 * 60 * 60 * 24; //24
                     wx.setStorageSync('openIdInfo', obj);//存储openid
                     that.setData({
                       openIdInfo: obj,
@@ -83,7 +126,6 @@ Page({
 
   getDevices:function(){
     var that = this;
-  
     var query = new AV.Query('Devices');
     query.find().then(function (results) {
 
@@ -153,6 +195,10 @@ Page({
         callback(res.data.openid);
       }, fail(error) {
         console.log(error);
+        wx.showToast({
+          title: error.errMsg,
+          icon:'none'
+        });
         callback(null);
       }
     });
@@ -174,9 +220,6 @@ Page({
       console.log('openid还没有获取到');
       return;
     }
-   
-
-    var now = Date.parse(new Date());//当前时间
 
     if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName || (now - this.data.employeeInfo.expiredDate >0)){
       var that = this;
