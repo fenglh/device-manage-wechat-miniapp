@@ -16,6 +16,14 @@
   </view>
 
   <view class='page__bd_spacing ' style=' margin-top:100rpx;'>
+    <view style=';display: flex;flex-direction: row;margin-top:10px;'>
+      <view class='item-base'>
+        我的设备
+      </view>
+      <view class='item-base'>
+        借入设备
+      </view>
+    </view>
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
       <view class="kind-list__item" bindtap='bindSpread' data-index="{{index}}">
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
@@ -37,15 +45,15 @@
           </view>
         </view>
 
-          <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
-            <view style='padding:2px;'>设备编号：{{item.deviceID}}</view>
-            <view style='padding:2px;'>公司编号：{{item.companyCode}}</view>
-            <view style='padding:2px;'>设备型号：{{item.deviceModel}}</view>
-            <view style='padding:2px;'>设备品牌：{{brands[item.brandID]}}</view>
-            <view style='padding:2px;'>系统版本：{{item.OSVersion}}</view>
-            <view style='padding:2px;'>设备归属：{{users[item.ownerID].employeeName}}</view>
-            <!-- <view>借取员工：</view> -->
-          </view>
+        <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
+          <view style='padding:2px;'>设备编号：{{item.deviceID}}</view>
+          <view style='padding:2px;'>公司编号：{{item.companyCode}}</view>
+          <view style='padding:2px;'>设备型号：{{item.deviceModel}}</view>
+          <view style='padding:2px;'>设备品牌：{{brands[item.brandID]}}</view>
+          <view style='padding:2px;'>系统版本：{{item.OSVersion}}</view>
+          <view style='padding:2px;'>设备归属：{{users[item.ownerID].employeeName}}</view>
+          <!-- <view>借取员工：</view> -->
+        </view>
       </view>
     </block>
   </view>
