@@ -135,9 +135,13 @@
   color:red;
 
 }
+.status-borrowing {
+  color:goldenrod;
+}
 .status-normal {
   color:green;
 }
+
 .item-base {
   display: flex;
   align-items: center;
@@ -149,6 +153,21 @@
   box-shadow: 0 2px 5px #ccc;
   color:#333333;
 }
+.empty-base {
+  margin-top:40px;
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;  
+}
 
+.empty-hide {
+  display: none;
+}
+
+.empty-show {
+  display: flex;
+}
 
    

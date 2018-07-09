@@ -1,38 +1,18 @@
 <!--index.wxml-->
 <view style='  display: flex; flex-direction: column;'>
 
-  <bindDialog showModalStatus="{{showModalStatus}}" openid="{{openIdInfo.openid}}" bind:bindEmployee="bindEmployee"> </bindDialog>
-  <view class="menu">
-    <image class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
 
-    <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='bindgetuserinfo'>
-    </button>
-
-    <view class="vertical-line line-left"></view>
-    <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>
-    <view class="vertical-line line-right"></view>
-
-    <input class='search' placeholder='搜索：系统版本/型号'></input>
-  </view>
-
-  <view class='page__bd_spacing ' style=' margin-top:100rpx;'>
+  <view class='page__bd_spacing ' >
     <view style=';display: flex;flex-direction: row;margin-top:10px;'>
-      <view class='item-base' bindtap='bindMyDevices'>
-        <image style="width:20px;height:20px;" src='../images/my1.png'></image>
-        <view style='margin-left:8px;'>我的设备</view>
-      </view>
-
-      <view class='item-base' bindtap='bindBorrowedDevices'>
-        <image style="width:20px;height:20px;" src='../images/borrowed1.png'></image>
-        <view style='margin-left:8px;'>借入设备</view>
+      <view class='item-base' bindtap='bindAddDevice'>
+        <view style=''>添加设备</view>
+        <image style="width:20px;height:20px;margin-left:8px;" src='../images/add.png'></image>
       </view>
     </view>
-    
-    <view class="weui-cells__title" style='margin-top:20px;font-size:12px;'>所有设备</view>
 
-    <view class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}'>
-      <image style="width:100px;height:100px;margin-left:8px;" src='../images/empty1.png'></image>
-      <view style='color:#999;'>空空如也~ </view>
+    <view  class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}' >
+        <image style="width:100px;height:100px;margin-left:8px;" src='../images/empty1.png'></image>
+        <view style='color:#999;'>空空如也~</view>
     </view>
 
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
@@ -52,8 +32,7 @@
           </view>
           <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
             <view style='width:2rpx;height:80%;background:#eee;'></view>
-
-            <view wx:if="{{status[item.deviceID].status==-1}}">
+                        <view wx:if="{{status[item.deviceID].status==-1}}">
               <view class='status-base status-borrowing'>申请中</view>
             </view>
 
@@ -63,24 +42,16 @@
             <view wx:else>
               <view class='status-base status-normal'>闲置</view>
             </view>
-
           </view>
-
-
-
-
-
         </view>
 
         <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
           <view style='padding:2px;'>设备型号：{{item.deviceModel}}</view>
           <view style='padding:2px;'>设备品牌：{{brands[item.brandID]}}</view>
-          <view style='padding:2px;'>系统版本：{{item.OSVersion}}</view>
           <view style='padding:2px;'>设备编号：{{item.deviceID}}</view>
           <view style='padding:2px;'>公司编号：{{item.companyCode}}</view>
+          <view style='padding:2px;'>系统版本：{{item.OSVersion}}</view>
           <view style='padding:2px;'>设备归属：{{users[item.ownerID].employeeName}}</view>
-          <!-- <view>借取员工：</view> -->
-          <button class="weui-btn" type="primary" catchtap="bindBorrowed" data-item="{{item}}" hidden='{{status[item.deviceID].status == -1 ? "hidden" : ""}}'>申请借取</button>
         </view>
       </view>
     </block>

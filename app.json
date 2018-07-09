@@ -1,11 +1,12 @@
 {
   "pages": [
-    
     "pages/index/index",
     "pages/menu/menu",
     "pages/search/search",
     "pages/user/user",
-    "pages/device/device"
+    "pages/device/device",
+    "pages/myDevices/myDevices",
+    "pages/borrowedDevices/borrowedDevices"
   ],
   "window": {
     "backgroundTextStyle": "light",
