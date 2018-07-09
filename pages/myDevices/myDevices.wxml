@@ -56,7 +56,7 @@
           </view>
 
 
-          <button class="weui-btn" type="primary" catchtap="bindPass" data-index="{{index}}" hidden='{{(item.status==0 || !item.status)  ? "hidden" : ""}}'>通过申请</button>
+          <button class="weui-btn" type="primary" catchtap="bindPass" data-index="{{index}}" hidden='{{item.status==-1   ? "" : "hidden"}}'>通过申请</button>
         </view>
       </view>
     </block>
