@@ -25,7 +25,7 @@ Page({
       })
       this.getMyDevices();
 
-      console.log("===当前品牌列表：", this.data.brands);
+      console.log("当前品牌列表：", this.data.brands);
   },
 
   bindAddDevice:function(e){
@@ -100,12 +100,24 @@ Page({
       success: function (res) {
         if (res.confirm) {
           console.log('用户点击确定');
-          that.doBorrowDevice(item.deviceID);
+          that.agreeBorrowed(that.data.devices[index].deviceID);
         } else if (res.cancel) {
           console.log('用户点击取消')
         }
       }
     })
+  },
+
+  agreeBorrowed:function(deviceID){
+    var that = this;
+    var queryStatus = new AV.Query('DevicesStatus');
+    queryStatus.equalTo("deviceID", deviceID);
+    queryStatus.first().then(function (result) {
+      that.updateDeviceStatus(result.id, -2);
+
+    }, function(error){
+
+    });
   },
 
   updateDeviceStatus: function (objectId, status) {
@@ -115,12 +127,12 @@ Page({
     todo.save().then(function (result) {
       that.getStatus(that.data.devices);
       wx.showToast({
-        title: '设备借取申请成功,请等待管理员确认',
+        title: '设备借取已同意申请借用!',
         icon: 'none'
       })
     }, function (error) {
       wx.showToast({
-        title: '设备借取申请失败！',
+        title: '同意借取设备失败，服务器错误',
         icon: 'none'
       })
     });
