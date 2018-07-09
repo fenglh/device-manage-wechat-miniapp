@@ -2,7 +2,7 @@
 <view style='  display: flex; flex-direction: column;'>
 
 
-  <view class='page__bd_spacing ' >
+  <view class='page__bd_spacing '>
     <view style=';display: flex;flex-direction: row;margin-top:10px;'>
       <view class='item-base' bindtap='bindAddDevice'>
         <view style=''>添加设备</view>
@@ -10,9 +10,9 @@
       </view>
     </view>
 
-    <view  class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}' >
-        <image style="width:100px;height:100px;margin-left:8px;" src='../images/empty1.png'></image>
-        <view style='color:#999;'>空空如也~</view>
+    <view class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}'>
+      <image style="width:100px;height:100px;margin-left:8px;" src='../images/empty1.png'></image>
+      <view style='color:#999;'>空空如也~</view>
     </view>
 
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
@@ -25,18 +25,18 @@
 
             </view>
             <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
-              <view class='label'>{{users[item.ownerID].employeeName}}</view>
-              <!-- <view class='label'>{{users[item.ownerID].employeeID}}</view>  -->
               <view class='label' style='width:70rpx;'>{{item.OSVersion}}</view>
+              <view class='label'>{{item.deviceID}}</view>
+              
             </view>
           </view>
           <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
             <view style='width:2rpx;height:80%;background:#eee;'></view>
-                        <view wx:if="{{status[item.deviceID].status==-1}}">
-              <view class='status-base status-borrowing'>申请中</view>
+            <view wx:if="{{item.status==-1}}">
+              <view class='status-base status-borrowing'>待处理</view>
             </view>
 
-            <view wx:elif="{{status[item.deviceID].status==-2}}">
+            <view wx:elif="{{item.status==-2}}">
               <view class='status-base status-borrowed'>已借出</view>
             </view>
             <view wx:else>
@@ -46,12 +46,17 @@
         </view>
 
         <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
-          <view style='padding:2px;'>设备型号：{{item.deviceModel}}</view>
-          <view style='padding:2px;'>设备品牌：{{brands[item.brandID]}}</view>
-          <view style='padding:2px;'>设备编号：{{item.deviceID}}</view>
-          <view style='padding:2px;'>公司编号：{{item.companyCode}}</view>
-          <view style='padding:2px;'>系统版本：{{item.OSVersion}}</view>
-          <view style='padding:2px;'>设备归属：{{users[item.ownerID].employeeName}}</view>
+          <view >设备型号：{{item.deviceModel}}</view>
+          <view >设备品牌：{{brands[item.brandID]}}</view>
+          <view >设备编号：{{item.deviceID}}</view>
+          <view >公司编号：{{item.companyCode}}</view>
+          <view >系统版本：{{item.OSVersion}}</view>
+          <view wx:if="{{item.status==-1}}">
+            <view class='status-borrowing' >{{item.borrowedEmployeeName}} {{item.borrowedEmployeeID}} 向你申请借用此设备</view>
+          </view>
+
+
+          <button class="weui-btn" type="primary" catchtap="bindPass" data-index="{{index}}" hidden='{{(item.status==0 || !item.status)  ? "hidden" : ""}}'>通过申请</button>
         </view>
       </view>
     </block>

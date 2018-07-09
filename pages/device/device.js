@@ -11,13 +11,13 @@ Page({
   data: {
     showTopTips: false,
     topTips: '',
-    models: wx.getStorageSync('modelsInfo').models || {},
+    models: {},
     modelIndex:null,
 
-    brands: wx.getStorageSync('brandsInfo').brands || [],
+    brandsInfo: {},
     brandIndex: null,
 
-    OSVersions: wx.getStorageSync('OSVersionsInfo').OSVersions || {},
+    OSVersions: {},
     systemVersionIndex: null,
 
     companyCode:null,
@@ -39,22 +39,9 @@ Page({
   onReady: function () {
 
     //同步品牌列表
-    if (this.data.brands.length == 0){
-      this.syncBrands();
-    }else{
-      console.log("从缓存同步设备品牌列表:", this.data.brands);
-    }
-    if (Object.keys(this.data.models).length == 0){
-      this.syncModels();
-    }else {
-      console.log("从缓存同步设备型号列表:", this.data.models);
-    }
-
-    if (Object.keys(this.data.OSVersions).length == 0) {
-      this.syncOSVersion();
-    } else {
-      console.log("从缓存同步设备系统版本列表:", this.data.OSVersions);
-    }
+    this.syncBrands();
+    this.syncModels();
+    this.syncOSVersion();
     
 
     //同步设备型号
@@ -143,14 +130,15 @@ Page({
           obj.brand = item.attributes.brand;
           brands.push(obj);
         });
-        that.setData({
-          brands: brands,
-        })
+
         var obj = {};
         obj.brands = brands;
         obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
         wx.setStorageSync('brandsInfo', obj);
-        console.log("从服务器同步设备品牌列表:", brands);
+        that.setData({
+          brandsInfo: obj,
+        })
+        console.log("从服务器同步设备品牌列表:", obj);
       } else {
         console.log('无法从服务器同步设备品牌列表');
       }
@@ -274,9 +262,9 @@ Page({
         var openIdInfo = wx.getStorageSync('openIdInfo');
         
         var deviceObject = new DevicesObject();
-        deviceObject.set('brandID', that.data.brands[that.data.brandIndex].brandID);
-        deviceObject.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
-        deviceObject.set('OSVersion', that.data.OSVersions[that.data.brands[that.data.brandIndex].brandID][that.data.systemVersionIndex])
+        deviceObject.set('brandID', that.data.brandsInfo.brands[that.data.brandIndex].brandID);
+        deviceObject.set('deviceModel', that.data.models[that.data.brandsInfo.brands[that.data.brandIndex].brandID][that.data.modelIndex])
+        deviceObject.set('OSVersion', that.data.OSVersions[that.data.brandsInfo.brands[that.data.brandIndex].brandID][that.data.systemVersionIndex])
         deviceObject.set('deviceID', that.data.deviceCode )
         deviceObject.set('companyCode', that.data.companyCode)
         deviceObject.set('ownerID', openIdInfo.openid);
@@ -384,7 +372,7 @@ Page({
               var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
               var brandIndex = null;
               console.log("deviceDesc :%s", deviceDesc)
-              that.data.brands.forEach(function (item, index) {
+              that.data.brandsInfo.brands.forEach(function (item, index) {
                 console.log(item);
                 var iscontain = deviceDesc.indexOf(item.brand) == -1 ? false : true;
                 if (iscontain) {

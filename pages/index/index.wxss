@@ -132,7 +132,7 @@
 }
 .status-borrowed {
 
-  color:red;
+  color:black;
 
 }
 .status-borrowing {

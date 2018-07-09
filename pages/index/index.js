@@ -13,8 +13,6 @@ Page({
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
     devices: [],
-    users: {},
-    status: {},
     brands: wx.getStorageSync('brandsInfo') || {},
     hiddens: {},
   },
@@ -59,12 +57,14 @@ Page({
     })
   },
 
-  addDeviceStatus: function (devicdID, status) {
+  addDeviceStatus: function (devicdID, status, openid) {
     var that = this;
     var DevicesStatus = AV.Object.extend('DevicesStatus');
     var devicesStatus = new DevicesStatus();
     devicesStatus.set('status', status);
     devicesStatus.set('deviceID', devicdID);
+    devicesStatus.set('borrowedUserOpenID', openid);
+
     devicesStatus.save().then(function (result) {
       that.getStatus(that.data.devices);
       wx.showToast({
@@ -80,10 +80,12 @@ Page({
     // 设置优先级
   },
 
-  updateDeviceStatus: function (objectId, status) {
+  updateDeviceStatus: function (objectId, status,openid) {
     var that = this;
     var todo = AV.Object.createWithoutData('DevicesStatus', objectId);
     todo.set('status', status);
+    todo.set('borrowedUserOpenID', openid);
+    
     todo.save().then(function (result) {
       that.getStatus(that.data.devices);
       wx.showToast({
@@ -117,11 +119,11 @@ Page({
           })
         } else {
           //可以借取
-          that.updateDeviceStatus(result.id, -1);
+          that.updateDeviceStatus(result.id, -1, that.data.openIdInfo.openid);
         }
       } else {
         //添加
-        that.addDeviceStatus(deviceID, -1);
+        that.addDeviceStatus(deviceID, -1, that.data.openIdInfo.openid);
       }
     }, function (error) {
 
@@ -130,6 +132,11 @@ Page({
 
   bindSpread: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
+    if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID) {
+      console.log('获取借用人信息');
+      this.getBorrowUserInfo(tapIndex)
+    }
+
     var hiddens = this.data.hiddens;
     if (!this.data.hiddens[tapIndex]) {
       hiddens[tapIndex] = true;
@@ -226,20 +233,40 @@ Page({
   },
 
 
+  getBorrowUserInfo: function (index) {
+    var that = this;
+    var openid = this.data.devices[index].borrowedUserOpenID;
+    var queryUser = new AV.Query('Users');
+    queryUser.equalTo("openID", openid);
+    queryUser.first().then(function (result) {
+      var borrowedEmployeeID = result.attributes.employeeID;
+      var borrowedEmployeeName = result.attributes.employeeName;
+      var devices = that.data.devices;
+      devices[index].borrowedEmployeeID = borrowedEmployeeID;
+      devices[index].borrowedEmployeeName = borrowedEmployeeName;
+      console.log(result);
+      console.log(devices);
+      that.setData({
+        devices: devices,
+      })
+
+    }, function (error) {
+      console.log(error);
+    });
+
+  },
+
 
   getUsers: function (devices) {
-    var users = {};
     var that = this;
     devices.forEach(function (item, index) {
       var queryUser = new AV.Query('Users');
       queryUser.equalTo("openID", item.ownerID);
       queryUser.first().then(function (result) {
-        var obj = {};
-        obj.employeeID = result.attributes.employeeID;
-        obj.employeeName = result.attributes.employeeName;
-        users[result.attributes.openID] = obj;
+        item.employeeID = result.attributes.employeeID;
+        item.employeeName = result.attributes.employeeName;
         that.setData({
-          users: users,
+          devices: devices,
         })
       }, function (error) {
         console.log(error);
@@ -257,11 +284,15 @@ Page({
       var queryStatus = new AV.Query('DevicesStatus');
       queryStatus.equalTo("deviceID", item.deviceID);
       queryStatus.first().then(function (result) {
-        var obj = {};
-        obj.status = result.attributes.status;
-        status[result.attributes.deviceID] = obj;
+        item.status = result.attributes.status;
+        item.borrowedUserOpenID = result.attributes.borrowedUserOpenID;
+        devices.sort(function(a,b){
+          var statusA = a.status ? a.status : 0;
+          var statusB = b.status ? b.status : 0;
+          return statusB - statusA;
+        })
         that.setData({
-          status: status,
+          devices: devices,
         })
       }, function (error) {
         console.log(error);
@@ -273,7 +304,7 @@ Page({
   getDevices: function () {
     var that = this;
     var query = new AV.Query('Devices');
-    query.descending('updatedAt');
+    query.descending('createdAt');
     query.find().then(function (results) {
 
       if (results) {
@@ -287,7 +318,6 @@ Page({
         that.getStatus(devices);
         that.getUsers(devices);
         console.log("获取设备列表:", devices);
-
       } else {
         console.log('无法从服务器同步设备系统版本列表');
       }
