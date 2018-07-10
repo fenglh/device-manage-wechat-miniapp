@@ -18,6 +18,10 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    wx.setNavigationBarTitle({
+      title: '我的设备',
+    })
+
     var brands = wx.getStorageSync('brandsInfo');
     this.setData({
       openid: options.openid,
@@ -83,6 +87,46 @@ Page({
    */
   onReady: function () {
 
+  },
+
+  confirmReturn:function(index){
+    var that = this;
+    var query = new AV.Query('DevicesStatus');
+    query.equalTo('deviceID', this.data.devices[index].deviceID);
+    query.equalTo('borrowedUserOpenID', this.data.openid);
+    query.equalTo('status', -3);
+    query.first().then(function (status) {
+      var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
+      // 修改属性
+      todo.set('status', 0);//归还中
+      todo.set('borrowedUserOpenID', "");
+      // 保存到云端
+      todo.save().then(function (result) {
+        wx.showToast({
+          title: '确认归还成功',
+          icon: 'success',
+        });
+        that.getMyDevices();
+      }, function (error) {
+        console.log(error);
+      });
+    }, function (error) {
+
+    });
+  },
+
+  bindConfirmReturn:function(e){
+    var index = e.currentTarget.dataset.index;
+    var that = this;
+    wx.showModal({
+      title: '确认归还',
+      content: '你确定已归还 ' + that.data.devices[index].deviceModel + " ?",
+      success: function (res) {
+        if (res.confirm) {
+          that.confirmReturn(index);
+        }
+      }
+    })
   },
   bindPass: function (e) {
     var index = e.currentTarget.dataset.index;

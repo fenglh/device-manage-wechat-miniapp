@@ -91,10 +91,13 @@ page{
   width:40px;
 }
 .status-borrowed {
-
   color:black;
-
 }
+
+.status-returning {
+  color:goldenrod;
+}
+
 .status-borrowing {
   color:goldenrod;
 }

@@ -28,6 +28,7 @@
   left: 0rpx;
   box-shadow: 0 2px 5px #ccc;
   line-height: 100rpx;
+  z-index: 1000;
   /* opacity: 0.75; */
 }
 .menu .avatar {

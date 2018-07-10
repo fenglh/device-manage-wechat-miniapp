@@ -4,7 +4,6 @@
   <bindDialog showModalStatus="{{showModalStatus}}" openid="{{openIdInfo.openid}}" bind:bindEmployee="bindEmployee"> </bindDialog>
   <view class="menu">
     <image class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
-
     <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='bindgetuserinfo'>
     </button>
 
@@ -19,20 +18,20 @@
     <view class='item-container'>
       <view class='item-base' bindtap='bindMyDevices'>
         <image class='item-logo' src='../images/my1.png'></image>
-        <view style='margin-left:8px;'>我的设备</view> 
-        <view class="weui-badge badge-position" hidden='{{myDevicesCount > 0 ? "" : "hidden"}}'>{{myDevicesCount}}</view>     
+        <view style='margin-left:8px;'>我的设备</view>
+        <view class="weui-badge badge-position" hidden='{{myDevicesCount > 0 ? "" : "hidden"}}'>{{myDevicesCount}}</view>
       </view>
 
 
-      <view class='item-base'  bindtap='bindBorrowedDevices'>
+      <view class='item-base' bindtap='bindBorrowedDevices'>
         <image class='item-logo' src='../images/borrowed1.png'></image>
         <view style='margin-left:8px;'>借入设备</view>
-        <view class="weui-badge badge-position" hidden='{{borrowedDevicesCount > 0 ? "" : "hidden"}}'>{{borrowedDevicesCount}}</view> 
+        <view class="weui-badge badge-position" hidden='{{borrowedDevicesCount > 0 ? "" : "hidden"}}'>{{borrowedDevicesCount}}</view>
       </view>
     </view>
 
 
-    <view class="weui-cells__title title" >所有设备，共{{devices.length}}台</view>
+    <view class="weui-cells__title title">所有设备，共{{devices.length}}台</view>
 
     <view class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}'>
       <image class='empty-image' src='../images/empty1.png'></image>
@@ -64,6 +63,10 @@
             <view wx:elif="{{item.status==-2}}">
               <view class='status-base status-borrowed'>已借出</view>
             </view>
+            <view wx:elif="{{item.status==-3}}">
+              <view class='status-base status-returning'>归还中</view>
+            </view>
+
             <view wx:else>
               <view class='status-base status-normal'>闲置</view>
             </view>
@@ -77,12 +80,12 @@
         </view>
 
         <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
-          <view >设备型号：{{item.deviceModel}}</view>
-          <view >设备品牌：{{brands[item.brandID]}}</view>
-          <view >系统版本：{{item.OSVersion}}</view>
-          <view >设备编号：{{item.deviceID}}</view>
-          <view >公司编号：{{item.companyCode}}</view>
-          <view >设备归属：{{item.employeeName}}</view>
+          <view>设备型号：{{item.deviceModel}}</view>
+          <view>设备品牌：{{brands[item.brandID]}}</view>
+          <view>系统版本：{{item.OSVersion}}</view>
+          <view>设备编号：{{item.deviceID}}</view>
+          <view>公司编号：{{item.companyCode}}</view>
+          <view>设备归属：{{item.employeeName}}</view>
           <view wx:if="{{item.status==-1}}">
             <view class='status-borrowing' style='padding:2px;'>申请人：{{item.borrowedEmployeeName}}</view>
           </view>

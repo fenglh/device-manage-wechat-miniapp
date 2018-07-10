@@ -23,6 +23,9 @@ Page({
 
   /******************* */
   onLoad: function () {
+    wx.setNavigationBarTitle({
+      title: '机可借',
+    })
     this.getDevices();
   },
 
@@ -144,9 +147,14 @@ Page({
 
   getBorrowedDeviceCount:function(openid){
     var that = this;
-    //获取设备状态
-    var query = new AV.Query('DevicesStatus');
-    query.equalTo("borrowedUserOpenID",  openid);
+    var borrowedOpenidQuery = new AV.Query('DevicesStatus');
+    borrowedOpenidQuery.equalTo("borrowedUserOpenID", openid);
+
+    var statusQuery = new AV.Query('DevicesStatus');
+    statusQuery.notEqualTo("status", 0);
+
+    var query = AV.Query.and(borrowedOpenidQuery, statusQuery);
+
     query.count().then(function (count) {
       that.setData({
         borrowedDevicesCount: count,
@@ -191,6 +199,9 @@ Page({
     todo.set('borrowedUserOpenID', openid);
     
     todo.save().then(function (result) {
+      that.setData({
+        hiddens:{}
+      })
       that.getStatus(that.data.devices);
       wx.showToast({
         title: '设备借取申请成功,请等待管理员确认',
@@ -498,7 +509,10 @@ Page({
     }
 
   },
-
+  onPullDownRefresh: function () {
+    wx.startPullDownRefresh();
+    wx.showNavigationBarLoading();
+  }
 
 
 })

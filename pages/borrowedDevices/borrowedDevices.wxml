@@ -33,6 +33,10 @@
             <view wx:elif="{{item.status==-2}}">
               <view class='status-base status-borrowed'>已借入</view>
             </view>
+            <view wx:elif="{{item.status==-3}}">
+              <view class='status-base status-returning'>归还中</view>
+            </view>
+
             <view wx:else>
               <view class='status-base status-normal'>闲置</view>
             </view>
@@ -47,12 +51,20 @@
           <view>系统版本：{{item.OSVersion}}</view>
           <view>设备归属：{{item.ownerEmployeeName}}</view>
           <view wx:if="{{item.status==-1}}">
-            <view style='margin-top:10px;'>申请时间：{{item.borrowedTime}}</view>
+            <view style='margin-top:10px;'>申请时间：{{item.actionTime}}</view>
+          </view>
+
+          <view wx:if="{{item.status==-3}}">
+            <view style='margin-top:10px;'>归还时间：{{item.actionTime}}</view>
           </view>
 
           <view wx:if="{{item.status==-2}}">
-            <view style='margin-top:10px;'>借入时间：{{item.borrowedTime}}</view>
+            <view style='margin-top:10px;'>借入时间：{{item.actionTime}}</view>
           </view>
+
+          <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindCancelBorrowed" data-index="{{index}}" hidden='{{(item.status==-1 || !item.status) ? "" : "hidden"}}'>取消申请</button>
+
+                    <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindReturnBorrowed" data-index="{{index}}" hidden='{{(item.status==-2 || !item.status) ? "" : "hidden"}}'>归还设备</button>
 
         </view>
       </view>
