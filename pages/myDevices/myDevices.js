@@ -11,24 +11,24 @@ Page({
     devices: [],
     brands: {},
     hiddens: {},
-    openid:null,
+    openid: null,
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    var brands = wx.getStorageSync('brandsInfo')  ;
-      this.setData({
-        openid:options.openid,
-        brands: brands,
-      })
-      this.getMyDevices();
+    var brands = wx.getStorageSync('brandsInfo');
+    this.setData({
+      openid: options.openid,
+      brands: brands,
+    })
+    this.getMyDevices();
 
-      console.log("当前品牌列表：", this.data.brands);
+    console.log("当前品牌列表：", this.data.brands);
   },
 
-  bindAddDevice:function(e){
+  bindAddDevice: function (e) {
     wx.navigateTo({
       url: '../device/device',
     })
@@ -36,8 +36,8 @@ Page({
 
   bindSpread: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
-    
-    if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID){
+
+    if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID) {
       console.log('获取借用人信息');
       this.getBorrowUserInfo(tapIndex)
     }
@@ -51,8 +51,6 @@ Page({
     this.setData({
       hiddens: hiddens
     });
-
-    console.log('当前点击:', this.data.hiddens);
 
   },
 
@@ -84,17 +82,17 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {
-  
+
   },
-  bindPass:function(e){
+  bindPass: function (e) {
     var index = e.currentTarget.dataset.index;
     var that = this;
     var borrowedEmployeeID = this.data.devices[index].borrowedEmployeeID;
     var borrowedEmployeeName = this.data.devices[index].borrowedEmployeeName;
     var deviceModel = this.data.devices[index].deviceModel;
     wx.showModal({
-      title: deviceModel+'借用申请',
-      content: "“" + borrowedEmployeeName + "”" + "向你申请借用该设备" ,
+      title: deviceModel + '借用申请',
+      content: "“" + borrowedEmployeeName + "”" + "向你申请借用该设备",
       cancelText: '稍后',
       confirmText: '同意',
       success: function (res) {
@@ -108,22 +106,24 @@ Page({
     })
   },
 
-  agreeBorrowed:function(deviceID){
+  agreeBorrowed: function (deviceID) {
     var that = this;
     var queryStatus = new AV.Query('DevicesStatus');
     queryStatus.equalTo("deviceID", deviceID);
     queryStatus.first().then(function (result) {
       that.updateDeviceStatus(result.id, -2);
 
-    }, function(error){
+    }, function (error) {
 
     });
   },
 
   updateDeviceStatus: function (objectId, status) {
     var that = this;
+    var timestamp = Date.parse(new Date());
     var todo = AV.Object.createWithoutData('DevicesStatus', objectId);
     todo.set('status', status);
+    todo.set('actionTimestamp', timestamp);//当前操作时间
     todo.save().then(function (result) {
       that.getStatus(that.data.devices);
       wx.showToast({
@@ -140,6 +140,22 @@ Page({
 
 
 
+  formatDateTime: function (inputTime) {
+    var date = new Date(inputTime);
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    m = m < 10 ? ('0' + m) : m;
+    var d = date.getDate();
+    d = d < 10 ? ('0' + d) : d;
+    var h = date.getHours();
+    h = h < 10 ? ('0' + h) : h;
+    var minute = date.getMinutes();
+    var second = date.getSeconds();
+    minute = minute < 10 ? ('0' + minute) : minute;
+    // second = second < 10 ? ('0' + second) : second; 
+    return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
+  },
+
 
 
   getStatus: function (devices) {
@@ -153,6 +169,7 @@ Page({
       queryStatus.first().then(function (result) {
         item.status = result.attributes.status;
         item.borrowedUserOpenID = result.attributes.borrowedUserOpenID;
+        item.borrowedTime = that.formatDateTime(result.attributes.actionTimestamp);
         devices.sort(function (a, b) {
           //升序
           var statusA = a.status ? a.status : 0;

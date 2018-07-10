@@ -11,8 +11,8 @@
     </view>
 
     <view class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}'>
-      <image style="width:100px;height:100px;margin-left:8px;" src='../images/empty1.png'></image>
-      <view style='color:#999;'>空空如也~</view>
+      <image class="empty-image" src='../images/empty1.png'></image>
+      <view class='empty-desc'>空空如也~</view>
     </view>
 
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
@@ -27,7 +27,7 @@
             <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
               <view class='label' style='width:70rpx;'>{{item.OSVersion}}</view>
               <view class='label'>{{item.deviceID}}</view>
-              
+
             </view>
           </view>
           <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
@@ -46,13 +46,23 @@
         </view>
 
         <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
-          <view >设备型号：{{item.deviceModel}}</view>
-          <view >设备品牌：{{brands[item.brandID]}}</view>
-          <view >设备编号：{{item.deviceID}}</view>
-          <view >公司编号：{{item.companyCode}}</view>
-          <view >系统版本：{{item.OSVersion}}</view>
+          <view>设备型号：{{item.deviceModel}}</view>
+          <view>设备品牌：{{brands[item.brandID]}}</view>
+          <view>设备编号：{{item.deviceID}}</view>
+          <view>公司编号：{{item.companyCode}}</view>
+          <view>系统版本：{{item.OSVersion}}</view>
+
+          <view wx:if="{{item.status==-2}}">
+            <view style='margin-top:10px;'>借出时间：{{item.borrowedTime}}</view>
+          </view>
+
+          <view wx:elif="{{item.status==-1}}">
+            <view style='margin-top:10px;'>申请时间：{{item.borrowedTime}}</view>
+          </view>
+
+
           <view wx:if="{{item.status==-1}}">
-            <view class='status-borrowing' >{{item.borrowedEmployeeName}} {{item.borrowedEmployeeID}} 向你申请借用此设备</view>
+            <view class='status-borrowing'>{{item.borrowedEmployeeName}} {{item.borrowedEmployeeID}} 向你申请借用此设备</view>
           </view>
 
 

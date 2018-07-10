@@ -134,10 +134,11 @@ Page({
         var obj = {};
         obj.brands = brands;
         obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-        wx.setStorageSync('brandsInfo', obj);
+        
         that.setData({
           brandsInfo: obj,
         })
+        // wx.setStorageSync('brandsInfo', obj);//不做缓存
         console.log("从服务器同步设备品牌列表:", obj);
       } else {
         console.log('无法从服务器同步设备品牌列表');
