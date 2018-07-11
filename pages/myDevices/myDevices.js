@@ -10,13 +10,16 @@ Page({
   data: {
     devices: [],
     brands: {},
-    hiddens: {},
     openid: null,
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
+
+  onShow:function() {
+    this.getMyDevices();
+  },
   onLoad: function (options) {
     wx.setNavigationBarTitle({
       title: '我的设备',
@@ -27,9 +30,7 @@ Page({
       openid: options.openid,
       brands: brands,
     })
-    this.getMyDevices();
-
-    console.log("当前品牌列表：", this.data.brands);
+    
   },
 
   bindAddDevice: function (e) {
@@ -38,22 +39,23 @@ Page({
     })
   },
 
-  bindSpread: function (e) {
+  bindTapExpand: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
 
     if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID) {
       console.log('获取借用人信息');
       this.getBorrowUserInfo(tapIndex)
     }
-    var hiddens = this.data.hiddens;
-    if (!this.data.hiddens[tapIndex]) {
-      hiddens[tapIndex] = true;
+    var devices = this.data.devices;
+    var device = devices[tapIndex];
+    if (!device.isExpand) {
+      device.isExpand = true;
     } else {
-      hiddens[tapIndex] = false;
-
+      device.isExpand = !device.isExpand;
     }
+
     this.setData({
-      hiddens: hiddens
+      devices: devices
     });
 
   },

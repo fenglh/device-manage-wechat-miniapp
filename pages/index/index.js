@@ -13,8 +13,8 @@ Page({
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
     devices: [],
+    allDevices: [],//搜索专用的所有设备
     brands: wx.getStorageSync('brandsInfo') || {},
-    hiddens: {},
     myDevicesCount:0,
     borrowedDevicesCount:0
   },
@@ -22,20 +22,20 @@ Page({
 
 
   /******************* */
+  onShow:function() {
+    // this.getStatus(this.data.devices);
+    this.getBorrowedDeviceCount(this.data.openIdInfo.openid);
+    this.getMyDevicesCount(this.data.openIdInfo.openid);
+    this.getDevices();
+  },
   onLoad: function () {
     wx.setNavigationBarTitle({
       title: '机可借',
     })
-    this.getDevices();
+    
   },
 
   onReady: function () {
-
-
-    console.log("获取缓存openid信息：", this.data.openIdInfo);
-    console.log("获取缓存userInfo信息：", this.data.userInfo);
-    console.log("获取缓存brands信息：", this.data.brands);
-
 
     if (!this.data.brands.expiredDate || now - this.data.brands.expiredDate > 0) {
       console.log('更新brands信息');
@@ -98,14 +98,52 @@ Page({
 
   },
 
+  searchContent:function(content){
+    if(content==""){
+      this.getDevices();
+      return;
+    }
+    var devices = [];
+    this.data.allDevices.forEach(function(item,index){
+      if (item.deviceModel.indexOf(content) != -1 || item.OSVersion.indexOf(content) != -1 || item.deviceID.indexOf(content) != -1){
+        devices.push(item);
+      }
+    });
+    this.setData({
+      devices:devices,
+    })
+  },
+
+
+  bindSearchConfirm:function(e){
+    console.log(e.detail);
+  },
+
+  bindSearchInput:function(e){
+    console.log(e.detail);
+    this.searchContent(e.detail.value);
+  },
 
   bindMyDevices: function (e) {
+    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName) {
+      this.setData({
+        showModalStatus: true,
+      });
+      return;
+    }
+
     //跳转
     wx.navigateTo({
       url: '../myDevices/myDevices?openid=' + this.data.openIdInfo.openid,
     })
   },
   bindBorrowedDevices: function (e) {
+    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName){
+      this.setData({
+        showModalStatus:true,
+      });
+      return;
+    }
     //跳转
     wx.navigateTo({
       url: '../borrowedDevices/borrowedDevices?openid=' + this.data.openIdInfo.openid,
@@ -113,7 +151,13 @@ Page({
   },
 
   bindBorrowed: function (e) {
-
+    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName) {
+      this.setData({
+        showModalStatus: true,
+      });
+      return;
+    }
+    
     var item = e.currentTarget.dataset.item;
     var that = this;
     wx.showModal({
@@ -133,6 +177,9 @@ Page({
   },
 
   getMyDevicesCount:function(openid){
+    if (!openid) {
+      return;
+    }
     var that = this;
     var query = new AV.Query('Devices');
     query.equalTo('ownerID', openid);
@@ -146,6 +193,9 @@ Page({
   },
 
   getBorrowedDeviceCount:function(openid){
+    if(!openid){
+      return;
+    }
     var that = this;
     var borrowedOpenidQuery = new AV.Query('DevicesStatus');
     borrowedOpenidQuery.equalTo("borrowedUserOpenID", openid);
@@ -181,6 +231,7 @@ Page({
         title: '设备借取申请成功,请等待管理员确认',
         icon: 'none'
       })
+      that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
     }, function (error) {
       wx.showToast({
         title: '设备借取申请失败！',
@@ -199,14 +250,13 @@ Page({
     todo.set('borrowedUserOpenID', openid);
     
     todo.save().then(function (result) {
-      that.setData({
-        hiddens:{}
-      })
       that.getStatus(that.data.devices);
       wx.showToast({
         title: '设备借取申请成功,请等待管理员确认',
         icon: 'none'
       })
+      that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
+
     }, function (error) {
       wx.showToast({
         title: '设备借取申请失败！',
@@ -245,25 +295,30 @@ Page({
     });
   },
 
-  bindSpread: function (e) {
+  bindTapExpand: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
     if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID) {
       console.log('获取借用人信息');
       this.getBorrowUserInfo(tapIndex)
     }
 
-    var hiddens = this.data.hiddens;
-    if (!this.data.hiddens[tapIndex]) {
-      hiddens[tapIndex] = true;
-    } else {
-      hiddens[tapIndex] = false;
+    var devices = this.data.devices;
 
+    var device = devices[tapIndex];
+
+    if(!device.isExpand) {
+      device.isExpand = true;
+    }else{
+      device.isExpand = !device.isExpand;
     }
+
+
     this.setData({
-      hiddens: hiddens
+      devices: devices,
+      allDevices: devices,
     });
 
-    console.log('当前点击:', this.data.hiddens);
+  
 
   },
 
@@ -301,6 +356,7 @@ Page({
       console.log(result);
       console.log(devices);
       that.setData({
+        allDevices: devices,
         devices: devices,
       })
 
@@ -320,6 +376,7 @@ Page({
         item.employeeID = result.attributes.employeeID;
         item.employeeName = result.attributes.employeeName;
         that.setData({
+          allDevices: devices,
           devices: devices,
         })
       }, function (error) {
@@ -340,12 +397,13 @@ Page({
       queryStatus.first().then(function (result) {
         item.status = result.attributes.status;
         item.borrowedUserOpenID = result.attributes.borrowedUserOpenID;
-        devices.sort(function(a,b){
-          var statusA = a.status ? a.status : 0;
-          var statusB = b.status ? b.status : 0;
-          return statusB - statusA;
-        })
+        // devices.sort(function(a,b){
+        //   var statusA = a.status ? a.status : 0;
+        //   var statusB = b.status ? b.status : 0;
+        //   return statusB - statusA;
+        // })
         that.setData({
+          allDevices: devices,
           devices: devices,
         })
       }, function (error) {
@@ -360,13 +418,15 @@ Page({
     var query = new AV.Query('Devices');
     query.descending('createdAt');
     query.find().then(function (results) {
-
+      wx.hideNavigationBarLoading();
+      wx.stopPullDownRefresh();
       if (results) {
         var devices = [];
         results.forEach(function (item, index) {
           devices.push(item.attributes);
         });
         that.setData({
+          allDevices: devices,
           devices: devices
         })
         that.getStatus(devices);
@@ -376,8 +436,10 @@ Page({
         console.log('无法从服务器同步设备系统版本列表');
       }
 
+
     }, function (error) {
     });
+
   },
 
 
@@ -471,11 +533,8 @@ Page({
     }
 
   },
-  bindSearchEvent: function () {
-    wx.navigateTo({
-      url: '../search/search',
-    })
-  },
+
+
   bindMoreEvent: function () {
     wx.navigateTo({
       url: '../menu/menu',
@@ -488,6 +547,9 @@ Page({
     var employeeInfo = {};
     employeeInfo.employeeID = e.detail.employeeID;
     employeeInfo.employeeName = e.detail.employeeName;
+    this.setData({
+      employeeInfo: employeeInfo
+    })
     wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
     console.log("更新绑定结果:", employeeInfo);
 
@@ -510,8 +572,9 @@ Page({
 
   },
   onPullDownRefresh: function () {
-    wx.startPullDownRefresh();
+
     wx.showNavigationBarLoading();
+    this.onShow();
   }
 
 

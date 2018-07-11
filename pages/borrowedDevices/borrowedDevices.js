@@ -9,7 +9,6 @@ Page({
   data: {
     devices: [],
     brands: {},
-    hiddens: {},
     openid: null,
   },
 
@@ -53,23 +52,24 @@ Page({
     return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
   },
 
-  bindSpread: function (e) {
+  bindTapExpand: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
 
     if (!this.data.devices[tapIndex].ownerEmployeeName && this.data.devices[tapIndex].ownerID) {
       console.log('获取设备归属人信息');
       this.getDeviceUserInfo(tapIndex)
     }
-    var hiddens = this.data.hiddens;
-    if (!this.data.hiddens[tapIndex]) {
-      hiddens[tapIndex] = true;
+    var devices = this.data.devices;
+    var device = devices[tapIndex];
+    if (!device.isExpand) {
+      device.isExpand = true;
     } else {
-      hiddens[tapIndex] = false;
-
+      device.isExpand = !device.isExpand;
     }
     this.setData({
-      hiddens: hiddens
+      devices: devices
     });
+
 
   },
   bindReturnBorrowed:function(e) {
@@ -192,8 +192,14 @@ Page({
     statusQuery.notEqualTo("status", 0);
     
     var query = AV.Query.and(borrowedOpenidQuery, statusQuery);
-    
+
     query.find().then(function (results) {
+      if(results.length == 0){
+        that.setData({
+          devices: [],
+        })
+        return;
+      }
       results.forEach(function (item, index) {
         var queryDevices = new AV.Query('Devices');
         queryDevices.equalTo('deviceID', item.attributes.deviceID);
@@ -209,7 +215,7 @@ Page({
             })
           }
         },function(error){
-
+          console.log(error);
         });
         });
       }, function (error) {

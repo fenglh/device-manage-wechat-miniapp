@@ -271,9 +271,8 @@ Page({
         deviceObject.set('ownerID', openIdInfo.openid);
         deviceObject.save().then(function (deviceObject) {
           wx.hideLoading();
-          wx.showToast({
-            title: '添加成功！',
-            icon:'success'
+          wx.navigateBack({
+            delta: 1
           })
 
           // 成功

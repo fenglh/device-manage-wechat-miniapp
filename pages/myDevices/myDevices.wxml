@@ -16,7 +16,7 @@
     </view>
 
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
-      <view class="kind-list__item" bindtap='bindSpread' data-index="{{index}}">
+      <view class="kind-list__item" bindtap='bindTapExpand' data-index="{{index}}">
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
           <view style='display: flex;flex-direction: column;width:100%;padding:10px;'>
             <view style='display: flex;flex-direction: row; '>
@@ -46,13 +46,13 @@
               <view class='status-base status-returning'>待处理</view>
             </view>
 
-            <view wx:else>
+            <view wx:elif="{{item.status==0}}">
               <view class='status-base status-normal'>闲置</view>
             </view>
           </view>
         </view>
 
-        <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{hiddens[index] ? '' : 'hidden'}}">
+        <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{item.isExpand ? '' : 'hidden'}}">
           <view>设备型号：{{item.deviceModel}}</view>
           <view>设备品牌：{{brands[item.brandID]}}</view>
           <view>设备编号：{{item.deviceID}}</view>
