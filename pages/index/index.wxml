@@ -8,7 +8,7 @@
     </button>
 
     <view class="vertical-line line-left"></view>
-     <!-- <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>  -->
+    <!-- <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>  -->
     <!-- <view class="vertical-line line-right"></view> -->
 
     <input class='search' bindinput='bindSearchInput' bindconfirm="bindSearchConfirm" placeholder='搜索：设备编码/系统版本/型号'></input>
@@ -37,13 +37,42 @@
       <image class='empty-image' src='../images/empty1.png'></image>
       <view class='empty-desc'>空空如也~ </view>
     </view>
-    
+
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
       <view class="kind-list__item" bindtap='bindTapExpand' data-index="{{index}}">
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
           <view style='display: flex;flex-direction: column;width:100%;padding:10px;'>
             <view style='display: flex;flex-direction: row; '>
-              <image src='../images/huawei.png' style='margin-top:6px; width:20px; height:20px; '></image>
+
+              <view wx:if="{{brands[item.brandID]=='华为'}}">
+                <image src='../images/huawei.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='联想'}}">
+                <image src='../images/lenovo.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='苹果'}}">
+                <image src='../images/apple.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='vivo'}}">
+                <image src='../images/vivo.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='小米'}}">
+                <image src='../images/xiaomi.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='锤子'}}">
+                <image src='../images/chuizi.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='三星'}}">
+                <image src='../images/sanxing.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='oppo'}}">
+                <image src='../images/oppo.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+
+              <view wx:else>
+                <image src='../images/device_other.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+
               <view style='font-size:20px;margin-left:10px;'>{{item.deviceModel}}</view>
 
             </view>
@@ -67,13 +96,11 @@
               <view class='status-base status-returning'>归还中</view>
             </view>
 
-            <view wx:elif="{{item.status==0}}">
+            <view wx:elif="{{!item.status || item.status==0}}">
               <view class='status-base status-normal'>闲置</view>
             </view>
 
-
           </view>
-
 
 
 
@@ -90,6 +117,24 @@
           <view wx:if="{{item.status==-1}}">
             <view class='status-borrowing' style='padding:2px;'>申请人：{{item.borrowedEmployeeName}}</view>
           </view>
+
+          <view wx:elif="{{item.status==-2 || item.status==-3}}">
+              <view class='status-borrowing' style='padding:2px;'>借用人：{{item.borrowedEmployeeName}}</view>
+          </view>
+
+          <view wx:if="{{item.status==-2}}">
+            <view class='status-borrowing' >借出时间：{{item.borrowedTime}}</view>
+          </view>
+
+          <view wx:elif="{{item.status==-1}}">
+            <view class='status-borrowing' >申请时间：{{item.borrowedTime}}</view>
+          </view>
+
+          <view wx:elif="{{item.status==-3}}">
+            <view class='status-borrowing' >归还时间：{{item.borrowedTime}}</view>
+          </view>
+          
+
           <!-- <view>借取员工：</view> -->
           <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借取</button>
         </view>

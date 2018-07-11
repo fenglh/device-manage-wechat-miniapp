@@ -105,6 +105,10 @@ page{
 .status-normal {
   color:green;
 }
+.item-logo {
+  width:20px;
+  height:20px;
+}
 .item-base {
   display: flex;
   align-items: center;

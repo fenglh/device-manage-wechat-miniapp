@@ -385,6 +385,21 @@ Page({
     });
   },
 
+  formatDateTime: function (inputTime) {
+    var date = new Date(inputTime);
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    m = m < 10 ? ('0' + m) : m;
+    var d = date.getDate();
+    d = d < 10 ? ('0' + d) : d;
+    var h = date.getHours();
+    h = h < 10 ? ('0' + h) : h;
+    var minute = date.getMinutes();
+    var second = date.getSeconds();
+    minute = minute < 10 ? ('0' + minute) : minute;
+    // second = second < 10 ? ('0' + second) : second; 
+    return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
+  },
 
   getStatus: function (devices) {
     var status = {};
@@ -397,6 +412,7 @@ Page({
       queryStatus.first().then(function (result) {
         item.status = result.attributes.status;
         item.borrowedUserOpenID = result.attributes.borrowedUserOpenID;
+        item.borrowedTime = that.formatDateTime(result.attributes.actionTimestamp);
         // devices.sort(function(a,b){
         //   var statusA = a.status ? a.status : 0;
         //   var statusB = b.status ? b.status : 0;

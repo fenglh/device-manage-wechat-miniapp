@@ -17,8 +17,10 @@ Page({
     brandsInfo: {},
     brandIndex: null,
 
-    OSVersions: {},
-    systemVersionIndex: null,
+    OSVersions: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+    systemVersionIndex1: 0,
+    systemVersionIndex2: 0,
+    systemVersionIndex3: 0,
 
     companyCode:null,
     deviceCode:null,
@@ -48,38 +50,7 @@ Page({
 
   },
 
-  syncOSVersion:function(){
-    var that = this;
-    var query = new AV.Query('OSVersion');
-    query.ascending('brandID');
-    query.find().then(function (results) {
-      if (results) {
-        var OSVersions = {};
-        results.forEach(function (item, index) {
-          var brandID = item.attributes.brandID;
-          if (!OSVersions[brandID]) {
-            OSVersions[brandID] = [];
-          }
-          OSVersions[brandID].push(item.attributes.version);
-        });
-
-        that.setData({
-          OSVersions: OSVersions,
-        })
-
-        var obj = {};
-        obj.OSVersions = OSVersions;
-        obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-        wx.setStorageSync('OSVersionsInfo', obj);//存储openid
-
-        console.log("从服务器同步设备系统版本列表:", OSVersions);
-      } else {
-        console.log('无法从服务器同步设备系统版本列表');
-      }
-
-    }, function (error) {
-    });
-  },
+  
 
 
   //同步型号
@@ -180,14 +151,12 @@ Page({
   },
 
 
-
   bindBrandChange:function(e) {
 
     if (e.detail.value !== this.data.brandIndex){
       this.setData({
         brandIndex: e.detail.value,
         modelIndex: null,
-        systemVersionIndex: null,
       })
     }
   },
@@ -200,7 +169,9 @@ Page({
   
   bindSystemVersionChange: function (e) {
     this.setData({
-      systemVersionIndex: e.detail.value
+      systemVersionIndex1: e.detail.value[0],
+      systemVersionIndex2: e.detail.value[1],
+      systemVersionIndex3: e.detail.value[2]
     })
   },
 
@@ -242,7 +213,7 @@ Page({
       return;
     }
 
-    if (!this.data.systemVersionIndex) {
+    if (this.data.systemVersionIndex1 == 0 && this.data.systemVersionIndex2 == 0 && this.data.systemVersionIndex3 == 0) {
       this.showTips('请选择系统版本');
       return;
     }
@@ -265,7 +236,7 @@ Page({
         var deviceObject = new DevicesObject();
         deviceObject.set('brandID', that.data.brandsInfo.brands[that.data.brandIndex].brandID);
         deviceObject.set('deviceModel', that.data.models[that.data.brandsInfo.brands[that.data.brandIndex].brandID][that.data.modelIndex])
-        deviceObject.set('OSVersion', that.data.OSVersions[that.data.brandsInfo.brands[that.data.brandIndex].brandID][that.data.systemVersionIndex])
+        deviceObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
         deviceObject.set('deviceID', that.data.deviceCode )
         deviceObject.set('companyCode', that.data.companyCode)
         deviceObject.set('ownerID', openIdInfo.openid);
@@ -303,7 +274,9 @@ Page({
    that.setData({
      modelIndex: null,
      brandIndex: null,
-     systemVersionIndex: null,
+     systemVersionIndex1: 0,
+     systemVersionIndex2: 0,
+     systemVersionIndex3: 0,
      companyCode: null,
      deviceCode: null,
    })

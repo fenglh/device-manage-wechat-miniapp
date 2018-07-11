@@ -92,10 +92,10 @@ Page({
   },
 
   confirmReturn:function(index){
-    var that = this;
+    var that = this; 
     var query = new AV.Query('DevicesStatus');
     query.equalTo('deviceID', this.data.devices[index].deviceID);
-    query.equalTo('borrowedUserOpenID', this.data.openid);
+    query.equalTo('borrowedUserOpenID', this.data.devices[index].borrowedUserOpenID);
     query.equalTo('status', -3);
     query.first().then(function (status) {
       var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
