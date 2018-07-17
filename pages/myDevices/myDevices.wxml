@@ -42,6 +42,15 @@
               <view wx:elif="{{brands[item.brandID]=='三星'}}">
                 <image src='../images/sanxing.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
+                           <view wx:elif="{{brands[item.brandID]=='中兴'}}">
+                <image src='../images/zhongxing.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+              <view wx:elif="{{brands[item.brandID]=='魅族'}}">
+                <image src='../images/meizu.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
+                <view wx:elif="{{brands[item.brandID]=='酷派'}}">
+                <image src='../images/coolpad.png' class="item-logo" style='margin-top:6px;'></image>
+              </view>
               <view wx:elif="{{brands[item.brandID]=='oppo'}}">
                 <image src='../images/oppo.png' class="item-logo" style='margin-top:6px;'></image>
               </view>

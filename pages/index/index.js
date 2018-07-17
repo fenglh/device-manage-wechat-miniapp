@@ -32,12 +32,14 @@ Page({
     wx.setNavigationBarTitle({
       title: '机可借',
     })
+
+
     
   },
 
   onReady: function () {
 
-    if (!this.data.brands.expiredDate || now - this.data.brands.expiredDate > 0) {
+    if (!this.data.brands.expiredDate || now - this.data.brands.expiredDate > 0)    {
       console.log('更新brands信息');
       this.getBrands();
     }
@@ -73,6 +75,8 @@ Page({
                   //获取我的设备数量
                   that.getMyDevicesCount(obj.openid);
                   that.getBorrowedDeviceCount(obj.openid);
+                }else{
+
                 }
               });
             } else {
@@ -89,6 +93,7 @@ Page({
         }
       });
     } else {
+
       //获取绑定的员工信息
       that.getBindEmployeeInfo(that.data.openIdInfo.openid);
       //获取我的设备数量
@@ -519,6 +524,9 @@ Page({
           employeeInfo.employeeID = result.attributes["employeeID"];
           employeeInfo.employeeName = result.attributes["employeeName"];
           employeeInfo.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+          that.setData({
+            employeeInfo: employeeInfo,
+          })
           wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
           console.log("从服务器获取绑定的员工信息:", employeeInfo);
         }
