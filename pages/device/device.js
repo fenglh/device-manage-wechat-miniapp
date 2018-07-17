@@ -24,7 +24,7 @@ Page({
     systemVersionIndex2: 0,
     systemVersionIndex3: 0,
 
-    companyCode:null,
+    companyCode:'A000',
     deviceCode:null,
     ocrSign:null,
   },

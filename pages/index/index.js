@@ -110,7 +110,9 @@ Page({
     }
     var devices = [];
     this.data.allDevices.forEach(function(item,index){
-      if (item.deviceModel.indexOf(content) != -1 || item.OSVersion.indexOf(content) != -1 || item.deviceID.indexOf(content) != -1){
+      if (item.deviceModel.toUpperCase().indexOf(content.toUpperCase()) != -1 ||
+                                        item.OSVersion.indexOf(content) != -1 ||
+                                          item.deviceID.indexOf(content) != -1){
         devices.push(item);
       }
     });
