@@ -20,5 +20,7 @@ App({
     userInfo: wx.getStorageSync('userInfo') || {},
     appid: 'wx2fc1b68058a04d90',//appid需自己提供，
     secret: 'ece9a679463eb37126b3c5fb3df0073e',//secret需自己提供，
+    brandsInfo: {},//型号信息
+    models: {},//品牌信息
   }
 })

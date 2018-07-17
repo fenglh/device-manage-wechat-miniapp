@@ -2,6 +2,7 @@
 
 const AV = require('../../utils/av-live-query-weapp-min');
 var crypto = require('../lib/cryptojs/cryptojs.js');
+const app = getApp()
 
 Page({
 
@@ -10,6 +11,7 @@ Page({
    */
   data: {
     showTopTips: false,
+    brandDisabled:true,
     topTips: '',
     models: {},
     modelIndex:null,
@@ -39,44 +41,39 @@ Page({
   },
 
   onReady: function () {
-
     //同步品牌列表
     this.syncBrands();
-    this.syncModels();
-    this.syncOSVersion();
     
-
-    //同步设备型号
-
   },
+
+
 
   
 
 
   //同步型号
-  syncModels:function(){
+  getModels:function(brandID){
     var that = this;
     var query = new AV.Query('Models');
     query.ascending('brandID');
+    query.equalTo('brandID', brandID);
     query.find().then(function (results) {
       if (results) {
-        var models={};
+        var models=[];
         results.forEach(function (item, index) {
-          var brandID = item.attributes.brandID;
-          if (!models[brandID]){
-            models[brandID] = [];
-          }
-          models[brandID].push(item.attributes.model);
+          models.push(item.attributes.model);
         });
 
+        var modelDic = that.data.models || {};
+        modelDic[brandID]= models;
         that.setData({
-          models: models,
+          models: modelDic,
         })
 
         var obj = {};
         obj.models = models;
         obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-        wx.setStorageSync('modelsInfo', obj);
+        // wx.setStorageSync('modelsInfo', obj);//不做缓存
 
         console.log("从服务器同步设备型号列表:", models);
       } else {
@@ -157,7 +154,16 @@ Page({
       this.setData({
         brandIndex: e.detail.value,
         modelIndex: null,
+        brandDisabled: false,
       })
+      //获取型号
+      var selectBrandID = this.data.brandsInfo.brands[e.detail.value].brandID;
+      var selectBrand = this.data.brandsInfo.brands[e.detail.value].brand;
+      console.log("选中品牌ID:", selectBrandID);
+      console.log("选中品牌名字:", selectBrand);
+      if (!this.data.models[selectBrandID]){
+        this.getModels(selectBrandID);
+      }
     }
   },
 
@@ -174,6 +180,16 @@ Page({
       systemVersionIndex3: e.detail.value[2]
     })
   },
+
+  bindModelTap:function(e){
+    if (!this.data.brandIndex) {
+      wx.showToast({
+        title: '请先选择品牌',
+        icon:'none'
+      })
+    }
+  },
+
 
   showTips:function(content) {
     var that = this;
