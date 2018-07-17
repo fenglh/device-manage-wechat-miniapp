@@ -216,12 +216,12 @@ Page({
         item.status = result.attributes.status;
         item.borrowedUserOpenID = result.attributes.borrowedUserOpenID;
         item.borrowedTime = that.formatDateTime(result.attributes.actionTimestamp);
-        devices.sort(function (a, b) {
-          //升序
-          var statusA = a.status ? a.status : 0;
-          var statusB = b.status ? b.status : 0;
-          return statusA - statusB;
-        })
+        // devices.sort(function (a, b) {
+        //   //升序
+        //   var statusA = a.status ? a.status : 0;
+        //   var statusB = b.status ? b.status : 0;
+        //   return statusA - statusB;
+        // })
         that.setData({
           devices: devices,
         })
