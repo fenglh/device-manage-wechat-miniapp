@@ -16,81 +16,95 @@
     </view>
 
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
-      <view class="kind-list__item" bindtap='bindTapExpand' data-index="{{index}}">
-        <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>
-          <view style='display: flex;flex-direction: column;width:100%;padding:10px;'>
-            <view style='display: flex;flex-direction: row; '>
 
-              <view wx:if="{{brands[item.brandID]=='华为'}}">
-                <image src='../images/huawei.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='联想'}}">
-                <image src='../images/lenovo.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='苹果'}}">
-                <image src='../images/apple.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='vivo'}}">
-                <image src='../images/vivo.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='小米'}}">
-                <image src='../images/xiaomi.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='锤子'}}">
-                <image src='../images/chuizi.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='三星'}}">
-                <image src='../images/sanxing.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-                           <view wx:elif="{{brands[item.brandID]=='中兴'}}">
-                <image src='../images/zhongxing.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='魅族'}}">
-                <image src='../images/meizu.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
+      <view class="kind-list"  data-index="{{index}}">
+
+        <view class='kind-list-item'>
+          <view class='kind-list-summary' data-index="{{index}}" bindtouchstart='touchS' bindtouchmove='touchM' bindtouchend='touchE' style='{{item.slideStyle}}'>
+            <view style='display: flex;flex-direction: column;width:100%;padding:10px; '>
+              <view style='display: flex;flex-direction: row; '>
+
+                <view wx:if="{{brands[item.brandID]=='华为'}}">
+                  <image src='../images/huawei.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='联想'}}">
+                  <image src='../images/lenovo.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='苹果'}}">
+                  <image src='../images/apple.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='vivo'}}">
+                  <image src='../images/vivo.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='小米'}}">
+                  <image src='../images/xiaomi.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='锤子'}}">
+                  <image src='../images/chuizi.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='三星'}}">
+                  <image src='../images/sanxing.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='中兴'}}">
+                  <image src='../images/zhongxing.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='魅族'}}">
+                  <image src='../images/meizu.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
                 <view wx:elif="{{brands[item.brandID]=='酷派'}}">
-                <image src='../images/coolpad.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
-              <view wx:elif="{{brands[item.brandID]=='oppo'}}">
-                <image src='../images/oppo.png' class="item-logo" style='margin-top:6px;'></image>
-              </view>
+                  <image src='../images/coolpad.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+                <view wx:elif="{{brands[item.brandID]=='oppo'}}">
+                  <image src='../images/oppo.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
 
-              <view wx:else>
-                <image src='../images/device_other.png' class="item-logo" style='margin-top:6px;'></image>
+                <view wx:else>
+                  <image src='../images/device_other.png' class="item-logo" style='margin-top:6px;'></image>
+                </view>
+
+                <view style='font-size:20px;margin-left:10px;'>{{item.deviceModel}}</view>
+
               </view>
+              <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
+                <view class='label' style='width:70rpx;'>{{item.OSVersion}}</view>
+                <view class='label'>{{item.deviceID}}</view>
 
-              <view style='font-size:20px;margin-left:10px;'>{{item.deviceModel}}</view>
-
+              </view>
             </view>
-            <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
-              <view class='label' style='width:70rpx;'>{{item.OSVersion}}</view>
-              <view class='label'>{{item.deviceID}}</view>
+            <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
+              <view style='width:2rpx;height:80%;background:#eee;'></view>
+              <view wx:if="{{item.status==-1}}">
+                <view class='status-base status-borrowing'>申请</view>
+                <view class='status-base status-borrowing'>待处理</view>
+              </view>
 
+              <view wx:elif="{{item.status==-2}}">
+                <view class='status-base status-borrowed'>已借出</view>
+              </view>
+
+              <view wx:elif="{{item.status==-3}}">
+                <view class='status-base status-borrowing'>归还</view>
+                <view class='status-base status-returning'>待处理</view>
+              </view>
+
+              <view wx:elif="{{!item.status || item.status==0}}">
+                <view class='status-base status-normal'>闲置</view>
+              </view>
             </view>
           </view>
-          <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
-            <view style='width:2rpx;height:80%;background:#eee;'></view>
-            <view wx:if="{{item.status==-1}}">
-              <view class='status-base status-borrowing'>申请</view>
-              <view class='status-base status-borrowing'>待处理</view>
-            </view>
 
-            <view wx:elif="{{item.status==-2}}">
-              <view class='status-base status-borrowed'>已借出</view>
+          <view class='menu'>
+            <view class='menu-delete'>
+              删除
             </view>
-
-            <view wx:elif="{{item.status==-3}}">
-              <view class='status-base status-borrowing'>归还</view>
-              <view class='status-base status-returning'>待处理</view>
-            </view>
-
-            <view wx:elif="{{!item.status || item.status==0}}">
-              <view class='status-base status-normal'>闲置</view>
+            <view class='menu-edit'>
+              修改
             </view>
           </view>
+
         </view>
 
-        <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{item.isExpand ? '' : 'hidden'}}">
+        <view class="detail" hidden="{{item.isExpand ? '' : 'hidden'}}">
           <view>设备型号：{{item.deviceModel}}</view>
           <view>设备品牌：{{brands[item.brandID]}}</view>
           <view>设备编号：{{item.deviceID}}</view>
@@ -102,19 +116,19 @@
           </view>
 
           <view wx:elif="{{item.status==-2 || item.status==-3}}">
-              <view class='status-borrowing' style='padding:2px;'>借用人：{{item.borrowedEmployeeName}}</view>
+            <view class='status-borrowing' style='padding:2px;'>借用人：{{item.borrowedEmployeeName}}</view>
           </view>
 
           <view wx:if="{{item.status==-2}}">
-            <view class='status-borrowing' >借出时间：{{item.borrowedTime}}</view>
+            <view class='status-borrowing'>借出时间：{{item.borrowedTime}}</view>
           </view>
 
           <view wx:elif="{{item.status==-1}}">
-            <view class='status-borrowing' >申请时间：{{item.borrowedTime}}</view>
+            <view class='status-borrowing'>申请时间：{{item.borrowedTime}}</view>
           </view>
 
           <view wx:elif="{{item.status==-3}}">
-            <view class='status-borrowing' >归还时间：{{item.borrowedTime}}</view>
+            <view class='status-borrowing'>归还时间：{{item.borrowedTime}}</view>
           </view>
 
 
@@ -122,7 +136,13 @@
           <button class="weui-btn" type="primary" catchtap="bindPass" data-index="{{index}}" hidden='{{item.status==-1   ? "" : "hidden"}}'>通过申请</button>
           <button class="weui-btn" type="primary" catchtap="bindConfirmReturn" data-index="{{index}}" hidden='{{item.status==-3   ? "" : "hidden"}}'>确认归还</button>
         </view>
+
+
+
       </view>
+
+
+
     </block>
   </view>
 

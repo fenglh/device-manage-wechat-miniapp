@@ -71,6 +71,8 @@ page{
   overflow: hidden;
 }
 
+kind-list__item 
+
 
 .label{
   border:1px solid #eee;

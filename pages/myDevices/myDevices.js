@@ -11,6 +11,10 @@ Page({
     devices: [],
     brands: {},
     openid: null,
+    slideStyle:'',
+    startX: 0,
+    slideMenuWidth:150,
+    touchEndTime:0,
   },
 
   /**
@@ -33,6 +37,10 @@ Page({
     
   },
 
+ 
+
+
+
   bindAddDevice: function (e) {
     wx.navigateTo({
       url: '../device/device',
@@ -40,13 +48,22 @@ Page({
   },
 
   bindTapExpand: function (e) {
-    var tapIndex = e.currentTarget.dataset.index;
 
-    if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID) {
+    //是否从在侧滑状态下点击
+    var now = Date.parse(new Date());//当前时间 毫秒
+    // if (now - this.data.touchEndTime  < 100){
+    //   console.log('侧滑状态下点击');
+    //   return;
+    // }
+
+    var tapIndex = e.currentTarget.dataset.index;
+    var devices = this.data.devices;
+
+    if (!devices[tapIndex].borrowedEmployeeID && devices[tapIndex].borrowedUserOpenID) {
       console.log('获取借用人信息');
       this.getBorrowUserInfo(tapIndex)
     }
-    var devices = this.data.devices;
+    
     var device = devices[tapIndex];
     if (!device.isExpand) {
       device.isExpand = true;
@@ -256,6 +273,106 @@ Page({
     });
   },
 
+  //手指刚放到屏幕触发
+  touchS: function (e) {
+    
+    var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
 
 
+
+
+
+    //判断是否只有一个触摸点
+    if (e.touches.length == 1) {
+      this.setData({
+        //记录触摸起始位置的X坐标
+        startX: e.touches[0].clientX
+      });
+    }
+  },
+
+  //触摸时触发，手指在屏幕上每移动一次，触发一次
+  touchM: function (e) {
+
+    var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
+    if (device.isExpand) {
+      return;
+    } 
+
+
+
+    var that = this
+    if (e.touches.length == 1) {
+      //记录触摸点位置的X坐标
+      var moveX = e.touches[0].clientX;
+      //计算手指起始点的X坐标与当前触摸点的X坐标的差值
+      var disX = that.data.startX - moveX;
+      //delBtnWidth 为右侧按钮区域的宽度
+      var slideMenuWidth = that.data.slideMenuWidth;
+      var slideStyle = "";
+      if (disX == 0 || disX < 0) {//如果移动距离小于等于0，文本层位置不变
+        slideStyle = "left:0px";
+      } else if (disX > 0) {//移动距离大于0，文本层left值等于手指移动距离
+        slideStyle = "left:-" + disX + "px";
+        if (disX >= slideMenuWidth) {
+          //控制手指移动距离最大值为删除按钮的宽度
+          slideStyle = "left:-" + slideMenuWidth + "px";
+        }
+      }
+      //获取手指触摸的是哪一个item
+      var index = e.currentTarget.dataset.index;
+      var devices = that.data.devices;
+      //将拼接好的样式设置到当前item中
+      devices[index].slideStyle = slideStyle;
+      //更新列表的状态
+      this.setData({
+        devices: devices
+      });
+    }
+  },
+
+  touchE: function (e) {
+
+    var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
+
+    var that = this
+    if (e.changedTouches.length == 1) {
+
+      //获取手指触摸的是哪一项
+      var index = e.currentTarget.dataset.index;
+      var devices = that.data.devices;
+
+
+      //手指移动结束后触摸点位置的X坐标
+      var endX = e.changedTouches[0].clientX;
+      //触摸开始与结束，手指移动的距离
+      var disX = that.data.startX - endX;
+      var slideMenuWidth = that.data.slideMenuWidth;
+      //如果距离小于删除按钮的1/2，不显示删除按钮
+      var slideStyle='';
+      if (!devices[index].isSlideMenuOpen && disX == 0){
+        this.bindTapExpand(e)
+      }
+      if(disX > slideMenuWidth / 2) {
+        slideStyle = "left:-" + slideMenuWidth + "px" ;
+        devices[index].isSlideMenuOpen = true;
+        console.log('侧滑打开');
+      }else{
+        slideStyle = "left:0px";
+        devices[index].isSlideMenuOpen = false;
+        console.log('侧滑关闭');
+      }
+
+
+      devices[index].slideStyle = slideStyle;
+      //更新列表的状态
+      that.setData({
+        devices: devices
+      });
+      this.data.touchEndTime = Date.parse(new Date());//当前时间 毫秒
+    }
+  }
 })
