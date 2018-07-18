@@ -11,17 +11,17 @@ Page({
     devices: [],
     brands: {},
     openid: null,
-    slideStyle:'',
+    slideStyle: '',
     startX: 0,
-    slideMenuWidth:150,
-    touchEndTime:0,
+    slideMenuWidth: 150,
+
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
 
-  onShow:function() {
+  onShow: function () {
     this.getMyDevices();
   },
   onLoad: function (options) {
@@ -34,10 +34,10 @@ Page({
       openid: options.openid,
       brands: brands,
     })
-    
+
   },
 
- 
+
 
 
 
@@ -63,7 +63,7 @@ Page({
       console.log('获取借用人信息');
       this.getBorrowUserInfo(tapIndex)
     }
-    
+
     var device = devices[tapIndex];
     if (!device.isExpand) {
       device.isExpand = true;
@@ -108,8 +108,8 @@ Page({
 
   },
 
-  confirmReturn:function(index){
-    var that = this; 
+  confirmReturn: function (index) {
+    var that = this;
     var query = new AV.Query('DevicesStatus');
     query.equalTo('deviceID', this.data.devices[index].deviceID);
     query.equalTo('borrowedUserOpenID', this.data.devices[index].borrowedUserOpenID);
@@ -134,7 +134,7 @@ Page({
     });
   },
 
-  bindConfirmReturn:function(e){
+  bindConfirmReturn: function (e) {
     var index = e.currentTarget.dataset.index;
     var that = this;
     wx.showModal({
@@ -275,7 +275,7 @@ Page({
 
   //手指刚放到屏幕触发
   touchS: function (e) {
-    
+
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
 
@@ -299,7 +299,7 @@ Page({
     var device = this.data.devices[index];
     if (device.isExpand) {
       return;
-    } 
+    }
 
 
 
@@ -338,6 +338,7 @@ Page({
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
 
+
     var that = this
     if (e.changedTouches.length == 1) {
 
@@ -352,27 +353,30 @@ Page({
       var disX = that.data.startX - endX;
       var slideMenuWidth = that.data.slideMenuWidth;
       //如果距离小于删除按钮的1/2，不显示删除按钮
-      var slideStyle='';
-      if (!devices[index].isSlideMenuOpen && disX == 0){
+      var slideStyle = '';
+      if (!devices[index].isSlideMenuOpen && disX == 0) {
         this.bindTapExpand(e)
-      }
-      if(disX > slideMenuWidth / 2) {
-        slideStyle = "left:-" + slideMenuWidth + "px" ;
-        devices[index].isSlideMenuOpen = true;
-        console.log('侧滑打开');
-      }else{
-        slideStyle = "left:0px";
-        devices[index].isSlideMenuOpen = false;
-        console.log('侧滑关闭');
+      } else {
+        if (!device.isExpand) {
+          if (disX > slideMenuWidth / 2) {
+            slideStyle = "left:-" + slideMenuWidth + "px";
+            devices[index].isSlideMenuOpen = true;
+            console.log('侧滑打开');
+          } else {
+            slideStyle = "left:0px";
+            devices[index].isSlideMenuOpen = false;
+            console.log('侧滑关闭');
+          }
+          devices[index].slideStyle = slideStyle;
+          //更新列表的状态
+          that.setData({
+            devices: devices
+          });
+        }
+
       }
 
 
-      devices[index].slideStyle = slideStyle;
-      //更新列表的状态
-      that.setData({
-        devices: devices
-      });
-      this.data.touchEndTime = Date.parse(new Date());//当前时间 毫秒
     }
   }
 })
