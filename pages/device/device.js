@@ -10,9 +10,10 @@ Page({
    * 页面的初始数据
    */
   data: {
+    hideHeaderView: false,
     showTopTips: false,
     brandDisabled: true,
-    openid:null,
+    openid: null,
     topTips: '',
     models: {},
     modelIndex: null,
@@ -30,15 +31,16 @@ Page({
     ocrSign: null,
 
     //在编辑状态时，
-    editBrand:null,
-    editModel:null,
-    editOSVersion:null
+    editBrand: null,
+    editModel: null,
+    editOSVersion: null
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    console.log(options);
     if (options.isEdit) {
       wx.setNavigationBarTitle({
         title: '修改设备',
@@ -52,13 +54,51 @@ Page({
     var brands = app.globalData.brandsInfo.brands || {};
     var models = app.globalData.modelsInfo.models || {};
     var openid = app.globalData.openIdInfo.openid || {};
-    var brandArr=[];
-    for (var key in brands){
-      var obj={}
+    var brandArr = [];
+    var brandIndex = this.data.brandIndex;
+    var modelIndex = this.data.modelIndex;
+    var brandDisabled = this.data.brandDisabled;
+    var hideHeaderView = this.data.hideHeaderView;
+    var systemVersionIndex1 = this.data.systemVersionIndex1;
+    var systemVersionIndex2 = this.data.systemVersionIndex2;
+    var systemVersionIndex3 = this.data.systemVersionIndex3;
+
+    //品牌字典转换成数组，并获取当前选中品牌索引
+    var i = 0;
+    for (var key in brands) {
+      var obj = {}
       obj.brandID = parseInt(key);
       obj.brand = brands[key];
-      brandArr.push(obj)
+      brandArr.push(obj);
+      if (options.brandID == obj.brandID) {
+        brandIndex = i;
+        brandDisabled = false;
+      }
+      i++;
     }
+
+    //隐藏头部
+    if (options.isEdit) {
+      hideHeaderView = true;
+    }
+    //获取选中型号对应的索引
+    var brandModels = models[options.brandID];
+    for (var i in brandModels) {
+      if (brandModels[i] == options.model) {
+        modelIndex = i;
+      }
+    }
+
+    //获取版本索引
+    if (options.OSVersion){
+      var versions = options.OSVersion.split(".") || [];
+      if (versions.length == 3) {
+        systemVersionIndex1 = parseInt(versions[0]) - 1;
+        systemVersionIndex2 = parseInt(versions[1]);
+        systemVersionIndex3 = parseInt(versions[2]);
+      }
+    }
+
 
     var sign = this.generateOCRSign()
     this.setData({
@@ -66,6 +106,14 @@ Page({
       brands: brandArr,
       models: models,
       ocrSign: sign,
+      brandIndex: brandIndex,
+      modelIndex: modelIndex,
+      systemVersionIndex1: systemVersionIndex1,
+      systemVersionIndex2: systemVersionIndex2,
+      systemVersionIndex3: systemVersionIndex3,
+
+      brandDisabled: brandDisabled,
+      hideHeaderView: hideHeaderView,
       isEdit: options.isEdit || false,
       deviceCode: options.deviceID || null,
       companyCode: options.companyCode || null,
@@ -187,31 +235,35 @@ Page({
       return;
     }
 
-
-
-    var DevicesObject = AV.Object.extend('Devices');
+    wx.showLoading({
+      title: '提交中...',
+      mask:true,
+    })
     var that = this;
-    new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).find().then(function (results) {
-      console.log(results);
-      console.log(results.length);
-      if (results.length > 0) {
-        wx.showToast({
-          title: '该设备已存在!',
-          icon: 'none'
-        });
-      } else {
+    if (this.data.isEdit) {
+      var DevicesObject = AV.Object.extend('Devices');
+      var that = this;
+      var query = new AV.Query(DevicesObject);
+      query.equalTo('deviceID', this.data.deviceCode);
+      query.equalTo('ownerID', this.data.openid);
+      query.first().then(function (result) {
+        var device = AV.Object.createWithoutData('Devices', result.id);
 
-        var deviceObject = new DevicesObject();
-        deviceObject.set('brandID', that.data.brands[that.data.brandIndex].brandID);
-        deviceObject.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
-        deviceObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-        deviceObject.set('deviceID', that.data.deviceCode)
-        deviceObject.set('companyCode', that.data.companyCode)
-        deviceObject.set('ownerID', that.data.openid);
-        deviceObject.save().then(function (deviceObject) {
+        device.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
+        device.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
+        device.set('deviceID', that.data.deviceCode)
+        device.set('companyCode', that.data.companyCode)
+        device.set('ownerID', that.data.openid);
+        device.save().then(function (device) {
+
           wx.hideLoading();
           wx.navigateBack({
             delta: 1
+          })
+
+          wx.showToast({
+            title: '修改成功！',
+            icon: 'success'
           })
 
           // 成功
@@ -220,20 +272,62 @@ Page({
           console.log(error)
           // 失败
           wx.showToast({
-            title: '添加设备失败！',
-            icon: 'success'
+            title: '修改失败！',
+            icon: 'none'
           })
         });
+      }, function(error){
 
-      }
-    }, function (error) {
-      wx.showToast({
-        title: '服务器错误!',
-        icon: 'none'
       });
-    });
+    } else {
+      var DevicesObject = AV.Object.extend('Devices');
+      var that = this;
+      new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).find().then(function (results) {
+        console.log(results);
+        console.log(results.length);
+        if (results.length > 0) {
+          wx.showToast({
+            title: '该设备已存在!',
+            icon: 'none'
+          });
+        } else {
 
+          var deviceObject = new DevicesObject();
+          deviceObject.set('brandID', that.data.brands[that.data.brandIndex].brandID);
+          deviceObject.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
+          deviceObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
+          deviceObject.set('deviceID', that.data.deviceCode)
+          deviceObject.set('companyCode', that.data.companyCode)
+          deviceObject.set('ownerID', that.data.openid);
+          deviceObject.save().then(function (deviceObject) {
+            wx.hideLoading();
+            wx.navigateBack({
+              delta: 1
+            })
 
+            // 成功
+            wx.showToast({
+              title: '添加成功！',
+              icon: 'success'
+            })
+          }, function (error) {
+            wx.hideLoading();
+            console.log(error)
+            // 失败
+            wx.showToast({
+              title: '添加设备失败！',
+              icon: 'none'
+            })
+          });
+
+        }
+      }, function (error) {
+        wx.showToast({
+          title: '服务器错误!',
+          icon: 'none'
+        });
+      });
+    }
   },
 
   bindScanClick: function () {

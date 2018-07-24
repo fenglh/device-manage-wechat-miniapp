@@ -1,6 +1,6 @@
 <view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
 
-      <view class="page__hd" >
+      <view class="page__hd {{hideHeaderView?'page__hd_hide':''}}" >
 
       <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">{{topTips}}</view>
       
@@ -27,7 +27,7 @@
           <view class="weui-label">设备编号</view>
         </view>
         <view class="weui-cell__bd">
-          <input class="weui-input" bindinput='bindDeviceCodeInput' disabled='{{isEdit}}' value="{{deviceCode}}" placeholder="请输入设备编号" />
+          <input class="weui-input {{isEdit?'input_disable':''}}" bindinput='bindDeviceCodeInput' disabled='{{isEdit}}' value="{{deviceCode}}" placeholder="请输入设备编号" />
         </view>
       </view>
 

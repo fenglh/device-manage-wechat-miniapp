@@ -12,3 +12,11 @@
   margin: 0;
   box-sizing: border-box;
 } 
+
+.page__hd_hide {
+  display: none;
+}
+
+.input_disable {
+  color: #999999;
+}
