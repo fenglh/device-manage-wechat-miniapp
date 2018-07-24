@@ -12,17 +12,19 @@ Page({
     userInfo: wx.getStorageSync('userInfo') || {},
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
+
     devices: [],
     allDevices: [],//搜索专用的所有设备
-    brands: wx.getStorageSync('brandsInfo') || {},
-    myDevicesCount:0,
-    borrowedDevicesCount:0
+    brandsInfo: app.globalData.brandsInfo || {},
+    modelsInfo: app.globalData.modelsInfo || {},
+    myDevicesCount: 0,
+    borrowedDevicesCount: 0
   },
 
 
 
   /******************* */
-  onShow:function() {
+  onShow: function () {
     // this.getStatus(this.data.devices);
     this.getBorrowedDeviceCount(this.data.openIdInfo.openid);
     this.getMyDevicesCount(this.data.openIdInfo.openid);
@@ -34,15 +36,24 @@ Page({
     })
 
 
+    //获取品牌信息
+    if (!this.data.modelsInfo.models || now - this.data.modelsInfo.expiredDate > 0) {
+      this.getModels();
+    } else {
+      console.log("型号信息缓存有效：", this.data.modelsInfo.models);
+    }
+
+    if (!this.data.brandsInfo.brands || now - this.data.brandsInfo.expiredDate > 0) {
+      this.syncBrands();
+    } else {
+      console.log("品牌信息缓存有效：", this.data.brandsInfo.brands);
+    }
     
+
   },
 
   onReady: function () {
 
-    if (!this.data.brands.expiredDate || now - this.data.brands.expiredDate > 0)    {
-      console.log('更新brands信息');
-      this.getBrands();
-    }
 
     var that = this;
     //获取用户信息和openid
@@ -75,7 +86,7 @@ Page({
                   //获取我的设备数量
                   that.getMyDevicesCount(obj.openid);
                   that.getBorrowedDeviceCount(obj.openid);
-                }else{
+                } else {
 
                 }
               });
@@ -103,30 +114,30 @@ Page({
 
   },
 
-  searchContent:function(content){
-    if(content==""){
+  searchContent: function (content) {
+    if (content == "") {
       this.getDevices();
       return;
     }
     var devices = [];
-    this.data.allDevices.forEach(function(item,index){
+    this.data.allDevices.forEach(function (item, index) {
       if (item.deviceModel.toUpperCase().indexOf(content.toUpperCase()) != -1 ||
-                                        item.OSVersion.indexOf(content) != -1 ||
-                                          item.deviceID.indexOf(content) != -1){
+        item.OSVersion.indexOf(content) != -1 ||
+        item.deviceID.indexOf(content) != -1) {
         devices.push(item);
       }
     });
     this.setData({
-      devices:devices,
+      devices: devices,
     })
   },
 
 
-  bindSearchConfirm:function(e){
+  bindSearchConfirm: function (e) {
     console.log(e.detail);
   },
 
-  bindSearchInput:function(e){
+  bindSearchInput: function (e) {
     console.log(e.detail);
     this.searchContent(e.detail.value);
   },
@@ -145,9 +156,9 @@ Page({
     })
   },
   bindBorrowedDevices: function (e) {
-    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName){
+    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName) {
       this.setData({
-        showModalStatus:true,
+        showModalStatus: true,
       });
       return;
     }
@@ -164,7 +175,7 @@ Page({
       });
       return;
     }
-    
+
     var item = e.currentTarget.dataset.item;
     var that = this;
     wx.showModal({
@@ -183,7 +194,7 @@ Page({
     })
   },
 
-  getMyDevicesCount:function(openid){
+  getMyDevicesCount: function (openid) {
     if (!openid) {
       return;
     }
@@ -192,15 +203,15 @@ Page({
     query.equalTo('ownerID', openid);
     query.count().then(function (count) {
       that.setData({
-        myDevicesCount:count,
+        myDevicesCount: count,
       })
-    },function(error){
+    }, function (error) {
 
     });
   },
 
-  getBorrowedDeviceCount:function(openid){
-    if(!openid){
+  getBorrowedDeviceCount: function (openid) {
+    if (!openid) {
       return;
     }
     var that = this;
@@ -248,14 +259,14 @@ Page({
     // 设置优先级
   },
 
-  updateDeviceStatus: function (objectId, status,openid) {
+  updateDeviceStatus: function (objectId, status, openid) {
     var that = this;
     var timestamp = Date.parse(new Date());
     var todo = AV.Object.createWithoutData('DevicesStatus', objectId);
     todo.set('actionTimestamp', timestamp);//当前操作时间
     todo.set('status', status);
     todo.set('borrowedUserOpenID', openid);
-    
+
     todo.save().then(function (result) {
       that.getStatus(that.data.devices);
       wx.showToast({
@@ -313,41 +324,22 @@ Page({
 
     var device = devices[tapIndex];
 
-    if(!device.isExpand) {
+    if (!device.isExpand) {
       device.isExpand = true;
-    }else{
+    } else {
       device.isExpand = !device.isExpand;
     }
-
 
     this.setData({
       devices: devices,
       allDevices: devices,
     });
 
-  
+
 
   },
 
-  getBrands: function () {
-    var that = this;
-    var query = new AV.Query('Brands');
-    query.find().then(function (results) {
-      console.log(results);
-      var brands = {};
-      brands.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24
-      results.forEach(function (item, index) {
-        brands[String(item.attributes.brandID)] = item.attributes.brand;
-      });
-      console.log("获取品牌列表：", brands);
-      wx.setStorageSync('brandsInfo', brands);//存储品牌信息
-      that.setData({
-        brands: brands,
-      });
-    }, function (error) {
 
-    });
-  },
 
   getBorrowUserInfo: function (index) {
     var that = this;
@@ -601,7 +593,71 @@ Page({
 
     wx.showNavigationBarLoading();
     this.onShow();
-  }
+  },
+
+  //同步品牌
+  syncBrands: function () {
+    var that = this;
+    var query = new AV.Query('Brands');
+    query.ascending('brandID');
+    query.find().then(function (results) {
+      if (results) {
+
+        var brands = {};
+        results.forEach(function (item, index) {
+          brands[item.attributes.brandID] = item.attributes.brand;
+        });
+
+        var obj = {};
+        obj.brands = brands;
+        obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+
+        that.setData({
+          brandsInfo: obj
+        });
+        app.globalData.brandsInfo=obj;
+        wx.setStorageSync('BrandsInfo', obj);//缓存
+        console.log("从服务器同步设备品牌列表:", obj);
+      } else {
+        console.log('无法从服务器同步设备品牌列表');
+      }
+
+    }, function (error) {
+    });
+  },
+
+  //同步型号
+  getModels: function () {
+    var that = this;
+    var query = new AV.Query('Models');
+    query.ascending('brandID');
+    query.limit(200);
+    query.find().then(function (results) {
+      if (results) {
+        var modelDic = {};
+        var models = [];
+        results.forEach(function (item, index) {
+          if (!modelDic[item.attributes.brandID]) {
+            modelDic[item.attributes.brandID] = [];
+          }
+          modelDic[item.attributes.brandID].push(item.attributes.model);
+        });
+        var obj = {};
+        obj.models = modelDic;
+        obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
+        that.setData({
+          modelsInfo:obj,
+        })
+        app.globalData.modelsInfo = obj;
+        wx.setStorageSync('ModelsInfo', obj);//缓存
+        console.log("从服务器同步设备型号列表:", obj);
+      } else {
+        console.log('无法从服务器同步设备型号列表');
+      }
+
+    }, function (error) {
+    });
+  },
 
 
 })

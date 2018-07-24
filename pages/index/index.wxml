@@ -44,37 +44,37 @@
           <view style='display: flex;flex-direction: column;width:100%;padding:10px;'>
             <view style='display: flex;flex-direction: row; '>
 
-              <view wx:if="{{brands[item.brandID]=='华为'}}">
+              <view wx:if="{{brandsInfo.brands[item.brandID]=='华为'}}">
                 <image src='../images/huawei.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='联想'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='联想'}}">
                 <image src='../images/lenovo.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='苹果'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='苹果'}}">
                 <image src='../images/apple.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='vivo'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='vivo'}}">
                 <image src='../images/vivo.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='小米'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='小米'}}">
                 <image src='../images/xiaomi.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='锤子'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='锤子'}}">
                 <image src='../images/chuizi.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='三星'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='三星'}}">
                 <image src='../images/sanxing.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='中兴'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='中兴'}}">
                 <image src='../images/zhongxing.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='魅族'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='魅族'}}">
                 <image src='../images/meizu.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-                <view wx:elif="{{brands[item.brandID]=='酷派'}}">
+                <view wx:elif="{{brandsInfo.brands[item.brandID]=='酷派'}}">
                 <image src='../images/coolpad.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-              <view wx:elif="{{brands[item.brandID]=='oppo'}}">
+              <view wx:elif="{{brandsInfo.brands[item.brandID]=='oppo'}}">
                 <image src='../images/oppo.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
 
@@ -118,7 +118,7 @@
 
         <view style='color:#666;margin:8px;padding:4px;font-size:12px;' hidden="{{item.isExpand ? '' : 'hidden'}}">
           <view>设备型号：{{item.deviceModel}}</view>
-          <view>设备品牌：{{brands[item.brandID]}}</view>
+          <view>设备品牌：{{brandsInfo.brands[item.brandID]}}</view>
           <view>系统版本：{{item.OSVersion}}</view>
           <view>设备编号：{{item.deviceID}}</view>
           <view>公司编号：{{item.companyCode}}</view>

@@ -48,17 +48,10 @@ Page({
   },
 
   bindTapExpand: function (e) {
-
     //是否从在侧滑状态下点击
     var now = Date.parse(new Date());//当前时间 毫秒
-    // if (now - this.data.touchEndTime  < 100){
-    //   console.log('侧滑状态下点击');
-    //   return;
-    // }
-
     var tapIndex = e.currentTarget.dataset.index;
     var devices = this.data.devices;
-
     if (!devices[tapIndex].borrowedEmployeeID && devices[tapIndex].borrowedUserOpenID) {
       console.log('获取借用人信息');
       this.getBorrowUserInfo(tapIndex)
@@ -166,6 +159,27 @@ Page({
           console.log('用户点击取消')
         }
       }
+    })
+  },
+
+  bindDelete:function(e){
+    wx.showActionSheet({
+      itemList: ['删除'],
+      success: function (res) {
+        console.log(res.tapIndex)
+      },
+      fail: function (res) {
+        console.log(res.errMsg)
+      }
+    })
+  },
+
+  bindEdit:function(e){
+    var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
+
+    wx.navigateTo({
+      url: '../device/device?' + "deviceID=" + device.deviceID + "&companyCode=" + device.companyCode + "&brandID=" + device.brandID + "&model=" + device.deviceModel + "&OSVersion=" + device.OSVersion + "&isEdit=true",
     })
   },
 

@@ -27,7 +27,7 @@
           <view class="weui-label">设备编号</view>
         </view>
         <view class="weui-cell__bd">
-          <input class="weui-input" bindinput='bindDeviceCodeInput' value="{{deviceCode}}" placeholder="请输入设备编号" />
+          <input class="weui-input" bindinput='bindDeviceCodeInput' disabled='{{isEdit}}' value="{{deviceCode}}" placeholder="请输入设备编号" />
         </view>
       </view>
 

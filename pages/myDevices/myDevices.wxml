@@ -94,10 +94,10 @@
           </view>
 
           <view class='menu'>
-            <view class='menu-delete'>
+            <view class='menu-delete' data-index="{{index}}" bindtap='bindDelete'>
               删除
             </view>
-            <view class='menu-edit'>
+            <view class='menu-edit' data-index="{{index}}" bindtap='bindEdit'>
               修改
             </view>
           </view>

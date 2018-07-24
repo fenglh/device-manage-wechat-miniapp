@@ -11,31 +11,49 @@ Page({
    */
   data: {
     showTopTips: false,
-    brandDisabled:true,
+    brandDisabled: true,
     topTips: '',
     models: {},
-    modelIndex:null,
-
+    modelIndex: null,
+    isEdit: false,
     brandsInfo: {},
     brandIndex: null,
 
-    OSVersions: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
+    OSVersions: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
     systemVersionIndex1: 0,
     systemVersionIndex2: 0,
     systemVersionIndex3: 0,
 
-    companyCode:'A000',
-    deviceCode:null,
-    ocrSign:null,
+    companyCode: 'A000',
+    deviceCode: null,
+    ocrSign: null,
+
+    //在编辑状态时，
+    editBrand:null,
+    editModel:null,
+    editOSVersion:null
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    if (options.isEdit) {
+      wx.setNavigationBarTitle({
+        title: '修改设备',
+      })
+    } else {
+      wx.setNavigationBarTitle({
+        title: '新增设备',
+      })
+    }
+
     var sign = this.generateOCRSign()
     this.setData({
-      ocrSign:sign
+      ocrSign: sign,
+      isEdit: options.isEdit,
+      deviceCode: options.deviceID,
+      companyCode: options.companyCode,
     })
     console.log("签名:%s", this.data.ocrSign)
   },
@@ -43,29 +61,29 @@ Page({
   onReady: function () {
     //同步品牌列表
     this.syncBrands();
-    
+
   },
 
 
 
-  
+
 
 
   //同步型号
-  getModels:function(brandID){
+  getModels: function (brandID) {
     var that = this;
     var query = new AV.Query('Models');
     query.ascending('brandID');
     query.equalTo('brandID', brandID);
     query.find().then(function (results) {
       if (results) {
-        var models=[];
+        var models = [];
         results.forEach(function (item, index) {
           models.push(item.attributes.model);
         });
 
         var modelDic = that.data.models || {};
-        modelDic[brandID]= models;
+        modelDic[brandID] = models;
         that.setData({
           models: modelDic,
         })
@@ -84,7 +102,7 @@ Page({
     });
   },
   //同步品牌
-  syncBrands:function(){
+  syncBrands: function () {
     var that = this;
     var query = new AV.Query('Brands');
     query.ascending('brandID');
@@ -102,7 +120,7 @@ Page({
         var obj = {};
         obj.brands = brands;
         obj.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-        
+
         that.setData({
           brandsInfo: obj,
         })
@@ -117,7 +135,7 @@ Page({
   },
 
   //生成腾讯orc签名
-  generateOCRSign:function() {
+  generateOCRSign: function () {
     var secretId = 'AKIDENL7i9LZVFpV6XoqqsBOTObhhTBlpEZp',
       secretKey = 'IVXN5hHguTtwJdnlYDKxY0GKFAwlQuCI',
       appid = '1256097546',
@@ -128,7 +146,7 @@ Page({
       rdm = parseInt(Math.random() * Math.pow(2, 32)),
       plainText = 'a=' + appid + '&k=' + secretId + '&e=' + (now + pexpired) + '&t=' + now + '&r=' + rdm + '&u=' + userid + '&f=',
       data = crypto.Crypto.charenc.UTF8.stringToBytes(plainText),
-      resBytes = crypto.Crypto.HMAC(crypto.Crypto.SHA1, plainText, secretKey, { asBytes:true}),
+      resBytes = crypto.Crypto.HMAC(crypto.Crypto.SHA1, plainText, secretKey, { asBytes: true }),
       bin = resBytes.concat(data);
 
     var sign = crypto.Crypto.util.bytesToBase64(bin);
@@ -148,9 +166,9 @@ Page({
   },
 
 
-  bindBrandChange:function(e) {
+  bindBrandChange: function (e) {
 
-    if (e.detail.value !== this.data.brandIndex){
+    if (e.detail.value !== this.data.brandIndex) {
       this.setData({
         brandIndex: e.detail.value,
         modelIndex: null,
@@ -161,7 +179,7 @@ Page({
       var selectBrand = this.data.brandsInfo.brands[e.detail.value].brand;
       console.log("选中品牌ID:", selectBrandID);
       console.log("选中品牌名字:", selectBrand);
-      if (!this.data.models[selectBrandID]){
+      if (!this.data.models[selectBrandID]) {
         this.getModels(selectBrandID);
       }
     }
@@ -172,7 +190,7 @@ Page({
       modelIndex: e.detail.value,
     })
   },
-  
+
   bindSystemVersionChange: function (e) {
     this.setData({
       systemVersionIndex1: e.detail.value[0],
@@ -181,17 +199,17 @@ Page({
     })
   },
 
-  bindModelTap:function(e){
+  bindModelTap: function (e) {
     if (!this.data.brandIndex) {
       wx.showToast({
         title: '请先选择品牌',
-        icon:'none'
+        icon: 'none'
       })
     }
   },
 
 
-  showTips:function(content) {
+  showTips: function (content) {
     var that = this;
     this.setData({
       showTopTips: true,
@@ -209,14 +227,14 @@ Page({
 
     console.log(this.data.brandIndex)
 
-    if (this.data.deviceCode == null){
+    if (this.data.deviceCode == null) {
       this.showTips('请输入设备编号');
       return;
     }
 
-    if (this.data.companyCode == null){
+    if (this.data.companyCode == null) {
       this.showTips('请输入公司编号');
-      return ;
+      return;
     }
 
     if (this.data.brandIndex == null) {
@@ -233,7 +251,7 @@ Page({
       this.showTips('请选择系统版本');
       return;
     }
-    
+
 
 
     var DevicesObject = AV.Object.extend('Devices');
@@ -241,19 +259,19 @@ Page({
     new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).find().then(function (results) {
       console.log(results);
       console.log(results.length);
-      if (results.length > 0){
+      if (results.length > 0) {
         wx.showToast({
-        title: '该设备已存在!',
-        icon:'none'
+          title: '该设备已存在!',
+          icon: 'none'
         });
-      }else{
+      } else {
         var openIdInfo = wx.getStorageSync('openIdInfo');
-        
+
         var deviceObject = new DevicesObject();
         deviceObject.set('brandID', that.data.brandsInfo.brands[that.data.brandIndex].brandID);
         deviceObject.set('deviceModel', that.data.models[that.data.brandsInfo.brands[that.data.brandIndex].brandID][that.data.modelIndex])
         deviceObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-        deviceObject.set('deviceID', that.data.deviceCode )
+        deviceObject.set('deviceID', that.data.deviceCode)
         deviceObject.set('companyCode', that.data.companyCode)
         deviceObject.set('ownerID', openIdInfo.openid);
         deviceObject.save().then(function (deviceObject) {
@@ -274,7 +292,7 @@ Page({
         });
 
       }
-    },function(error){
+    }, function (error) {
       wx.showToast({
         title: '服务器错误!',
         icon: 'none'
@@ -284,18 +302,18 @@ Page({
 
   },
 
-  bindScanClick:function() {
+  bindScanClick: function () {
     console.log('照相机拍照')
-   var that = this
-   that.setData({
-     modelIndex: null,
-     brandIndex: null,
-     systemVersionIndex1: 0,
-     systemVersionIndex2: 0,
-     systemVersionIndex3: 0,
-     companyCode: null,
-     deviceCode: null,
-   })
+    var that = this
+    that.setData({
+      modelIndex: null,
+      brandIndex: null,
+      systemVersionIndex1: 0,
+      systemVersionIndex2: 0,
+      systemVersionIndex3: 0,
+      companyCode: null,
+      deviceCode: null,
+    })
     //相机拍照
     wx.chooseImage({
       count: 1, // 默认9
@@ -312,11 +330,11 @@ Page({
           url: 'https://recognition.image.myqcloud.com/ocr/general',
           filePath: tempFilePaths[0],
           name: 'image',
-          header:{
-            "authorization": that.data.ocrSign ,
+          header: {
+            "authorization": that.data.ocrSign,
           },
-          formData:{
-            "appid":"1256097546",
+          formData: {
+            "appid": "1256097546",
           },
           success: function (res) {
             wx.hideLoading();
@@ -328,16 +346,16 @@ Page({
               return a.itemcoord.y - b.itemcoord.y
             })
             console.log(srotYItems)
-            var flagIndex=null;
-            srotYItems.forEach(function(item, index){
+            var flagIndex = null;
+            srotYItems.forEach(function (item, index) {
               var str = item['itemstring'];
               var iscontain = str.indexOf("蓝月亮") == -1 ? false : true;
-              if(iscontain){  
+              if (iscontain) {
                 flagIndex = index;
               }
             });
 
-            if(flagIndex !== null){
+            if (flagIndex !== null) {
               //设备编码标签索引
               var deviceCodeIndex = 0
               if (flagIndex == 0) {
@@ -379,15 +397,15 @@ Page({
               //   icon:'success',
               // })
 
-            }else{
+            } else {
               wx.showToast({
                 title: '资产识别失败,请手动填写或重新识别',
-                icon:'none'
+                icon: 'none'
               })
             }
 
           },
-          fail:function(){
+          fail: function () {
             wx.hideLoading();
             wx.showToast({
               title: '资产识别出错，请重新识别',

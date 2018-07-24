@@ -71,17 +71,12 @@ page{
   overflow: hidden;
 }
 
-kind-list__item 
-
 
 .label{
-  border:1px solid #eee;
-  border-radius:2px;
-  background-color:#eee;
-  padding-left:2px;
-  padding-right:2px;
-  margin-left:8px;
-  text-align: center; 
+  padding-left:4px;
+  padding-right:4px;
+  text-align: center;
+
 }
 
 .status-base {
