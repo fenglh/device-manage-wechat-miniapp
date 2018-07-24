@@ -78,6 +78,7 @@ Page({
                   obj.openid = openid;
                   obj.expiredDate = now + 1000 * 60 * 60 * 24; //24
                   wx.setStorageSync('openIdInfo', obj);//存储openid
+                  app.openIdInfo = obj;
                   that.setData({
                     openIdInfo: obj,
                   })

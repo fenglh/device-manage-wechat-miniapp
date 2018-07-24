@@ -1,5 +1,6 @@
 
 const AV = require('../../utils/av-live-query-weapp-min');
+const app = getApp()
 
 Page({
 
@@ -8,7 +9,7 @@ Page({
    */
   data: {
     devices: [],
-    brands: {},
+    brandsInfo: {},
     openid: null,
   },
 
@@ -19,14 +20,13 @@ Page({
     wx.setNavigationBarTitle({
       title: '借入设备',
     })
-    var brands = wx.getStorageSync('brandsInfo');
+    var brands = app.globalData.brandsInfo.brands || {};
+
     this.setData({
       openid: options.openid,
       brands: brands,
     })
     this.getBorrowedDevices();
-
-    console.log("当前品牌列表：", this.data.brands);
   },
 
   /**

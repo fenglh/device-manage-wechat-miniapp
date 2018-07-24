@@ -2,6 +2,7 @@
 
 const AV = require('../../utils/av-live-query-weapp-min');
 const now = Date.parse(new Date());//当前时间
+const app = getApp()
 Page({
 
   /**
@@ -29,7 +30,7 @@ Page({
       title: '我的设备',
     })
 
-    var brands = wx.getStorageSync('brandsInfo');
+    var brands = app.globalData.brandsInfo.brands || {};
     this.setData({
       openid: options.openid,
       brands: brands,
