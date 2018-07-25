@@ -164,13 +164,23 @@ Page({
   },
 
   bindDelete:function(e){
+    var index = e.currentTarget.dataset.index;
+    var that = this;
+    var device = this.data.devices[index];
+    var that = this 
     wx.showActionSheet({
       itemList: ['删除'],
       success: function (res) {
-        console.log(res.tapIndex)
+        if(res.tapIndex == 0){
+          wx.showLoading({
+            title: '',
+            mask:true,
+          })
+          that.deleDevice(device.deviceID, that.data.openid);
+        };
       },
       fail: function (res) {
-        console.log(res.errMsg)
+        that.closeSlide(index);
       }
     })
   },
@@ -178,7 +188,7 @@ Page({
   bindEdit:function(e){
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
-
+    this.closeSlide(index);
     wx.navigateTo({
       url: '../device/device?' + "deviceID=" + device.deviceID + "&companyCode=" + device.companyCode + "&brandID=" + device.brandID + "&model=" + device.deviceModel + "&OSVersion=" + device.OSVersion + "&isEdit=true",
     })
@@ -194,6 +204,80 @@ Page({
     }, function (error) {
 
     });
+  },
+
+  closeSlide:function(index){
+    var devices = this.data.devices;
+    var slideStyle = "left:0px";
+    devices[index].isSlideMenuOpen = false;
+    devices[index].slideStyle = slideStyle;
+    //更新列表的状态
+    this.setData({
+      devices: devices
+    });
+
+    
+  },
+
+  deleDevice:function(deviceID, youOpenId) {
+    var DevicesObject = AV.Object.extend('Devices');
+    var that = this;
+    var query = new AV.Query(DevicesObject);
+    query.equalTo('deviceID', deviceID);
+    query.equalTo('ownerID', youOpenId);
+    query.first().then(function (result) {
+      var device = AV.Object.createWithoutData('Devices', result.id);
+      device.destroy().then(function (success) {
+        //删除状态
+        var DevicesStatus = AV.Object.extend('DevicesStatus');
+        var query = new AV.Query(DevicesStatus);
+        query.equalTo('deviceID', deviceID);
+        query.first().then(function (result) {
+          var status  = AV.Object.createWithoutData('DevicesStatus', deviceID);
+          status.destroy().then(function (success) {
+            that.getMyDevices();
+            wx.hideLoading();
+            wx.showToast({
+              title: '删除成功',
+              icon: "success",
+            })
+            
+          }, function (error) {
+            // 删除失败
+            wx.hideLoading();
+            wx.showToast({
+              title: '删除失败',
+              icon: "none",
+            })
+          });
+        }, function(error){
+          console.log('设备不存在状态记录，无需删除状态记录')
+          that.getMyDevices();
+          wx.hideLoading();
+          wx.showToast({
+            title: '删除成功',
+            icon: "success",
+          })
+          
+        });
+
+      }, function (error) {
+        wx.hideLoading();
+        // 删除失败
+        wx.showToast({
+          title: '删除失败',
+          icon: "none",
+        })
+      });
+
+    }, function(error){
+      wx.hideLoading();
+        wx.showToast({
+          title: '设备不存在',
+          icon:"none",
+        })
+    });
+
   },
 
   updateDeviceStatus: function (objectId, status) {
