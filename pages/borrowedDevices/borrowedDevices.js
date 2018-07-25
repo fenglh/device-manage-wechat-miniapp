@@ -11,6 +11,7 @@ Page({
     devices: [],
     brandsInfo: {},
     openid: null,
+    showEmptyView:false,
   },
 
   /**
@@ -187,16 +188,14 @@ Page({
     var devices = [];
     var borrowedOpenidQuery = new AV.Query('DevicesStatus');
     borrowedOpenidQuery.equalTo("borrowedUserOpenID", this.data.openid);
-
     var statusQuery = new AV.Query('DevicesStatus');
     statusQuery.notEqualTo("status", 0);
-    
     var query = AV.Query.and(borrowedOpenidQuery, statusQuery);
-
     query.find().then(function (results) {
       if(results.length == 0){
         that.setData({
           devices: [],
+          showEmptyView:true,
         })
         return;
       }
@@ -211,7 +210,8 @@ Page({
             device.actionTime = that.formatDateTime(item.attributes.actionTimestamp);
             devices.push(device);
             that.setData({
-              devices: devices
+              devices: devices,
+              showEmptyView: false,
             })
           }
         },function(error){

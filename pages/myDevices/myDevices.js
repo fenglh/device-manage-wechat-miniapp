@@ -9,6 +9,7 @@ Page({
    * 页面的初始数据
    */
   data: {
+    showEmptyView: false,
     devices: [],
     brands: {},
     openid: null,
@@ -352,20 +353,24 @@ Page({
     query.equalTo('ownerID', this.data.openid);
     query.find().then(function (results) {
 
-      if (results) {
+      if (results.length > 0) {
         var devices = [];
         results.forEach(function (item, index) {
           devices.push(item.attributes);
         });
         that.setData({
-          devices: devices
+          devices: devices,
+          showEmptyView: false,
         })
         that.getStatus(devices);
         // that.getUsers(devices);
         console.log("获取设备列表:", devices);
 
       } else {
-        console.log('无法从服务器同步设备系统版本列表');
+        that.setData({
+          showEmptyView: true,
+        })
+        
       }
 
     }, function (error) {

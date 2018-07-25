@@ -31,9 +31,9 @@
     </view>
 
 
-    <view class="weui-cells__title title">所有设备，共{{devices.length}}台</view>
+    <view class="weui-cells__title title {{devices.length == 0 ?'hide':''}}">所有设备，共{{devices.length}}台</view>
 
-    <view class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}'>
+    <view class='empty-base  {{ showEmptyView ? "empty-show" : "empty-hide"}}'>
       <image class='empty-image' src='../images/empty1.png'></image>
       <view class='empty-desc'>空空如也~ </view>
     </view>

@@ -4,11 +4,11 @@
 
   <view class='page__bd_spacing '>
 
-    <view class='empty-base  {{ devices.length == 0 ? "empty-show" : "empty-hide"}}'>
+    <view class='empty-base  {{ showEmptyView ? "empty-show" : "empty-hide"}}'>
       <image class='empty-image' src='../images/empty1.png'></image>
       <view class='empty-desc'>空空如也~</view>
     </view>
-    <view class="weui-cells__title title">借用设备，共{{devices.length}}台</view>
+    <view class="weui-cells__title title {{devices.length == 0 ?'hide':''}}">借用设备，共{{devices.length}}台</view>
     <block wx:for="{{devices}}" wx:key="id" wx:for-index="index">
       <view class="kind-list__item" bindtap='bindTapExpand' data-index="{{index}}">
         <view style='padding:8px; display: flex;flex-direction: row;justify-content: space-between; '>

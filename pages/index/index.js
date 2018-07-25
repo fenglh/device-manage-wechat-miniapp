@@ -7,12 +7,11 @@ const app = getApp()
 const now = Date.parse(new Date());//当前时间
 Page({
   data: {
-
+    showEmptyView: false,
     showModalStatus: false,
     userInfo: wx.getStorageSync('userInfo') || {},
     openIdInfo: wx.getStorageSync('openIdInfo') || {},
     employeeInfo: wx.getStorageSync('employeeInfo') || {},
-
     devices: [],
     allDevices: [],//搜索专用的所有设备
     brandsInfo: app.globalData.brandsInfo || {},
@@ -434,14 +433,16 @@ Page({
     var query = new AV.Query('Devices');
     query.descending('createdAt');
     query.find().then(function (results) {
+
       wx.hideNavigationBarLoading();
       wx.stopPullDownRefresh();
-      if (results) {
+      if (results.length > 0) {
         var devices = [];
         results.forEach(function (item, index) {
           devices.push(item.attributes);
         });
         that.setData({
+          showEmptyView: false,
           allDevices: devices,
           devices: devices
         })
@@ -449,11 +450,18 @@ Page({
         that.getUsers(devices);
         console.log("获取设备列表:", devices);
       } else {
-        console.log('无法从服务器同步设备系统版本列表');
+        that.setData({
+          showEmptyView: true,
+        })
+        
       }
 
 
     }, function (error) {
+      wx.showToast({
+        title: '获取设备列表失败',
+        icon:'none',
+      })
     });
 
   },
