@@ -76,6 +76,7 @@ page{
   padding-left:4px;
   padding-right:4px;
   text-align: center;
+  font-size: 14px;
 
 }
 
