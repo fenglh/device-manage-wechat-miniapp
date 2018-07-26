@@ -183,7 +183,7 @@ Page({
   },
 
   bindModelTap: function (e) {
-    if (!this.data.brandIndex) {
+    if (this.data.brandIndex == null) {
       wx.showToast({
         title: '请先选择品牌',
         icon: 'none'
@@ -208,7 +208,7 @@ Page({
 
   bindSubmit: function () {
 
-    console.log(this.data.brandIndex)
+
 
     if (this.data.deviceCode == null) {
       this.showTips('请输入设备编号');
@@ -333,21 +333,24 @@ Page({
   bindScanClick: function () {
     console.log('照相机拍照')
     var that = this
-    that.setData({
-      modelIndex: null,
-      brandIndex: null,
-      systemVersionIndex1: 0,
-      systemVersionIndex2: 0,
-      systemVersionIndex3: 0,
-      companyCode: null,
-      deviceCode: null,
-    })
+
     //相机拍照
     wx.chooseImage({
       count: 1, // 默认9
       sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
       sourceType: ['camera'], // 可以指定来源是相册还是相机，默认二者都有
       success: function (res) {
+
+        that.setData({
+          modelIndex: null,
+          brandIndex: null,
+          systemVersionIndex1: 0,
+          systemVersionIndex2: 0,
+          systemVersionIndex3: 0,
+          companyCode: null,
+          deviceCode: null,
+          brandDisabled:true,
+        })
 
 
         var tempFilePaths = res.tempFilePaths;
@@ -406,19 +409,21 @@ Page({
               //型号描述
               var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
               var brandIndex = null;
-              console.log("deviceDesc :%s", deviceDesc)
-              that.data.brands.forEach(function (item, index) {
-                console.log(item);
-                var iscontain = deviceDesc.indexOf(item.brand) == -1 ? false : true;
+              var iscontain = false;
+              for (var index = 0; index < that.data.brands.length; index++){
+                var item = that.data.brands[index];
+                iscontain = deviceDesc.indexOf(item.brand) == -1 ? false : true;
                 if (iscontain) {
                   brandIndex = index;
+                  break;
                 }
-              });
-
+              }
+   
               that.setData({
                 deviceCode: deviceCode,
                 companyCode: companyCode,
-                brandIndex: brandIndex
+                brandIndex: brandIndex,
+                brandDisabled: !iscontain,
               })
               // wx.showToast({
               //   title: '资产识成功!',
