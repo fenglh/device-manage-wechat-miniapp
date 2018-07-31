@@ -28,6 +28,7 @@ Page({
     this.getBorrowedDeviceCount(this.data.openIdInfo.openid);
     this.getMyDevicesCount(this.data.openIdInfo.openid);
     this.getDevices();
+
   },
   onLoad: function () {
     wx.setNavigationBarTitle({
