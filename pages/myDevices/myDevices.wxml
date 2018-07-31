@@ -106,11 +106,11 @@
         </view>
 
         <view class="detail" hidden="{{item.isExpand ? '' : 'hidden'}}">
-          <view>设备型号：{{item.deviceModel}}</view>
-          <view>设备品牌：{{brands[item.brandID]}}</view>
-          <view>设备编号：{{item.deviceID}}</view>
-          <view>公司编号：{{item.companyCode}}</view>
-          <view>系统版本：{{item.OSVersion}}</view>
+          <view class='detail-label'>设备型号：{{item.deviceModel}}</view>
+          <view class='detail-label'>设备品牌：{{brands[item.brandID]}}</view>
+          <view class='detail-label'>设备编号：{{item.deviceID}}</view>
+          <view class='detail-label'>公司编号：{{item.companyCode}}</view>
+          <view class='detail-label'>系统版本：{{item.OSVersion}}</view>
 
           <view wx:if="{{item.status==-1}}">
             <view class='status-borrowing' style='padding:2px;'>申请人：{{item.borrowedEmployeeName}}</view>

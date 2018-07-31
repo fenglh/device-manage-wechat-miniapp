@@ -151,3 +151,6 @@ page{
 .hide {
   display: none;
 }
+.detail-label {
+  padding: 2px;
+}
