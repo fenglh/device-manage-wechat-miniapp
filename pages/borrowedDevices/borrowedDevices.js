@@ -111,7 +111,9 @@ Page({
     query.first().then(function (status) {
       var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
       // 修改属性
+      var timestamp = Date.parse(new Date());
       todo.set('status', -3);//归还中
+      todo.set('actionTimestamp', timestamp);//当前操作时间
       // todo.set('borrowedUserOpenID', "");
       // 保存到云端
       todo.save().then(function (result) {

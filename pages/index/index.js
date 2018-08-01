@@ -178,6 +178,7 @@ Page({
     }
 
     var item = e.currentTarget.dataset.item;
+    var index = e.currentTarget.dataset.index;
     var that = this;
     wx.showModal({
       title: '申请借取设备',
@@ -187,7 +188,7 @@ Page({
       success: function (res) {
         if (res.confirm) {
           console.log('用户点击确定');
-          that.doBorrowDevice(item.deviceID);
+          that.doBorrowDevice(index, item.deviceID);
         } else if (res.cancel) {
           console.log('用户点击取消')
         }
@@ -234,7 +235,7 @@ Page({
 
   },
 
-  addDeviceStatus: function (devicdID, status, openid) {
+  addDeviceStatus: function (index, devicdID, status, openid) {
     var that = this;
     var DevicesStatus = AV.Object.extend('DevicesStatus');
     var devicesStatus = new DevicesStatus();
@@ -260,7 +261,7 @@ Page({
     // 设置优先级
   },
 
-  updateDeviceStatus: function (objectId, status, openid) {
+  updateDeviceStatus: function (index, objectId, status, openid) {
     var that = this;
     var timestamp = Date.parse(new Date());
     var todo = AV.Object.createWithoutData('DevicesStatus', objectId);
@@ -274,6 +275,13 @@ Page({
         title: '设备借取申请成功,请等待管理员确认',
         icon: 'none'
       })
+      var devices = that.data.devices;
+      devices[index].borrowedEmployeeName = that.data.employeeInfo.employeeName;
+      that.setData({
+        devices: devices,
+      })
+
+
       that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
 
     }, function (error) {
@@ -284,7 +292,7 @@ Page({
     });
   },
 
-  doBorrowDevice: function (deviceID) {
+  doBorrowDevice: function (index, deviceID) {
     var query = new AV.Query('DevicesStatus');
     var that = this;
     query.equalTo('deviceID', deviceID);
@@ -303,11 +311,11 @@ Page({
           })
         } else {
           //可以借取
-          that.updateDeviceStatus(result.id, -1, that.data.openIdInfo.openid);
+          that.updateDeviceStatus(index,result.id, -1, that.data.openIdInfo.openid);
         }
       } else {
         //添加
-        that.addDeviceStatus(deviceID, -1, that.data.openIdInfo.openid);
+        that.addDeviceStatus(index, deviceID, -1, that.data.openIdInfo.openid);
       }
     }, function (error) {
 

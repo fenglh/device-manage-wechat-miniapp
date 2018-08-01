@@ -145,7 +145,7 @@
           
 
           <!-- <view>借取员工：</view> -->
-          <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借取</button>
+          <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-index="{{index}}" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借取</button>
         </view>
       </view>
     </block>

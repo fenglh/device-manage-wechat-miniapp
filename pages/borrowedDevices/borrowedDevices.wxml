@@ -56,7 +56,7 @@
 
             </view>
             <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
-              <view class='label' style='width:70rpx;'>{{item.OSVersion}}</view>
+              <view class='label' >{{item.OSVersion}}</view>
               <view class='label'>{{item.deviceID}}</view>
 
             </view>
