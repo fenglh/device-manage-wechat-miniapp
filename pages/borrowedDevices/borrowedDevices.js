@@ -114,7 +114,6 @@ Page({
       var timestamp = Date.parse(new Date());
       todo.set('status', -3);//归还中
       todo.set('actionTimestamp', timestamp);//当前操作时间
-      // todo.set('borrowedUserOpenID', "");
       // 保存到云端
       todo.save().then(function (result) {
         wx.showToast({

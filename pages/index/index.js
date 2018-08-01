@@ -8,10 +8,7 @@ const now = Date.parse(new Date());//当前时间
 Page({
   data: {
     showEmptyView: false,
-    showModalStatus: false,
     userInfo: wx.getStorageSync('userInfo') || {},
-    openIdInfo: wx.getStorageSync('openIdInfo') || {},
-    employeeInfo: wx.getStorageSync('employeeInfo') || {},
     devices: [],
     allDevices: [],//搜索专用的所有设备
     brandsInfo: app.globalData.brandsInfo || {},
@@ -25,8 +22,8 @@ Page({
   /******************* */
   onShow: function () {
     // this.getStatus(this.data.devices);
-    this.getBorrowedDeviceCount(this.data.openIdInfo.openid);
-    this.getMyDevicesCount(this.data.openIdInfo.openid);
+    this.getBorrowedDeviceCount(app.globalData.openid);
+    this.getMyDevicesCount(app.globalData.openid);
     this.getDevices();
 
   },
@@ -53,65 +50,9 @@ Page({
   },
 
   onReady: function () {
-
-
-    var that = this;
-    //获取用户信息和openid
-    if (!this.data.openIdInfo.openid || !this.data.userInfo.avatarUrl || !this.data.userInfo.nickName) {
-      console.log("头像或者昵称不存在");
-      wx.login({
-        success: function (res) {
-          if (res.code) {
-            //获取用户信息
-            wx.getUserInfo({
-              success: function (res) {
-                that.saveUserInfo(res.userInfo);
-              }, fail(error) {
-                console.log("获取用户信息失败，原因:", error.errMsg);
-              }
-            });
-            //获取openid
-            if (!that.data.openIdInfo.openid) {
-              that.getOpenId(res.code, function (openid) {
-                if (openid) {
-                  var obj = {};
-                  obj.openid = openid;
-                  obj.expiredDate = now + 1000 * 60 * 60 * 24; //24
-                  wx.setStorageSync('openIdInfo', obj);//存储openid
-                  app.openIdInfo = obj;
-                  that.setData({
-                    openIdInfo: obj,
-                  })
-                  //获取绑定的员工信息
-                  that.getBindEmployeeInfo(obj.openid);
-                  //获取我的设备数量
-                  that.getMyDevicesCount(obj.openid);
-                  that.getBorrowedDeviceCount(obj.openid);
-                } else {
-
-                }
-              });
-            } else {
-              //获取绑定的员工信息
-              that.getBindEmployeeInfo(that.data.openIdInfo.openid);
-              //获取我的设备数量
-              that.getMyDevicesCount(that.data.openIdInfo.openid);
-              that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
-            }
-
-          } else {
-            that.showToast('获取登录用户身份标识失败');
-          }
-        }
-      });
-    } else {
-
-      //获取绑定的员工信息
-      that.getBindEmployeeInfo(that.data.openIdInfo.openid);
-      //获取我的设备数量
-      that.getMyDevicesCount(that.data.openIdInfo.openid);
-      that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
-    }
+    //获取我的设备数量
+    this.getMyDevicesCount(app.globalData.openid);
+    this.getBorrowedDeviceCount(app.globalData.openid);
 
   },
 
@@ -144,38 +85,20 @@ Page({
   },
 
   bindMyDevices: function (e) {
-    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName) {
-      this.setData({
-        showModalStatus: true,
-      });
-      return;
-    }
-
     //跳转
     wx.navigateTo({
-      url: '../myDevices/myDevices?openid=' + this.data.openIdInfo.openid,
+      url: '../myDevices/myDevices?openid=' + app.globalData.openid,
     })
   },
   bindBorrowedDevices: function (e) {
-    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName) {
-      this.setData({
-        showModalStatus: true,
-      });
-      return;
-    }
     //跳转
     wx.navigateTo({
-      url: '../borrowedDevices/borrowedDevices?openid=' + this.data.openIdInfo.openid,
+      url: '../borrowedDevices/borrowedDevices?openid=' + app.globalData.openid,
     })
   },
 
   bindBorrowed: function (e) {
-    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName) {
-      this.setData({
-        showModalStatus: true,
-      });
-      return;
-    }
+
 
     var item = e.currentTarget.dataset.item;
     var index = e.currentTarget.dataset.index;
@@ -251,7 +174,7 @@ Page({
         title: '设备借取申请成功,请等待管理员确认',
         icon: 'none'
       })
-      that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
+      that.getBorrowedDeviceCount(app.globalData.openid);
     }, function (error) {
       wx.showToast({
         title: '设备借取申请失败！',
@@ -276,13 +199,13 @@ Page({
         icon: 'none'
       })
       var devices = that.data.devices;
-      devices[index].borrowedEmployeeName = that.data.employeeInfo.employeeName;
+      devices[index].borrowedEmployeeName = app.globalData.employeeInfo.employeeName;
       that.setData({
         devices: devices,
       })
 
 
-      that.getBorrowedDeviceCount(that.data.openIdInfo.openid);
+      that.getBorrowedDeviceCount(app.globalData.openid);
 
     }, function (error) {
       wx.showToast({
@@ -311,11 +234,11 @@ Page({
           })
         } else {
           //可以借取
-          that.updateDeviceStatus(index,result.id, -1, that.data.openIdInfo.openid);
+          that.updateDeviceStatus(index, result.id, -1, app.globalData.openid);
         }
       } else {
         //添加
-        that.addDeviceStatus(index, deviceID, -1, that.data.openIdInfo.openid);
+        that.addDeviceStatus(index, deviceID, -1, app.globalData.openid);
       }
     }, function (error) {
 
@@ -511,50 +434,6 @@ Page({
     })
   },
 
-
-
-  getBindEmployeeInfo: function (openid) {
-    //在获取了openid的情况下，检查绑定关系
-    if (!openid) {
-      console.log('无法获取微信用户身份标识');
-      return;
-    }
-
-    if (!this.data.employeeInfo.employeeID || !this.data.employeeInfo.employeeName || (now - this.data.employeeInfo.expiredDate > 0)) {
-      var that = this;
-      var query = new AV.Query('Users');
-      query.equalTo('openID', openid);
-      query.first().then(function (result) {
-        if (!result) {
-          console.log("还没有绑定员工信息")
-          that.setData({
-            showModalStatus: true
-          })
-        } else {
-          console.log("已有绑定员工信息")
-          var employeeInfo = {};
-          employeeInfo.employeeID = result.attributes["employeeID"];
-          employeeInfo.employeeName = result.attributes["employeeName"];
-          employeeInfo.expiredDate = Date.parse(new Date()) + 1000 * 60 * 60 * 24; //24小时有效期 
-          that.setData({
-            employeeInfo: employeeInfo,
-          })
-          wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
-          console.log("从服务器获取绑定的员工信息:", employeeInfo);
-        }
-      }, function (error) {
-      })
-    } else {
-      console.log('从缓存中获取到绑定员工信息:', this.data.employeeInfo);
-    }
-
-
-
-
-  },
-
-
-
   //事件
   bindgetuserinfo: function (e) {
     console.log(e);
@@ -577,19 +456,7 @@ Page({
     })
   },
 
-  bindEmployee: function (e) {
 
-
-    var employeeInfo = {};
-    employeeInfo.employeeID = e.detail.employeeID;
-    employeeInfo.employeeName = e.detail.employeeName;
-    this.setData({
-      employeeInfo: employeeInfo
-    })
-    wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
-    console.log("更新绑定结果:", employeeInfo);
-
-  },
 
   //保存用户信息
   saveUserInfo: function (userInfo) {

@@ -1,4 +1,5 @@
 // pages/user/user.js
+const AV = require('../../utils/av-live-query-weapp-min');
 
 const app = getApp()
 
@@ -15,7 +16,6 @@ Page({
     binBtnHide:false,
     focus:false,
     showModalStatus: false,
-    openIdInfo:  {},
   },
 
 
@@ -27,93 +27,66 @@ Page({
     wx.setNavigationBarTitle({
       title: '个人信息',
     })
+    console.log("个人信息:", app.globalData.employeeInfo);
       this.setData({
-        employeeInfo: wx.getStorageSync('employeeInfo') || {},
+        employeeInfo: app.globalData.employeeInfo || {},
         userInfo: wx.getStorageSync('userInfo') || {},
         openIdInfo: wx.getStorageSync('openIdInfo') || {},
       })
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-    if (!this.data.employeeInfo){
-      var that = this;
-      wx.showModal({
-        title: '提示',
-        content: '请绑定员工信息',
-        showCancel:false,
-        success:function(){
-          that.setData({
-            binBtnHide:false,
-            focus:true
-          })
+  bindLogout:function(e){
+    var that = this;
+    wx.showModal({
+      title: '解除绑定',
+      content: '您确定要解除绑定吗？',
+      success: function (res) {
+        
+        if (res.confirm) {
+          that.deleteBindOpenId(app.globalData.openid);
         }
-      })
-    }
+      }
+    })
+
   },
 
-  bindSubmit:function(){
-    this.setData({
-      showModalStatus: true
+
+
+  deleteBindOpenId: function ( youOpenId) {
+    wx.showLoading({
+      title: '',
+    })
+    var Users = AV.Object.extend('Users');
+    var that = this;
+    var query = new AV.Query(Users);
+    query.equalTo('openID', youOpenId);
+    query.first().then(function (result) {
+      var user = AV.Object.createWithoutData('Users', result.id);
+      user.destroy().then(function (success) {
+        wx.clearStorage();
+        wx.reLaunch({
+          url: '../login/login',
+        })
+
+      }, function (error) {
+        wx.hideLoading();
+        // 删除失败
+        wx.showToast({
+          title: '解除绑定失败!',
+          icon: "none",
+        })
+      });
+
+    }, function (error) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '绑定不存在',
+        icon: "none",
+      })
     });
 
   },
-  bindEmployee: function (e) {
-
-    var employeeInfo = {};
-    employeeInfo.employeeID = e.detail.employeeID;
-    employeeInfo.employeeName = e.detail.employeeName;
-    employeeInfo.expiredDate = e.detail.expiredDate;
-    this.setData({
-      employeeInfo: employeeInfo,
-    })
-    wx.setStorageSync('employeeInfo', employeeInfo);//存储员工信息
-    console.log("更新绑定结果:", employeeInfo);
-
-  },
 
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-  
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-  
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-  
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-  
-  }
+ 
 })

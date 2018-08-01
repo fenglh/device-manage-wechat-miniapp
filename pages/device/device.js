@@ -53,7 +53,7 @@ Page({
 
     var brands = app.globalData.brandsInfo.brands || {};
     var models = app.globalData.modelsInfo.models || {};
-    var openid = app.globalData.openIdInfo.openid || {};
+    var openid = app.globalData.openid || {};
     var brandArr = [];
     var brandIndex = this.data.brandIndex;
     var modelIndex = this.data.modelIndex;

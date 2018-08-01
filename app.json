@@ -1,5 +1,7 @@
 {
   "pages": [
+    "pages/launch/launch",
+    "pages/login/login",
     "pages/index/index",
     "pages/menu/menu",
     "pages/search/search",

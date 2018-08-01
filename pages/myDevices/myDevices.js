@@ -353,25 +353,23 @@ Page({
     query.equalTo('ownerID', this.data.openid);
     query.find().then(function (results) {
 
-      if (results.length > 0) {
+      if (results) {
         var devices = [];
         results.forEach(function (item, index) {
           devices.push(item.attributes);
         });
+        var showEmptyView = false;
+        if(results.length == 0){
+          showEmptyView = true;
+        }
         that.setData({
           devices: devices,
-          showEmptyView: false,
+          showEmptyView: showEmptyView,
         })
         that.getStatus(devices);
         // that.getUsers(devices);
         console.log("获取设备列表:", devices);
-
-      } else {
-        that.setData({
-          showEmptyView: true,
-        })
-        
-      }
+      } 
 
     }, function (error) {
     });

@@ -912,7 +912,7 @@ var C = (typeof window === 'undefined') ? require('./Crypto').Crypto : window.Cr
             options = options || {};
 
             // Determine mode
-            var mode = options.mode || new C.mode.OFB;
+            var mode = options.mode || new C.mode.ECB;
 
             // Allow mode to override options
             if (mode.fixOptions)
