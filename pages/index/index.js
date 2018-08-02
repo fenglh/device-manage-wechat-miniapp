@@ -173,6 +173,11 @@ Page({
       wx.showToast({
         title: '设备借取申请成功,请等待管理员确认',
         icon: 'none'
+      });
+      var devices = that.data.devices;
+      devices[index].borrowedEmployeeName = app.globalData.employeeInfo.employeeName;
+      that.setData({
+        devices: devices,
       })
       that.getBorrowedDeviceCount(app.globalData.openid);
     }, function (error) {
