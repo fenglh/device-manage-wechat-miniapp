@@ -220,6 +220,10 @@ Page({
     
   },
 
+  deleStatus: function (deviceID, openid){
+    
+  },
+
   deleDevice:function(deviceID, youOpenId) {
     var DevicesObject = AV.Object.extend('Devices');
     var that = this;
@@ -233,8 +237,9 @@ Page({
         var DevicesStatus = AV.Object.extend('DevicesStatus');
         var query = new AV.Query(DevicesStatus);
         query.equalTo('deviceID', deviceID);
+        query.equalTo('borrowedUserOpenID', youOpenId);
         query.first().then(function (result) {
-          var status  = AV.Object.createWithoutData('DevicesStatus', deviceID);
+          var status = AV.Object.createWithoutData('DevicesStatus', result.id);
           status.destroy().then(function (success) {
             that.getMyDevices();
             wx.hideLoading();
