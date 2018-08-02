@@ -1,0 +1,44 @@
+<view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
+
+  
+
+  <view class="page__bd">
+
+    <view class="weui-cells__title">添加型号</view>
+
+    <view class="weui-cells weui-cells_after-title">
+
+
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <view class="weui-label">品牌</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="bindBrandChange" value="{{brandIndex}}" range-key="brand" range="{{brands}}">
+            <view class="weui-select weui-select_in-select-after">{{brands[brandIndex].brand}}</view>
+          </picker>
+        </view>
+      </view>
+
+
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">型号</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" bindinput='bindInputModel' value="{{model}}" placeholder="请输入要添加的型号" />
+        </view>
+      </view>
+
+
+
+
+
+
+    </view>
+
+    <view class="weui-btn-area">
+      <button class="weui-btn" type="primary" bindtap="bindSubmit">添加</button>
+    </view>
+  </view>
+</view>

@@ -5,8 +5,8 @@ const AV = require('./utils/av-live-query-weapp-min');
 const now = Date.parse(new Date());//当前时间
 
 AV.init({
-  appId: 'IcEv4jY8hXwfHnIdn2DMlF4E-gzGzoHsz',
-  appKey: 'X6WstPiEjGHdzoRMqx9JR7lT',
+  appId: 'LaH7wECHB7xg5FTiTlFqdjLj-gzGzoHsz',
+  appKey: '5LFqOEzgD0ot0Wvqvg4hLJ1F',
 });
 
 

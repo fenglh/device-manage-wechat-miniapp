@@ -33,18 +33,9 @@ Page({
     })
 
 
-    //获取品牌信息
-    if (!this.data.modelsInfo.models || now - this.data.modelsInfo.expiredDate > 0) {
-      this.getModels();
-    } else {
-      console.log("型号信息缓存有效：", this.data.modelsInfo.models);
-    }
+    this.getModels();
+    this.syncBrands();
 
-    if (!this.data.brandsInfo.brands || now - this.data.brandsInfo.expiredDate > 0) {
-      this.syncBrands();
-    } else {
-      console.log("品牌信息缓存有效：", this.data.brandsInfo.brands);
-    }
     
 
   },
