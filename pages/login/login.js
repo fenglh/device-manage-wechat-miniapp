@@ -22,8 +22,8 @@ Page({
    * 页面的初始数据
    */
   data: {
-    user: '80474124',
-    pwd: 'abc12345',
+    user: '',
+    pwd: '',
     pwdInputDisabled: true,
     pwdInputFocus: false,
     userInputFocus: false,
