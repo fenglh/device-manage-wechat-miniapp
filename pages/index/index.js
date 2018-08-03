@@ -20,8 +20,8 @@ Page({
   /******************* */
   onShow: function () {
 
-    this.getBorrowedDeviceCount(app.globalData.openid);
-    this.getMyDevicesCount(app.globalData.openid);
+    this.getBorrowedDeviceCount();
+    this.getMyDevicesCount();
     this.getDevices();
 
   },
@@ -34,13 +34,8 @@ Page({
     })
   },
 
-  onReady: function () {
-    //获取我的设备数量
-    this.getMyDevicesCount(app.globalData.openid);
-    this.getBorrowedDeviceCount(app.globalData.openid);
 
-  },
-
+  // ok
   searchContent: function (content) {
     if (content == "") {
       this.getDevices();
@@ -48,7 +43,7 @@ Page({
     }
     var devices = [];
     this.data.allDevices.forEach(function (item, index) {
-      if (item.deviceModel.toUpperCase().indexOf(content.toUpperCase()) != -1 ||
+      if (item.model.toUpperCase().indexOf(content.toUpperCase()) != -1 ||
         item.OSVersion.indexOf(content) != -1 ||
         item.deviceID.indexOf(content) != -1) {
         devices.push(item);
@@ -104,13 +99,13 @@ Page({
     })
   },
 
-  getMyDevicesCount: function (openid) {
-    if (!openid) {
-      return;
-    }
+  // ok
+  getMyDevicesCount: function () {
+
     var that = this;
+    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     var query = new AV.Query('Devices');
-    query.equalTo('ownerID', openid);
+    query.equalTo('dependentUser', user);
     query.count().then(function (count) {
       that.setData({
         myDevicesCount: count,
@@ -120,90 +115,36 @@ Page({
     });
   },
 
-  getBorrowedDeviceCount: function (openid) {
-    if (!openid) {
-      return;
-    }
+  //ok
+  getBorrowedDeviceCount: function () {
     var that = this;
-    var borrowedOpenidQuery = new AV.Query('DevicesStatus');
-    borrowedOpenidQuery.equalTo("borrowedUserOpenID", openid);
-
-    var statusQuery = new AV.Query('DevicesStatus');
-    statusQuery.notEqualTo("status", 0);
-
-    var query = AV.Query.and(borrowedOpenidQuery, statusQuery);
-
-    query.count().then(function (count) {
+    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var query = new AV.Query('Devices');
+    query.equalTo('dependentUser', user);
+    query.include(['dependentDevicesStatus']);
+    query.find().then(function (results) {
+      console.log(results);
+      var i = 0
+      results.forEach(function(item, index){
+        var dependentDevicesStatus = item.get('dependentDevicesStatus');
+        if (dependentDevicesStatus){
+          var status = dependentDevicesStatus.get('status');
+          if (status && status != 0){
+            i++;
+          }
+        }
+      })
       that.setData({
-        borrowedDevicesCount: count,
+        borrowedDevicesCount: i,
       })
     }, function (error) {
-      console.log(error);
+
     });
 
   },
 
-  addDeviceStatus: function (index, devicdID, status, openid) {
-    var that = this;
-    var DevicesStatus = AV.Object.extend('DevicesStatus');
-    var devicesStatus = new DevicesStatus();
-    var timestamp = Date.parse(new Date());
-    devicesStatus.set('actionTimestamp', timestamp);//当前操作时间
-    devicesStatus.set('status', status);
-    devicesStatus.set('deviceID', devicdID);
-    devicesStatus.set('borrowedUserOpenID', openid);
 
-    devicesStatus.save().then(function (result) {
-      wx.showToast({
-        title: '设备借取申请成功,请等待管理员确认',
-        icon: 'none'
-      });
-      var devices = that.data.devices;
-      devices[index].borrowedEmployeeName = app.globalData.employeeInfo.employeeName;
-      that.setData({
-        devices: devices,
-      })
-      that.getBorrowedDeviceCount(app.globalData.openid);
-    }, function (error) {
-      wx.showToast({
-        title: '设备借取申请失败！',
-        icon: 'none'
-      })
-    });
-    // 设置优先级
-  },
-
-  updateDeviceStatus: function (index, objectId, status, openid) {
-    var that = this;
-    var timestamp = Date.parse(new Date());
-    var todo = AV.Object.createWithoutData('DevicesStatus', objectId);
-    todo.set('actionTimestamp', timestamp);//当前操作时间
-    todo.set('status', status);
-    todo.set('borrowedUserOpenID', openid);
-
-    todo.save().then(function (result) {
-      wx.showToast({
-        title: '设备借取申请成功,请等待管理员确认',
-        icon: 'none'
-      })
-      var devices = that.data.devices;
-      devices[index].borrowedEmployeeName = app.globalData.employeeInfo.employeeName;
-      that.setData({
-        devices: devices,
-      })
-
-
-      that.getBorrowedDeviceCount(app.globalData.openid);
-
-    }, function (error) {
-      wx.showToast({
-        title: '设备借取申请失败！',
-        icon: 'none'
-      })
-    });
-  },
-
-
+  //ok
   doBorrowDevice: function (index) {
 
     var device = this.data.devices[index];
@@ -270,50 +211,13 @@ Page({
         })
     });
 
-    // var device = this.data.devices[index];
-    // var query = new AV.Query('DevicesStatus');
-    // var that = this;
-    // query.equalTo('deviceID', device.deviceID);
-    // query.first().then(function (result) {
-    //   if (result) {
-    //     var status = result.attributes.status;
-    //     if (status == -2) {
-    //       wx.showToast({
-    //         title: '借取失败，该设备已被借出!',
-    //         icon: "none",
-    //       })
-    //     } else if (status == -1) {
-    //       wx.showToast({
-    //         title: '借取失败，该设备已被别人申请',
-    //         icon: "none",
-    //       })
-    //     } else {
-    //       //可以借取
-    //       that.updateDeviceStatus(index, result.id, -1, app.globalData.openid);
-    //     }
-    //   } else {
-    //     //添加
-    //     that.addDeviceStatus(index, deviceID, -1, app.globalData.openid);
-    //   }
-    // }, function (error) {
-    //   wx.showToast({
-    //     title: '查询设备失败',
-    //     icon:'none',
-    //   })
-    // });
   },
 
+  //ok
   bindTapExpand: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
-    if (!this.data.devices[tapIndex].borrowedEmployeeID && this.data.devices[tapIndex].borrowedUserOpenID) {
-      console.log('获取借用人信息');
-      this.getBorrowUserInfo(tapIndex)
-    }
-
     var devices = this.data.devices;
-
     var device = devices[tapIndex];
-
     if (!device.isExpand) {
       device.isExpand = true;
     } else {
@@ -330,34 +234,7 @@ Page({
   },
 
 
-
-  getBorrowUserInfo: function (index) {
-    var that = this;
-    var openid = this.data.devices[index].borrowedUserOpenID;
-    var queryUser = new AV.Query('Users');
-    queryUser.equalTo("openID", openid);
-    queryUser.first().then(function (result) {
-      var borrowedEmployeeID = result.attributes.employeeID;
-      var borrowedEmployeeName = result.attributes.employeeName;
-      var devices = that.data.devices;
-      devices[index].borrowedEmployeeID = borrowedEmployeeID;
-      devices[index].borrowedEmployeeName = borrowedEmployeeName;
-      console.log(result);
-      console.log(devices);
-      that.setData({
-        allDevices: devices,
-        devices: devices,
-      })
-
-    }, function (error) {
-      console.log(error);
-    });
-
-  },
-
-
-
-
+  // ok
   formatDateTime: function (inputTime) {
     var date = new Date(inputTime);
     var y = date.getFullYear();
@@ -376,7 +253,7 @@ Page({
 
 
 
-
+  // ok
   getDevices: function () {
     var that = this;
     var query = new AV.Query('Devices');
@@ -526,11 +403,7 @@ Page({
     })
   },
 
-
-
-
   onPullDownRefresh: function () {
-
     wx.showNavigationBarLoading();
     this.onShow();
   },

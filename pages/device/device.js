@@ -275,8 +275,7 @@ Page({
           var selectedModel = that.data.models[that.data.modelIndex];
           var Models = AV.Object.createWithoutData('Models', selectedModel.objectID);
           //关联用户
-          var me = app.globalData.employeeInfo;
-          var User = AV.Object.createWithoutData('Users', me.objectID);
+          var User = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
 
           var deviceObject = AV.Object('Devices');
           deviceObject.set('dependentModel', Models);
