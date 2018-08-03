@@ -351,10 +351,10 @@ Page({
         user.save().then(function (obj) {
           //保存
           var employeeInfo = {};
+          employeeInfo.objectID =obj.id;
           employeeInfo.employeeID = obj.attributes["employeeID"];
           employeeInfo.employeeName = obj.attributes["employeeName"];
           app.globalData.employeeInfo = employeeInfo;
-          wx.setStorageSync("employeeInfo", employeeInfo)
           //跳转到index
           wx.redirectTo({
             url: '../index/index',
@@ -378,11 +378,10 @@ Page({
         user.save().then(function (obj) {
           //保存
           var employeeInfo = {};
+          employeeInfo.objectID = obj.id;
           employeeInfo.employeeID = obj.attributes["employeeID"];
           employeeInfo.employeeName = obj.attributes["employeeName"];
           app.globalData.employeeInfo = employeeInfo;
-          wx.setStorageSync("employeeInfo", employeeInfo)
-
           wx.redirectTo({
             url: '../index/index',
           })

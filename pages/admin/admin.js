@@ -63,23 +63,57 @@ Page({
     });
     
 
-    // var brandObject = AV.Object.createWithoutData('Brands', brand.objectID);
-    var brand = this.data.brands[this.data.brandIndex];
-    var brandObject = AV.Object.createWithoutData('Brands', brand.objectID);
-    var modelObject = new AV.Object('Models');
-    modelObject.set('model', this.data.model);
-    modelObject.set('dependent', brandObject);
-    modelObject.save().then(function(model){
-      wx.showToast({
-        title: '添加成功!',
-      })
+
+    var Object = AV.Object.extend('Models');
+    var that = this;
+    var query = new AV.Query(Object);
+    query.equalTo('model', this.data.model);
+    query.include(['dependent']);
+    query.first().then(function (result) {
+      var selectedBrandInfo = that.data.brands[that.data.brandIndex];
+
+      if(result) {
+        var brand = result.get('dependent').get("brand");
+        if (brand == selectedBrandInfo.brand) {
+          //已存在
+          wx.showToast({
+            title: '已存在型号\"' + that.data.model + "\"",
+            icon: 'none'
+          });
+        }
+        return;
+      }
+
+
+      //添加型号
+      var brandObject = AV.Object.createWithoutData('Brands', selectedBrandInfo.objectID);
+      var modelObject = new AV.Object('Models');
+      modelObject.set('model', that.data.model);
+      modelObject.set('dependent', brandObject);
+      modelObject.save().then(function(model){
+        wx.showToast({
+          title: '添加成功!',
+        })
+      }, function(error){
+        wx.showToast({
+          title: '添加失败!',
+          icon:'none',
+        });
+      });
+
     }, function(error){
+      console.log(error);
       wx.showToast({
-        title: '添加失败!',
-        icon:'none',
+        title: '数据获取失败!',
+        icon: 'none',
       })
+
     });
   },
+
+
+
+
   //同步品牌
   getBrands: function () {
     var that = this;

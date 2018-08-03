@@ -12,13 +12,12 @@ Page({
   data: {
     hideHeaderView: false,
     showTopTips: false,
-    brandDisabled: true,
     openid: null,
     topTips: '',
-    models: {},
+    models: [],
     modelIndex: null,
     isEdit: false,
-    brands: {},
+    brands: [],
     brandIndex: null,
 
     OSVersions: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]],
@@ -51,43 +50,24 @@ Page({
       })
     }
 
-    var brands = app.globalData.brandsInfo.brands || {};
-    var models = app.globalData.modelsInfo.models || {};
+    //获取品牌信息
+    this.getBrands();
+
+
     var openid = app.globalData.openid || {};
-    var brandArr = [];
     var brandIndex = this.data.brandIndex;
     var modelIndex = this.data.modelIndex;
-    var brandDisabled = this.data.brandDisabled;
     var hideHeaderView = this.data.hideHeaderView;
     var systemVersionIndex1 = this.data.systemVersionIndex1;
     var systemVersionIndex2 = this.data.systemVersionIndex2;
     var systemVersionIndex3 = this.data.systemVersionIndex3;
-
-    //品牌字典转换成数组，并获取当前选中品牌索引
-    var i = 0;
-    for (var key in brands) {
-      var obj = {}
-      obj.brandID = parseInt(key);
-      obj.brand = brands[key];
-      brandArr.push(obj);
-      if (options.brandID == obj.brandID) {
-        brandIndex = i;
-        brandDisabled = false;
-      }
-      i++;
-    }
+    //修改品牌号
 
     //隐藏头部
     if (options.isEdit) {
       hideHeaderView = true;
     }
-    //获取选中型号对应的索引
-    var brandModels = models[options.brandID];
-    for (var i in brandModels) {
-      if (brandModels[i] == options.model) {
-        modelIndex = i;
-      }
-    }
+
 
     //获取版本索引
     if (options.OSVersion){
@@ -103,8 +83,6 @@ Page({
     var sign = this.generateOCRSign()
     this.setData({
       openid: openid,
-      brands: brandArr,
-      models: models,
       ocrSign: sign,
       brandIndex: brandIndex,
       modelIndex: modelIndex,
@@ -112,7 +90,6 @@ Page({
       systemVersionIndex2: systemVersionIndex2,
       systemVersionIndex3: systemVersionIndex3,
 
-      brandDisabled: brandDisabled,
       hideHeaderView: hideHeaderView,
       isEdit: options.isEdit || false,
       deviceCode: options.deviceID || null,
@@ -158,19 +135,21 @@ Page({
 
 
   bindBrandChange: function (e) {
-
-    if (e.detail.value !== this.data.brandIndex) {
+    var value = parseInt(e.detail.value); 
+    if (value !== this.data.brandIndex) {
+      var brand = this.data.brands[value];
       this.setData({
-        brandIndex: e.detail.value,
+        brandIndex: parseInt(e.detail.value),
         modelIndex: null,
-        brandDisabled: false,
-      })
+      });
+
+      this.getBrandModels(brand.objectID);
     }
   },
 
   bindModelChange: function (e) {
     this.setData({
-      modelIndex: e.detail.value,
+      modelIndex: parseInt(e.detail.value),
     })
   },
 
@@ -183,12 +162,12 @@ Page({
   },
 
   bindModelTap: function (e) {
-    if (this.data.brandIndex == null) {
-      wx.showToast({
-        title: '请先选择品牌',
-        icon: 'none'
-      })
-    }
+    // if (this.data.brandIndex == null) {
+    //   wx.showToast({
+    //     title: '请先选择品牌',
+    //     icon: 'none'
+    //   })
+    // }
   },
 
 
@@ -248,7 +227,6 @@ Page({
       query.equalTo('ownerID', this.data.openid);
       query.first().then(function (result) {
         var device = AV.Object.createWithoutData('Devices', result.id);
-
         device.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
         device.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
         device.set('deviceID', that.data.deviceCode)
@@ -292,13 +270,20 @@ Page({
           });
         } else {
 
-          var deviceObject = new DevicesObject();
-          deviceObject.set('brandID', that.data.brands[that.data.brandIndex].brandID);
-          deviceObject.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
+          console.log("添加设备");
+          //关联的品牌
+          var selectedModel = that.data.models[that.data.modelIndex];
+          var Models = AV.Object.createWithoutData('Models', selectedModel.objectID);
+          //关联用户
+          var me = app.globalData.employeeInfo;
+          var User = AV.Object.createWithoutData('Users', me.objectID);
+
+          var deviceObject = AV.Object('Devices');
+          deviceObject.set('dependentModel', Models);
+          deviceObject.set('dependentUser', User);
           deviceObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
           deviceObject.set('deviceID', that.data.deviceCode)
           deviceObject.set('companyCode', that.data.companyCode)
-          deviceObject.set('ownerID', that.data.openid);
           deviceObject.save().then(function (deviceObject) {
             wx.hideLoading();
             wx.navigateBack({
@@ -349,7 +334,6 @@ Page({
           systemVersionIndex3: 0,
           companyCode: null,
           deviceCode: null,
-          brandDisabled:true,
         })
 
 
@@ -423,7 +407,6 @@ Page({
                 deviceCode: deviceCode,
                 companyCode: companyCode,
                 brandIndex: brandIndex,
-                brandDisabled: !iscontain,
               })
               // wx.showToast({
               //   title: '资产识成功!',
@@ -450,6 +433,55 @@ Page({
   },
 
 
+  ////////////新增函数//////
+  //同步品牌
+  getBrands: function () {
+    var that = this;
+    var query = new AV.Query('Brands');
+    query.ascending('brandID');
+    query.find().then(function (results) {
+      if (results) {
+        var brands = [];
+        results.forEach(function (item, index) {
+          var obj = {};
+          obj.objectID = item.id;
+          obj.brand = item.attributes.brand
+          brands.push(obj);
+        });
+        that.setData({
+          brands: brands,
+        })
+        console.log('从服务器获取品牌列表:', brands);
+      } else {
+        console.log('无法从服务器同步设备品牌列表');
+      }
+
+    }, function (error) {
+    });
+  },
+
+  getBrandModels: function (brandObjectID){
+    var that = this;
+    var Brand = AV.Object.createWithoutData('Brand', brandObjectID);
+    var query = new AV.Query('Models');
+    query.equalTo('dependent', Brand);
+    query.find().then(function(results){
+
+      var models = [];
+      results.forEach(function (item, index) {
+        var obj = {};
+        obj.model = item.attributes.model;
+        obj.objectID = item.id
+        models.push(obj);
+      });
+      that.setData({
+        models:models,
+      })
+
+    }, function(error){
+
+    });
+  },
 
 })
 

@@ -95,7 +95,7 @@ App({
       if (!result) {
         success ? success(null) : null
       } else {
-        success ? success(result.attributes) : null
+        success ? success(result) : null
       }
     }, function (error) {
       fail ? fail() : null;

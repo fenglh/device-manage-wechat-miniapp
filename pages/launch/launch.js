@@ -16,13 +16,13 @@ Page({
             openid:openid,
             success:function(res){
                 if(res){
-                  console.log("已绑定1");
-                  var employeeInfo = {};
-                  employeeInfo.employeeID = res.employeeID;
-                  employeeInfo.employeeName = res.employeeName;
-                  app.globalData.employeeInfo = employeeInfo;
-                  wx.setStorageSync("employeeInfo", employeeInfo)
 
+                  var employeeInfo = {};
+                  employeeInfo.employeeObjectID = res.id;
+                  employeeInfo.employeeID = res.attributes.employeeID;
+                  employeeInfo.employeeName = res.attributes.employeeName;
+                  app.globalData.employeeInfo = employeeInfo;
+                  console.log('获取用户信息:', app.globalData.employeeInfo);
                   wx.redirectTo({
                     url: '../index/index',
                   })
@@ -53,11 +53,11 @@ Page({
           if (res) {
             console.log("已绑定2");
             var employeeInfo = {};
-            employeeInfo.employeeID = res.employeeID;
-            employeeInfo.employeeName = res.employeeName;
+            employeeInfo.employeeObjectID = res.id;
+            employeeInfo.employeeID = res.attributes.employeeID;
+            employeeInfo.employeeName = res.attributes.employeeName;
             app.globalData.employeeInfo = employeeInfo;
-            wx.setStorageSync("employeeInfo", employeeInfo)
-
+            console.log('获取用户信息:', app.globalData.employeeInfo);
           //跳转到index
             wx.redirectTo({
               url: '../index/index',

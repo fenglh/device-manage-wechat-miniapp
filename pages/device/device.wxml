@@ -58,8 +58,8 @@
           <view class="weui-label">设备型号</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindModelChange" value="{{modelIndex}}" disabled="{{brandDisabled}}" bindtap='bindModelTap'  range="{{models[brands[brandIndex].brandID]}}">
-            <view class="weui-select weui-select_in-select-after">{{models[brands[brandIndex].brandID][modelIndex]}}</view>
+          <picker bindchange="bindModelChange" value="{{modelIndex}}"  bindtap='bindModelTap' range-key="model" range="{{models}}">
+            <view class="weui-select weui-select_in-select-after">{{models[modelIndex].model}}</view>
           </picker>
         </view>
       </view>
