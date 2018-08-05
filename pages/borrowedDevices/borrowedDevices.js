@@ -69,6 +69,8 @@ Page({
       }
     })
   },
+
+  //ok
   bindCancelBorrowed:function(e) {
       console.log('取消申请');
       var index = e.currentTarget.dataset.index;
@@ -123,6 +125,8 @@ Page({
     });
   },
 
+  // ok
+
   cancelBorrowingDevice:function(index){
 
     var that = this;
@@ -156,30 +160,6 @@ Page({
         icon: 'noen'
       })
     });
-
-
-    // var that = this;
-    // var query = new AV.Query('DevicesStatus');
-    // query.equalTo('deviceID', this.data.devices[index].deviceID);
-    // query.equalTo('borrowedUserOpenID', app.globalData.openid);
-    // query.equalTo('status', -1);
-    // query.first().then(function (status) {
-    //   var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
-    //   // 修改属性
-    //   todo.set('status', 0);
-    //   todo.set('borrowedUserOpenID', "");
-    //   // 保存到云端
-    //   todo.save().then(function (result) {
-    //     wx.showToast({
-    //       title: '取消申请成功!',
-    //     });
-    //     that.getBorrowedDevices();
-    //   }, function (error) {
-    //     console.log(error);
-    //   });
-    // }, function (error) {
-
-    // });
   },
 
   // ok

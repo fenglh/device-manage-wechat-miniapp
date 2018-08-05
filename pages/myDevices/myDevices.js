@@ -56,12 +56,11 @@ Page({
 
   },
 
-
+  // ok
   confirmReturn: function (index) {
     var that = this;
     var device = this.data.devices[index];
     var timestamp = Date.parse(new Date());
-
     //
     var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
     //关联状态
@@ -89,32 +88,9 @@ Page({
         icon: 'noen'
       })
     });
-
-    // var that = this;
-    // var query = new AV.Query('DevicesStatus');
-    // query.equalTo('deviceID', this.data.devices[index].deviceID);
-    // query.equalTo('borrowedUserOpenID', this.data.devices[index].borrowedUserOpenID);
-    // query.equalTo('status', -3);
-    // query.first().then(function (status) {
-    //   var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
-    //   // 修改属性
-    //   todo.set('status', 0);//归还中
-    //   todo.set('borrowedUserOpenID', "");
-    //   // 保存到云端
-    //   todo.save().then(function (result) {
-    //     wx.showToast({
-    //       title: '确认归还成功',
-    //       icon: 'success',
-    //     });
-    //     that.getMyDevices();
-    //   }, function (error) {
-    //     console.log(error);
-    //   });
-    // }, function (error) {
-
-    // });
   },
 
+  //ok
   bindConfirmReturn: function (e) {
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
@@ -144,45 +120,28 @@ Page({
       confirmText: '同意',
       success: function (res) {
         if (res.confirm) {
-          that.agreeBorrowed(index);
+          that.addDevicesStatus(index, -2, {
+            success:function(){
+              that.getMyDevices();
+            },
+            fail:function(){
+              wx.showToast({
+                title: '通过借用申请失败',
+                icon: 'none'
+              });
+            }
+          });
         } else if (res.cancel) {
           console.log('用户点击取消')
         }
       }
     })
   },
-  // ok
-  agreeBorrowed:function(index){
-      var that = this;
-      var device = this.data.devices[index];
-      var deviceObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-      var timestamp = Date.parse(new Date());
-      var devicesStatus = new AV.Object('DevicesStatus');
-      devicesStatus.set('status', -2); //0闲置，-1 申请中，-2借出，-3归还中 
-      devicesStatus.set('actionTimestamp', timestamp);//当前操作时间
-      //关联借用人
-      var dependentUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-      devicesStatus.set('dependentUser', dependentUser);//关联用户
-      //关联设备
-      var dependentDevice = AV.Object.createWithoutData('Device', device.deviceObjectID);
-      devicesStatus.set('dependentDevice', dependentDevice);//关联设备
-      //关联状态
-      deviceObject.set('dependentDevicesStatus', devicesStatus);
-      deviceObject.save().then(function (result) {
-        that.getMyDevices();
-      }, function (error) {
-        wx.showToast({
-          title: '通过申请失败',
-          icon: 'none'
-        });
-      });
-  },
+  
 
   bindDelete:function(e){
     var index = e.currentTarget.dataset.index;
     var that = this;
-    var device = this.data.devices[index];
-    var that = this 
     wx.showActionSheet({
       itemList: ['删除'],
       success: function (res) {
@@ -191,7 +150,18 @@ Page({
             title: '',
             mask:true,
           })
-          that.deleDevice(device.deviceID, that.data.openid);
+          that.deleteDevice(index);
+          that.addDevicesStatus(index, -99, {
+            success:function(){
+              that.getMyDevices();
+            },
+            fail:function(){
+              wx.showToast({
+                title: '设备删除失败',
+                icon: 'none'
+              });
+            }
+          }) ;
         };
       },
       fail: function (res) {
@@ -226,69 +196,28 @@ Page({
   },
 
 
-  deleDevice:function(deviceID, youOpenId) {
-    var DevicesObject = AV.Object.extend('Devices');
+  addDevicesStatus:function(index,status, {success, fail}){
     var that = this;
-    var query = new AV.Query(DevicesObject);
-    query.equalTo('deviceID', deviceID);
-    query.equalTo('ownerID', youOpenId);
-    query.first().then(function (result) {
-      var device = AV.Object.createWithoutData('Devices', result.id);
-      device.destroy().then(function (success) {
-        //删除状态
-        var DevicesStatus = AV.Object.extend('DevicesStatus');
-        var query = new AV.Query(DevicesStatus);
-        query.equalTo('deviceID', deviceID);
-        query.equalTo('borrowedUserOpenID', youOpenId);
-        query.first().then(function (result) {
-          var status = AV.Object.createWithoutData('DevicesStatus', result.id);
-          status.destroy().then(function (success) {
-            that.getMyDevices();
-            wx.hideLoading();
-            wx.showToast({
-              title: '删除成功',
-              icon: "success",
-            })
-            
-          }, function (error) {
-            // 删除失败
-            wx.hideLoading();
-            wx.showToast({
-              title: '删除失败',
-              icon: "none",
-            })
-          });
-        }, function(error){
-          console.log('设备不存在状态记录，无需删除状态记录')
-          that.getMyDevices();
-          wx.hideLoading();
-          wx.showToast({
-            title: '删除成功',
-            icon: "success",
-          })
-          
-        });
-
-      }, function (error) {
-        wx.hideLoading();
-        // 删除失败
-        wx.showToast({
-          title: '删除失败',
-          icon: "none",
-        })
-      });
-
-    }, function(error){
-      wx.hideLoading();
-        wx.showToast({
-          title: '设备不存在',
-          icon:"none",
-        })
+    var device = this.data.devices[index];
+    var deviceObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+    var timestamp = Date.parse(new Date());
+    var devicesStatus = new AV.Object('DevicesStatus');
+    devicesStatus.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
+    devicesStatus.set('actionTimestamp', timestamp);//当前操作时间
+    //关联借用人
+    var dependentUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    devicesStatus.set('dependentUser', dependentUser);//关联用户
+    //关联设备
+    var dependentDevice = AV.Object.createWithoutData('Device', device.deviceObjectID);
+    devicesStatus.set('dependentDevice', dependentDevice);//关联设备
+    //关联状态
+    deviceObject.set('dependentDevicesStatus', devicesStatus);
+    deviceObject.save().then(function (result) {
+      success?success():null;
+    }, function (error) {
+      fail?fail():null;
     });
-
   },
-
-
 
   //ok
   formatDateTime: function (inputTime) {
