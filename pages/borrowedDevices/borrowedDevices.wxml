@@ -42,7 +42,7 @@
               <view wx:elif="{{item.brand=='魅族'}}">
                 <image src='../images/meizu.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-                <view wx:elif="{{item.brand=='酷派'}}">
+              <view wx:elif="{{item.brand=='酷派'}}">
                 <image src='../images/coolpad.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
               <view wx:elif="{{item.brand=='oppo'}}">
@@ -56,7 +56,7 @@
 
             </view>
             <view style='margin-top:8px;font-size:12px; display: flex;flex-direction: row;color:#666;'>
-              <view class='label' >{{item.OSVersion}}</view>
+              <view class='label'>{{item.OSVersion}}</view>
               <view class='label'>{{item.deviceID}}</view>
 
             </view>
@@ -87,21 +87,14 @@
           <view class='detail-label'>公司编号：{{item.companyCode}}</view>
           <view class='detail-label'>系统版本：{{item.OSVersion}}</view>
           <view class='detail-label'>设备归属：{{item.employeeName}}</view>
-          <view wx:if="{{item.status==-1}}">
-            <view style='margin-top:10px;'>申请时间：{{item.statusActionTimestamp}}</view>
-          </view>
 
-          <view wx:if="{{item.status==-3}}">
-            <view style='margin-top:10px;'>归还时间：{{item.statusActionTimestamp}}</view>
-          </view>
+          <view class='status-borrowing' style='padding:2px;'>{{item.status==-1?'申请人':(item.status==-2 ?"借用人":(item.status==-3?"归还人":""))}}：{{item.statusActionEmployeeObjectName}}</view>
+          <view class='status-borrowing'>{{item.status==-1?'借出时间':(item.status==-2 ?"申请时间":(item.status==-3?"归还提交时间":""))}}：{{item.statusActionTimestamp}}</view>
 
-          <view wx:if="{{item.status==-2}}">
-            <view style='margin-top:10px;'>借入时间：{{item.statusActionTimestamp}}</view>
-          </view>
 
           <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindCancelBorrowed" data-index="{{index}}" hidden='{{(item.status==-1 || !item.status) ? "" : "hidden"}}'>取消申请</button>
 
-                    <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindReturnBorrowed" data-index="{{index}}" hidden='{{(item.status==-2 || !item.status) ? "" : "hidden"}}'>归还设备</button>
+          <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindReturnBorrowed" data-index="{{index}}" hidden='{{(item.status==-2 || !item.status) ? "" : "hidden"}}'>归还设备</button>
 
         </view>
       </view>

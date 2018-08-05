@@ -158,21 +158,22 @@ Page({
           //设置
           console.log('可以借用:', device);
 
-          var deviceObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+          var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
           var timestamp = Date.parse(new Date());
-          var devicesStatus = new AV.Object('DevicesStatus');
-          devicesStatus.set('status', -1); //0闲置，-1 申请中，-2借出，-3归还中 
-          devicesStatus.set('actionTimestamp', timestamp);//当前操作时间
+          //关联状态
+          var statusAVObject = new AV.Object('DevicesStatus');
+          statusAVObject.set('status', -1); //0闲置，-1 申请中，-2借出，-3归还中 
+          statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
           //关联借用人
-          var dependentUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-          devicesStatus.set('dependentUser', dependentUser);//关联用户
+          var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+          statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
           //关联设备
-          var dependentDevice = AV.Object.createWithoutData('Device', device.deviceObjectID);
-          devicesStatus.set('dependentDevice', dependentDevice);//关联设备
+          var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
+          statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
 
           //关联状态
-          deviceObject.set('dependentDevicesStatus', devicesStatus);
-          deviceObject.save().then(function(result){
+          deviceAVObject.set('dependentDevicesStatus', statusAVObject);
+          deviceAVObject.save().then(function(result){
             console.log('更新状态成功:',reslut);
             wx.showToast({
               title: '申请借取成功!',

@@ -168,6 +168,7 @@ Page({
     })
   },
 
+  //ok
   bindEdit:function(e){
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
@@ -453,10 +454,7 @@ Page({
             devices: devices
           });
         }
-
       }
-
-
     }
   }
 })

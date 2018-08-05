@@ -70,7 +70,7 @@
               <view wx:elif="{{item.brand=='魅族'}}">
                 <image src='../images/meizu.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
-                <view wx:elif="{{item.brand=='酷派'}}">
+              <view wx:elif="{{item.brand=='酷派'}}">
                 <image src='../images/coolpad.png' class="item-logo" style='margin-top:6px;'></image>
               </view>
               <view wx:elif="{{item.brand=='oppo'}}">
@@ -122,26 +122,10 @@
           <view class='detail-label'>设备编号：{{item.deviceID}}</view>
           <view class='detail-label'>公司编号：{{item.companyCode}}</view>
           <view class='detail-label'>设备归属：{{item.employeeName}}</view>
-          <view wx:if="{{item.status==-1}}">
-            <view class='status-borrowing' style='padding:2px;'>申请人：{{item.statusActionEmployeeObjectName}}</view>
-          </view>
 
-          <view wx:elif="{{item.status==-2 || item.status==-3}}">
-              <view class='status-borrowing' style='padding:2px;'>借用人：{{item.statusActionEmployeeObjectName}}</view>
-          </view>
+          <view class='status-borrowing' style='padding:2px;'>{{item.status==-1?'申请人':(item.status==-2 ?"借用人":(item.status==-3?"归还人":""))}}：{{item.statusActionEmployeeObjectName}}</view>
+          <view class='status-borrowing'>{{item.status==-1?'借出时间':(item.status==-2 ?"申请时间":(item.status==-3?"归还提交时间":""))}}：{{item.statusActionTimestamp}}</view>
 
-          <view wx:if="{{item.status==-2}}">
-            <view class='status-borrowing' >借出时间：{{item.statusActionTimestamp}}</view>
-          </view>
-
-          <view wx:elif="{{item.status==-1}}">
-            <view class='status-borrowing' >申请时间：{{item.statusActionTimestamp}}</view>
-          </view>
-
-          <view wx:elif="{{item.status==-3}}">
-            <view class='status-borrowing' >归还时间：{{item.statusActionTimestamp}}</view>
-          </view>
-          
 
           <!-- <view>借取员工：</view> -->
           <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-index="{{index}}" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借取</button>
