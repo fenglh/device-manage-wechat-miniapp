@@ -58,7 +58,7 @@ Page({
 
 
   confirmReturn: function (index) {
-
+    var that = this;
     var device = this.data.devices[index];
     var timestamp = Date.parse(new Date());
 
@@ -153,6 +153,7 @@ Page({
   },
   // ok
   agreeBorrowed:function(index){
+      var that = this;
       var device = this.data.devices[index];
       var deviceObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
       var timestamp = Date.parse(new Date());
@@ -168,9 +169,7 @@ Page({
       //关联状态
       deviceObject.set('dependentDevicesStatus', devicesStatus);
       deviceObject.save().then(function (result) {
-        wx.showToast({
-          title: '通过申请成功!',
-        })
+        that.getMyDevices();
       }, function (error) {
         wx.showToast({
           title: '通过申请失败',

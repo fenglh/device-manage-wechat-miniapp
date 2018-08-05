@@ -83,15 +83,12 @@ Page({
     var that = this;
     wx.showModal({
       title: '申请借取设备',
-      content: device.model + "（" + device.deviceID + "）",
+      content: "你确定要申请设备 " + device.model + "?" ,
       cancelText: '稍后',
       confirmText: '申请',
       success: function (res) {
         if (res.confirm) {
-          console.log('用户点击确定');
           that.doBorrowDevice(index);
-        } else if (res.cancel) {
-          console.log('用户点击取消')
         }
       }
     })
@@ -174,19 +171,17 @@ Page({
           //关联状态
           deviceAVObject.set('dependentDevicesStatus', statusAVObject);
           deviceAVObject.save().then(function(result){
-            console.log('更新状态成功:',reslut);
             wx.showToast({
               title: '申请借取成功!',
-            })
+            });
+            that.getDevices();
+            that.getBorrowedDeviceCount();
           },function(error){
             wx.showToast({
               title: '申请借取失败，请稍后再试',
               icon:'noen'
             })
-          });
-
-
-          
+          }); 
         }else{
           wx.showToast({
             title: '设备已被删除，请刷新列表',

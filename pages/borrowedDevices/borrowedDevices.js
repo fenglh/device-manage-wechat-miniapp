@@ -87,9 +87,9 @@ Page({
   },
 
   returnDevice:function(index){
-
+    var that = this;
     var device = this.data.devices[index];
-    console.log(device);
+    // console.log(device);
     var timestamp = Date.parse(new Date());
 
     //
