@@ -150,9 +150,9 @@ Page({
             title: '',
             mask:true,
           })
-          that.deleteDevice(index);
           that.addDevicesStatus(index, -99, {
             success:function(){
+              wx.hideLoading();
               that.getMyDevices();
             },
             fail:function(){

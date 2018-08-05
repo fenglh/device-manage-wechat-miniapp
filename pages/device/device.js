@@ -274,14 +274,13 @@ Page({
     else {
       var DevicesObject = AV.Object.extend('Devices');
       var that = this;
-      new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).find().then(function (results) {
-        console.log(results);
-        console.log(results.length);
-        if (results.length > 0) {
-          wx.showToast({
-            title: '该设备已存在!',
-            icon: 'none'
-          });
+      new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).first().then(function (result) {
+        console.log(result);
+        if (result) {
+          wx.hideLoading();
+          var str = '已存在编号为' + result.attributes.deviceID + "的设备";
+          that.showTips(str);
+
         } else {
 
           console.log("添加设备");
@@ -310,12 +309,7 @@ Page({
             })
           }, function (error) {
             wx.hideLoading();
-            console.log(error)
-            // 失败
-            wx.showToast({
-              title: '添加设备失败！',
-              icon: 'none'
-            })
+            that.showTips('添加设备失败');
           });
 
         }
