@@ -22,7 +22,7 @@ Page({
     this.getBorrowedDevices();
   },
 
-
+  //ok
   formatDateTime: function (inputTime) {
     var date = new Date(inputTime);
     var y = date.getFullYear();
@@ -38,7 +38,7 @@ Page({
     // second = second < 10 ? ('0' + second) : second; 
     return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
   },
-
+  //ok
   bindTapExpand: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
     var devices = this.data.devices;
@@ -86,6 +86,7 @@ Page({
 
   },
 
+  //ok
   returnDevice:function(index){
     var that = this;
     var device = this.data.devices[index];
@@ -120,23 +121,57 @@ Page({
         icon: 'noen'
       })
     });
+  },
+
+  cancelBorrowingDevice:function(index){
+
+    var that = this;
+    var device = this.data.devices[index];
+    var timestamp = Date.parse(new Date());
+
+    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+    //关联状态
+    var statusAVObject = new AV.Object('DevicesStatus');
+    statusAVObject.set('status',0); //0闲置，-1 申请中，-2借出，-3归还中 
+    statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+    //关联借用人
+    var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
+    //关联设备
+    var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
+    statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
+
+    //关联状态
+    deviceAVObject.set('dependentDevicesStatus', statusAVObject);
+
+    deviceAVObject.save().then(function (result) {
+      wx.showToast({
+        title: "取消申请成功!",
+        icon: 'success',
+      });
+      that.getBorrowedDevices();
+    }, function (error) {
+      wx.showToast({
+        title: '取消申请，请稍后再试',
+        icon: 'noen'
+      })
+    });
+
 
     // var that = this;
     // var query = new AV.Query('DevicesStatus');
     // query.equalTo('deviceID', this.data.devices[index].deviceID);
     // query.equalTo('borrowedUserOpenID', app.globalData.openid);
-    // query.equalTo('status', -2);
+    // query.equalTo('status', -1);
     // query.first().then(function (status) {
     //   var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
     //   // 修改属性
-    //   var timestamp = Date.parse(new Date());
-    //   todo.set('status', -3);//归还中
-    //   todo.set('actionTimestamp', timestamp);//当前操作时间
+    //   todo.set('status', 0);
+    //   todo.set('borrowedUserOpenID', "");
     //   // 保存到云端
     //   todo.save().then(function (result) {
     //     wx.showToast({
-    //       title: '归还提交成功，请等待管理员确认',
-    //       icon:'none',
+    //       title: '取消申请成功!',
     //     });
     //     that.getBorrowedDevices();
     //   }, function (error) {
@@ -145,30 +180,6 @@ Page({
     // }, function (error) {
 
     // });
-  },
-  cancelBorrowingDevice:function(index){
-    var that = this;
-    var query = new AV.Query('DevicesStatus');
-    query.equalTo('deviceID', this.data.devices[index].deviceID);
-    query.equalTo('borrowedUserOpenID', app.globalData.openid);
-    query.equalTo('status', -1);
-    query.first().then(function (status) {
-      var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
-      // 修改属性
-      todo.set('status', 0);
-      todo.set('borrowedUserOpenID', "");
-      // 保存到云端
-      todo.save().then(function (result) {
-        wx.showToast({
-          title: '取消申请成功!',
-        });
-        that.getBorrowedDevices();
-      }, function (error) {
-        console.log(error);
-      });
-    }, function (error) {
-
-    });
   },
 
   // ok

@@ -54,29 +54,30 @@ Page({
     })
   },
 
-
+  // ok
   bindSearchConfirm: function (e) {
     console.log(e.detail);
   },
-
+  //ok
   bindSearchInput: function (e) {
     console.log(e.detail);
     this.searchContent(e.detail.value);
   },
-
+  // ok
   bindMyDevices: function (e) {
     //跳转
     wx.navigateTo({
       url: '../myDevices/myDevices',
     })
   },
+  // ok
   bindBorrowedDevices: function (e) {
     //跳转
     wx.navigateTo({
       url: '../borrowedDevices/borrowedDevices',
     })
   },
-
+  // ok
   bindBorrowed: function (e) {
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
@@ -322,7 +323,7 @@ Page({
 
   },
 
-
+  // ok
   getOpenId: function (code, callback = ((string) => (Void))) {
     //获取openid
     var data = app.globalData;//这里存储了appid、secret、token串  
