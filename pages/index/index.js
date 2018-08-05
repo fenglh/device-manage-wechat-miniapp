@@ -246,10 +246,8 @@ Page({
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentUser']);
 
-    // //内嵌查询，不显示已删除的设备
-    // var innerQuery = new AV.Query('DevicesStatus');
-    // innerQuery.notEqualTo('status', -99);
-    // query.matchesQuery('dependentDevicesStatus', innerQuery);
+  
+    
 
     query.find().then(function (results) {
 
