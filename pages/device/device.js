@@ -10,8 +10,9 @@ Page({
    * 页面的初始数据
    */
   data: {
-    hideHeaderView: false,
+    ocrSign:null,
     showTopTips: false,
+    deviceObjectID:null,
     topTips: '',
     models: [],
     brands: [],
@@ -23,28 +24,26 @@ Page({
     systemVersionIndex1: 0,
     systemVersionIndex2: 0,
     systemVersionIndex3: 0,
-
     companyCode: 'A000',
     deviceCode: null,
-    ocrSign: null,
 
-    //在编辑状态时，
-    editBrand: null,
-    editModel: null,
-    editOSVersion: null
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
+
   onLoad: function (options) {
     var title = "新增设备";
     if (options.isEdit) {
      title = "修改设备";
+     this.setData({
+       isEdit: true,
+     })
     }
     wx.setNavigationBarTitle({
       title: '修改设备',
     })
+
+    this.data.ocrSign = this.generateOCRSign();
+    //初始化品牌
     var that = this;
     this.getBrands({
       success: function (brands) {
@@ -53,58 +52,60 @@ Page({
         });
         wx.hideLoading();
         //初始化数据
-        var device = JSON.parse(options.device);
-        console.log(device);
-        //初始化修改设备的数据
-        //隐藏头部
-        var hideHeaderView = true;
-        //计算品牌
-        var brandIndex = null;
-        for (var i = 0; i < brands.length; i++) {
-          var brandObject = brands[i];
-          if (brandObject.brand = device.brand) {
-            brandIndex = i;
-            //获取可选型号
-            break;
-          }
-        }
-        //计算型号
-        if(brandIndex != null){
-          that.getBrandModels(device.brandObjectID, {
-            success:function(models){
-              var modelIndex = null;
-              for (var index = 0; index < models.length; index++){
-                var item = models[index];
-                if (item.objectID == device.modelObjectID) {
-                  modelIndex = index;
-                  break;
-                }
-              }
-              that.setData({
-                models: models,
-                modelIndex: modelIndex,
-              });
-            },
-            fail:function(){
-              wx.showToast({
-                title: '加载型号列表失败',
-                icon: 'none',
-              });
+        if (options.isEdit){
+          var device = JSON.parse(options.device);
+          that.data.deviceObjectID = device.deviceObjectID;
+          console.log(device);
+          //初始化修改设备的数据
+          //隐藏头部
+          //计算品牌
+          var brandIndex = null;
+          for (var i = 0; i < brands.length; i++) {
+            var brandObject = brands[i];
+            if (brandObject.brand = device.brand) {
+              brandIndex = i;
+              //获取可选型号
+              break;
             }
+          }
+          //计算型号
+          if (brandIndex != null) {
+            that.getBrandModels(device.brandObjectID, {
+              success: function (models) {
+                var modelIndex = null;
+                for (var index = 0; index < models.length; index++) {
+                  var item = models[index];
+                  if (item.objectID == device.modelObjectID) {
+                    modelIndex = index;
+                    break;
+                  }
+                }
+                that.setData({
+                  models: models,
+                  modelIndex: modelIndex,
+                });
+                console.log('型号:', models);
+              },
+              fail: function () {
+                wx.showToast({
+                  title: '加载型号列表失败',
+                  icon: 'none',
+                });
+              }
+            });
+          }
+          //计算版本
+          var versions = device.OSVersion.split(".") || [];
+          that.setData({
+            
+            deviceCode: device.deviceID,
+            companyCode: device.companyCode,
+            brandIndex: brandIndex,
+            systemVersionIndex1: parseInt(versions[0]) - 1,
+            systemVersionIndex2: parseInt(versions[1]),
+            systemVersionIndex3: parseInt(versions[2]),
           });
         }
-        //计算版本
-        var versions = device.OSVersion.split(".") || [];
-        that.setData({
-          isEdit: true,
-          deviceCode: device.deviceID,
-          companyCode: device.companyCode,
-          brandIndex: brandIndex,
-          systemVersionIndex1: parseInt(versions[0]) - 1,
-          systemVersionIndex2: parseInt(versions[1]),
-          systemVersionIndex3: parseInt(versions[2]),
-        });
-
       },
       fail: function () {
         wx.showToast({
@@ -113,53 +114,7 @@ Page({
         });
       }
     });
-
-
-   
-
-
-
-
-
-    // var brandIndex = this.data.brandIndex;
-    // var modelIndex = this.data.modelIndex;
-    // var hideHeaderView = this.data.hideHeaderView;
-    // var systemVersionIndex1 = this.data.systemVersionIndex1;
-    // var systemVersionIndex2 = this.data.systemVersionIndex2;
-    // var systemVersionIndex3 = this.data.systemVersionIndex3;
-    // //修改品牌号
-
-    // //隐藏头部
-    // if (options.isEdit) {
-    //   hideHeaderView = true;
-    // }
-
-
-    // //计算品牌
-
-
-
-
-    // var sign = this.generateOCRSign()
-    // this.setData({
-    //   ocrSign: sign,
-    //   brandIndex: brandIndex,
-    //   modelIndex: modelIndex,
-    //   systemVersionIndex1: systemVersionIndex1,
-    //   systemVersionIndex2: systemVersionIndex2,
-    //   systemVersionIndex3: systemVersionIndex3,
-
-    //   hideHeaderView: hideHeaderView,
-    //   isEdit: options.isEdit || false,
-    //   deviceCode: options.deviceID || null,
-    //   companyCode: options.companyCode || null,
-    // })
-    // console.log("签名:%s", this.data.ocrSign)
   },
-
-
-
-
 
   //生成腾讯orc签名
   generateOCRSign: function () {
@@ -273,12 +228,10 @@ Page({
       this.showTips('请选择设备品牌');
       return;
     }
-
     if (this.data.modelIndex == null) {
       this.showTips('请选择设备型号');
       return;
     }
-
     if (this.data.systemVersionIndex1 == 0 && this.data.systemVersionIndex2 == 0 && this.data.systemVersionIndex3 == 0) {
       this.showTips('请选择系统版本');
       return;
@@ -289,45 +242,36 @@ Page({
       mask:true,
     })
     var that = this;
+    //编辑
     if (this.data.isEdit) {
-      var DevicesObject = AV.Object.extend('Devices');
-      var that = this;
-      var query = new AV.Query(DevicesObject);
-      query.equalTo('deviceID', this.data.deviceCode);
-      query.equalTo('ownerID', app.globalData.openid);
-      query.first().then(function (result) {
-        var device = AV.Object.createWithoutData('Devices', result.id);
-        device.set('deviceModel', that.data.models[that.data.brands[that.data.brandIndex].brandID][that.data.modelIndex])
-        device.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-        device.set('deviceID', that.data.deviceCode)
-        device.set('companyCode', that.data.companyCode)
-        device.set('ownerID', app.globalData.openid);
-        device.save().then(function (device) {
+      var deviceAVObject = AV.Object.createWithoutData('Devices', that.data.deviceObjectID);
+      //公司编码
+      deviceAVObject.set('companyCode', that.data.companyCode);
 
+      //关联型号（含品牌）
+      var modelObject = that.data.models[that.data.modelIndex];
+      var modelAVObject = AV.Object.createWithoutData('Models', modelObject.objectID);
+      deviceAVObject.set('dependentModel', modelAVObject);
+      //系统版本
+      deviceAVObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
+      deviceAVObject.save().then(function(result){
           wx.hideLoading();
           wx.navigateBack({
             delta: 1
-          })
-
+          });
           wx.showToast({
             title: '修改成功！',
             icon: 'success'
-          })
-
-          // 成功
-        }, function (error) {
-          wx.hideLoading();
-          console.log(error)
-          // 失败
-          wx.showToast({
-            title: '修改失败！',
-            icon: 'none'
-          })
+          });
+      },function(error){
+        wx.showToast({
+          title: '修改失败,请稍后再试!',
+          icon:'none',
         });
-      }, function(error){
-
       });
-    } else {
+    } 
+    //添加
+    else {
       var DevicesObject = AV.Object.extend('Devices');
       var that = this;
       new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).find().then(function (results) {
@@ -410,6 +354,7 @@ Page({
         wx.showLoading({
           title: '资产识别中...',
         })
+        
         wx.uploadFile({
           url: 'https://recognition.image.myqcloud.com/ocr/general',
           filePath: tempFilePaths[0],
@@ -470,6 +415,22 @@ Page({
                   brandIndex = index;
                   break;
                 }
+              }
+              //加载可选的型号
+              if(brandIndex != null){
+                that.getBrandModels(item.objectID, {
+                  success: function (models) {
+                    that.setData({
+                      models: models,
+                    });
+                  },
+                  fail: function () {
+                    wx.showToast({
+                      title: '加载型号列表失败',
+                      icon: 'none',
+                    });
+                  }
+                });
               }
    
               that.setData({

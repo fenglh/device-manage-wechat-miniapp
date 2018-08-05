@@ -1,6 +1,6 @@
 <view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
 
-      <view class="page__hd {{hideHeaderView?'page__hd_hide':''}}" >
+      <view class="page__hd {{isEdit?'page__hd_hide':''}}" >
 
       <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">{{topTips}}</view>
       

@@ -171,10 +171,10 @@ Page({
   bindEdit:function(e){
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
-
     wx.navigateTo({
       url: '../device/device?' + "device=" + JSON.stringify(device) + "&isEdit=true",
-    })
+    });
+    this.closeSlide(index);
   },
 
 
