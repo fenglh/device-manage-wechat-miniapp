@@ -123,8 +123,10 @@
           <view class='detail-label'>公司编号：{{item.companyCode}}</view>
           <view class='detail-label'>设备归属：{{item.employeeName}}</view>
 
-          <view class='status-borrowing' style='padding:2px;'>{{item.status==-1?'申请人':(item.status==-2 ?"借用人":(item.status==-3?"归还人":""))}}：{{item.statusActionEmployeeObjectName}}</view>
-          <view class='status-borrowing'>{{item.status==-1?'借出时间':(item.status==-2 ?"申请时间":(item.status==-3?"归还提交时间":""))}}：{{item.statusActionTimestamp}}</view>
+          <view wx:if="{{item.status != 0}}">
+            <view class='status-borrowing' style='padding:2px;'>{{item.status==-1?'申请人':(item.status==-2 ?"借用人":(item.status==-3?"归还人":""))}}：{{item.statusActionEmployeeObjectName}}</view>
+            <view class='status-borrowing'>{{item.status==-1?'借出时间':(item.status==-2 ?"申请时间":(item.status==-3?"归还提交时间":""))}}：{{item.statusActionTimestamp}}</view>
+          </view>
 
 
           <!-- <view>借取员工：</view> -->

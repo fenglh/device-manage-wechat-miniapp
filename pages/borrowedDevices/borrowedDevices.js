@@ -113,6 +113,7 @@ Page({
         title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
         icon:'none',
       });
+      that.getBorrowedDevices();
     }, function (error) {
       wx.showToast({
         title: '归还提交失败，请稍后再试',

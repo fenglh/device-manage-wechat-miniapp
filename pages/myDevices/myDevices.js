@@ -58,37 +58,70 @@ Page({
 
 
   confirmReturn: function (index) {
-    var that = this;
-    var query = new AV.Query('DevicesStatus');
-    query.equalTo('deviceID', this.data.devices[index].deviceID);
-    query.equalTo('borrowedUserOpenID', this.data.devices[index].borrowedUserOpenID);
-    query.equalTo('status', -3);
-    query.first().then(function (status) {
-      var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
-      // 修改属性
-      todo.set('status', 0);//归还中
-      todo.set('borrowedUserOpenID', "");
-      // 保存到云端
-      todo.save().then(function (result) {
+
+    var device = this.data.devices[index];
+    var timestamp = Date.parse(new Date());
+
+    //
+    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+    //关联状态
+    var statusAVObject = new AV.Object('DevicesStatus');
+    statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
+    statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+    //关联借用人
+    var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
+    //关联设备
+    var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
+    statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
+
+    //关联状态
+    deviceAVObject.set('dependentDevicesStatus', statusAVObject);
+    deviceAVObject.save().then(function (result) {
         wx.showToast({
-          title: '确认归还成功',
+          title: '确认归还成功!',
           icon: 'success',
         });
         that.getMyDevices();
-      }, function (error) {
-        console.log(error);
-      });
     }, function (error) {
-
+      wx.showToast({
+        title: '确认归还失败，请稍后再试',
+        icon: 'noen'
+      })
     });
+
+    // var that = this;
+    // var query = new AV.Query('DevicesStatus');
+    // query.equalTo('deviceID', this.data.devices[index].deviceID);
+    // query.equalTo('borrowedUserOpenID', this.data.devices[index].borrowedUserOpenID);
+    // query.equalTo('status', -3);
+    // query.first().then(function (status) {
+    //   var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
+    //   // 修改属性
+    //   todo.set('status', 0);//归还中
+    //   todo.set('borrowedUserOpenID', "");
+    //   // 保存到云端
+    //   todo.save().then(function (result) {
+    //     wx.showToast({
+    //       title: '确认归还成功',
+    //       icon: 'success',
+    //     });
+    //     that.getMyDevices();
+    //   }, function (error) {
+    //     console.log(error);
+    //   });
+    // }, function (error) {
+
+    // });
   },
 
   bindConfirmReturn: function (e) {
     var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
     var that = this;
     wx.showModal({
       title: '确认归还',
-      content: '你确定已归还 ' + that.data.devices[index].model + " ?",
+      content: '你确定已归还设备 ' + device.model + " ?",
       success: function (res) {
         if (res.confirm) {
           that.confirmReturn(index);
