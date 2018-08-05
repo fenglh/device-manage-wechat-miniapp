@@ -88,7 +88,7 @@ Page({
     var that = this;
     wx.showModal({
       title: '确认归还',
-      content: '你确定已归还 ' + that.data.devices[index].deviceModel + " ?",
+      content: '你确定已归还 ' + that.data.devices[index].model + " ?",
       success: function (res) {
         if (res.confirm) {
           that.confirmReturn(index);
@@ -104,9 +104,8 @@ Page({
     var that = this;
     var borrowedEmployeeID = device.borrowedEmployeeID;
     var statusActionEmployeeObjectName = device.statusActionEmployeeObjectName;
-    var deviceModel = device.model;
     wx.showModal({
-      title: deviceModel + '借用申请',
+      title: device.model + '借用申请',
       content: "“" + statusActionEmployeeObjectName + "”" + "向你申请借用设备",
       cancelText: '稍后',
       confirmText: '同意',
@@ -172,9 +171,9 @@ Page({
   bindEdit:function(e){
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
-    this.closeSlide(index);
+
     wx.navigateTo({
-      url: '../device/device?' + "deviceID=" + device.deviceID + "&companyCode=" + device.companyCode + "&brandID=" + device.brandID + "&model=" + device.deviceModel + "&OSVersion=" + device.OSVersion + "&isEdit=true",
+      url: '../device/device?' + "device=" + JSON.stringify(device) + "&isEdit=true",
     })
   },
 
@@ -305,6 +304,8 @@ Page({
           var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
           //品牌
           var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').get('brand') : null) : null;
+          var brandObjectID = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').id : null) : null;
+
           //状态
           var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
           var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
@@ -329,7 +330,7 @@ Page({
           obj.modelObjectID = modelObjectID;
           obj.model = model;
           obj.brand = brand;
-
+          obj.brandObjectID = brandObjectID;
           obj.status = status;
           obj.statusObjectID = statusObjectID;
           obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
