@@ -1,6 +1,7 @@
 //index.js
 const AV = require('../../utils/av-live-query-weapp-min');
 
+
 //获取应用实例
 const app = getApp()
 
@@ -34,7 +35,6 @@ Page({
     })
   },
 
-
   // ok
   searchContent: function (content) {
     if (content == "") {
@@ -67,19 +67,17 @@ Page({
   bindMyDevices: function (e) {
     //跳转
     wx.navigateTo({
-      url: '../myDevices/myDevices?openid=' + app.globalData.openid,
+      url: '../myDevices/myDevices',
     })
   },
   bindBorrowedDevices: function (e) {
     //跳转
     wx.navigateTo({
-      url: '../borrowedDevices/borrowedDevices?openid=' + app.globalData.openid,
+      url: '../borrowedDevices/borrowedDevices',
     })
   },
 
   bindBorrowed: function (e) {
-
-
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
     var that = this;
@@ -123,7 +121,6 @@ Page({
     query.equalTo('dependentUser', user);
     query.include(['dependentDevicesStatus']);
     query.find().then(function (results) {
-      console.log(results);
       var i = 0
       results.forEach(function(item, index){
         var dependentDevicesStatus = item.get('dependentDevicesStatus');
@@ -314,7 +311,6 @@ Page({
           obj.employeeName = employeeName;
           obj.employeeOpenID = employeeOpenID;
           devices.push(obj);
-          console.log(obj);
 
         });
         that.setData({
@@ -322,7 +318,6 @@ Page({
           allDevices: devices,
           devices: devices
         })
-        console.log("获取设备列表:", devices);
       } else {
         that.setData({
           showEmptyView: true,
@@ -396,7 +391,6 @@ Page({
 
   },
 
-
   bindMoreEvent: function () {
     wx.navigateTo({
       url: '../menu/menu',
@@ -407,10 +401,4 @@ Page({
     wx.showNavigationBarLoading();
     this.onShow();
   },
-
-
-
-
-
-
 })

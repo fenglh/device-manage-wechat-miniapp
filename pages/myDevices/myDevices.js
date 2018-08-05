@@ -39,69 +39,31 @@ Page({
 
   },
 
-
-
-
-
+  //ok
   bindAddDevice: function (e) {
     wx.navigateTo({
       url: '../device/device',
     })
   },
 
+  // ok
   bindTapExpand: function (e) {
     //是否从在侧滑状态下点击
     var now = Date.parse(new Date());//当前时间 毫秒
     var tapIndex = e.currentTarget.dataset.index;
     var devices = this.data.devices;
-    if (!devices[tapIndex].borrowedEmployeeID && devices[tapIndex].borrowedUserOpenID) {
-      console.log('获取借用人信息');
-      this.getBorrowUserInfo(tapIndex)
-    }
-
     var device = devices[tapIndex];
     if (!device.isExpand) {
       device.isExpand = true;
     } else {
       device.isExpand = !device.isExpand;
     }
-
     this.setData({
       devices: devices
     });
 
   },
 
-
-  getBorrowUserInfo: function (index) {
-    var that = this;
-    var openid = this.data.devices[index].borrowedUserOpenID;
-    var queryUser = new AV.Query('Users');
-    queryUser.equalTo("openID", openid);
-    queryUser.first().then(function (result) {
-      var borrowedEmployeeID = result.attributes.employeeID;
-      var borrowedEmployeeName = result.attributes.employeeName;
-      var devices = that.data.devices;
-      devices[index].borrowedEmployeeID = borrowedEmployeeID;
-      devices[index].borrowedEmployeeName = borrowedEmployeeName;
-      console.log(result);
-      console.log(devices);
-      that.setData({
-        devices: devices,
-      })
-
-    }, function (error) {
-      console.log(error);
-    });
-
-  },
-
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-
-  },
 
   confirmReturn: function (index) {
     var that = this;
@@ -142,26 +104,55 @@ Page({
       }
     })
   },
+
+  // ok
   bindPass: function (e) {
     var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
     var that = this;
-    var borrowedEmployeeID = this.data.devices[index].borrowedEmployeeID;
-    var borrowedEmployeeName = this.data.devices[index].borrowedEmployeeName;
-    var deviceModel = this.data.devices[index].deviceModel;
+    var borrowedEmployeeID = device.borrowedEmployeeID;
+    var statusActionEmployeeObjectName = device.statusActionEmployeeObjectName;
+    var deviceModel = device.model;
     wx.showModal({
       title: deviceModel + '借用申请',
-      content: "“" + borrowedEmployeeName + "”" + "向你申请借用该设备",
+      content: "“" + statusActionEmployeeObjectName + "”" + "向你申请借用设备",
       cancelText: '稍后',
       confirmText: '同意',
       success: function (res) {
         if (res.confirm) {
-          console.log('用户点击确定');
-          that.agreeBorrowed(that.data.devices[index].deviceID);
+          that.agreeBorrowed(index);
         } else if (res.cancel) {
           console.log('用户点击取消')
         }
       }
     })
+  },
+  // ok
+  agreeBorrowed:function(index){
+      var device = this.data.devices[index];
+      var deviceObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+      var timestamp = Date.parse(new Date());
+      var devicesStatus = new AV.Object('DevicesStatus');
+      devicesStatus.set('status', -2); //0闲置，-1 申请中，-2借出，-3归还中 
+      devicesStatus.set('actionTimestamp', timestamp);//当前操作时间
+      //关联借用人
+      var dependentUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+      devicesStatus.set('dependentUser', dependentUser);//关联用户
+      //关联设备
+      var dependentDevice = AV.Object.createWithoutData('Device', device.deviceObjectID);
+      devicesStatus.set('dependentDevice', dependentDevice);//关联设备
+      //关联状态
+      deviceObject.set('dependentDevicesStatus', devicesStatus);
+      deviceObject.save().then(function (result) {
+        wx.showToast({
+          title: '通过申请成功!',
+        })
+      }, function (error) {
+        wx.showToast({
+          title: '通过申请失败',
+          icon: 'none'
+        });
+      });
   },
 
   bindDelete:function(e){
@@ -195,18 +186,8 @@ Page({
     })
   },
 
-  agreeBorrowed: function (deviceID) {
-    var that = this;
-    var queryStatus = new AV.Query('DevicesStatus');
-    queryStatus.equalTo("deviceID", deviceID);
-    queryStatus.first().then(function (result) {
-      that.updateDeviceStatus(result.id, -2);
 
-    }, function (error) {
-
-    });
-  },
-
+  //ok
   closeSlide:function(index){
     var devices = this.data.devices;
     var slideStyle = "left:0px";
@@ -220,9 +201,6 @@ Page({
     
   },
 
-  deleStatus: function (deviceID, openid){
-    
-  },
 
   deleDevice:function(deviceID, youOpenId) {
     var DevicesObject = AV.Object.extend('Devices');
@@ -286,28 +264,9 @@ Page({
 
   },
 
-  updateDeviceStatus: function (objectId, status) {
-    var that = this;
-    var timestamp = Date.parse(new Date());
-    var todo = AV.Object.createWithoutData('DevicesStatus', objectId);
-    todo.set('status', status);
-    todo.set('actionTimestamp', timestamp);//当前操作时间
-    todo.save().then(function (result) {
-      that.getStatus(that.data.devices);
-      wx.showToast({
-        title: '设备借取已同意申请借用!',
-        icon: 'none'
-      })
-    }, function (error) {
-      wx.showToast({
-        title: '同意借取设备失败，服务器错误',
-        icon: 'none'
-      })
-    });
-  },
 
 
-
+  //ok
   formatDateTime: function (inputTime) {
     var date = new Date(inputTime);
     var y = date.getFullYear();
@@ -326,70 +285,99 @@ Page({
 
 
 
-  getStatus: function (devices) {
-    var status = {};
-    var that = this;
-    devices.forEach(function (item, index) {
-
-      //获取设备状态
-      var queryStatus = new AV.Query('DevicesStatus');
-      queryStatus.equalTo("deviceID", item.deviceID);
-      queryStatus.first().then(function (result) {
-        item.status = result.attributes.status;
-        item.borrowedUserOpenID = result.attributes.borrowedUserOpenID;
-        item.borrowedTime = that.formatDateTime(result.attributes.actionTimestamp);
-        // devices.sort(function (a, b) {
-        //   //升序
-        //   var statusA = a.status ? a.status : 0;
-        //   var statusB = b.status ? b.status : 0;
-        //   return statusA - statusB;
-        // })
-        that.setData({
-          devices: devices,
-        })
-      }, function (error) {
-        console.log(error);
-      });
-    });
-  },
+  // ok
   getMyDevices: function () {
     var that = this;
+
+    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     var query = new AV.Query('Devices');
-    query.equalTo('ownerID', this.data.openid);
+    query.equalTo('dependentUser', user);
+    query.include(['dependentModel.dependent']);
+    query.include(['dependentUser']);
+    query.include(['dependentDevicesStatus.dependentUser']);
+    
     query.find().then(function (results) {
 
-      if (results) {
+      wx.hideNavigationBarLoading();
+      wx.stopPullDownRefresh();
+      if (results.length > 0) {
         var devices = [];
         results.forEach(function (item, index) {
-          devices.push(item.attributes);
-        });
-        var showEmptyView = false;
-        if(results.length == 0){
-          showEmptyView = true;
-        }
-        that.setData({
-          devices: devices,
-          showEmptyView: showEmptyView,
-        })
-        that.getStatus(devices);
-        // that.getUsers(devices);
-        console.log("获取设备列表:", devices);
-      } 
+          //设备信息
+          var deviceObjectID = item.id;
+          var deviceID = item.get('deviceID');
+          var OSVersion = item.get('OSVersion');
+          var companyCode = item.get('companyCode');
+          //型号
+          var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
+          var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
+          //品牌
+          var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').get('brand') : null) : null;
+          //状态
+          var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
 
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+          var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
+
+          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser') ? item.get('dependentDevicesStatus').get('dependentUser').id : null) : null;
+          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser') ? item.get('dependentDevicesStatus').get('dependentUser').get('employeeID') : null) : null;
+          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser') ? item.get('dependentDevicesStatus').get('dependentUser').get('employeeName') : null) : null;
+
+          //用户信息
+          var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
+          var employeeID = item.get('dependentUser') ? item.get('dependentUser').get('employeeID') : null;
+          var employeeName = item.get('dependentUser') ? item.get('dependentUser').get('employeeName') : null;
+          var employeeOpenID = item.get('dependentUser') ? item.get('dependentUser').get('openID') : null;
+          var obj = {};
+          obj.deviceObjectID = deviceObjectID;
+          obj.deviceID = deviceID;
+          obj.OSVersion = OSVersion;
+          obj.companyCode = companyCode;
+          obj.modelObjectID = modelObjectID;
+          obj.model = model;
+          obj.brand = brand;
+
+          obj.status = status;
+          obj.statusObjectID = statusObjectID;
+          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
+          obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
+          obj.statusActionEmployeeID = statusActionEmployeeID;
+          obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
+
+          obj.employeeObjectID = employeeObjectID;
+          obj.employeeID = employeeID;
+          obj.employeeName = employeeName;
+          obj.employeeOpenID = employeeOpenID;
+          devices.push(obj);
+
+        });
+        that.setData({
+          showEmptyView: false,
+          allDevices: devices,
+          devices: devices
+        })
+      } else {
+        that.setData({
+          showEmptyView: true,
+        })
+      }
     }, function (error) {
+      wx.showToast({
+        title: '获取设备列表失败',
+        icon: 'none',
+      })
     });
+
   },
+
+
+
 
   //手指刚放到屏幕触发
   touchS: function (e) {
-
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
-
-
-
-
-
     //判断是否只有一个触摸点
     if (e.touches.length == 1) {
       this.setData({
@@ -407,9 +395,6 @@ Page({
     if (device.isExpand) {
       return;
     }
-
-
-
     var that = this
     if (e.touches.length == 1) {
       //记录触摸点位置的X坐标
@@ -444,16 +429,12 @@ Page({
 
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
-
-
     var that = this
     if (e.changedTouches.length == 1) {
 
       //获取手指触摸的是哪一项
       var index = e.currentTarget.dataset.index;
       var devices = that.data.devices;
-
-
       //手指移动结束后触摸点位置的X坐标
       var endX = e.changedTouches[0].clientX;
       //触摸开始与结束，手指移动的距离

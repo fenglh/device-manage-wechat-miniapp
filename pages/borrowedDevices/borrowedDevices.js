@@ -10,7 +10,6 @@ Page({
   data: {
     devices: [],
     brandsInfo: {},
-    openid: null,
     showEmptyView:false,
   },
 
@@ -24,7 +23,6 @@ Page({
     var brands = app.globalData.brandsInfo.brands || {};
 
     this.setData({
-      openid: options.openid,
       brands: brands,
     })
     this.getBorrowedDevices();
@@ -106,7 +104,7 @@ Page({
     var that = this;
     var query = new AV.Query('DevicesStatus');
     query.equalTo('deviceID', this.data.devices[index].deviceID);
-    query.equalTo('borrowedUserOpenID', this.data.openid);
+    query.equalTo('borrowedUserOpenID', app.globalData.openid);
     query.equalTo('status', -2);
     query.first().then(function (status) {
       var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
@@ -132,7 +130,7 @@ Page({
     var that = this;
     var query = new AV.Query('DevicesStatus');
     query.equalTo('deviceID', this.data.devices[index].deviceID);
-    query.equalTo('borrowedUserOpenID', this.data.openid);
+    query.equalTo('borrowedUserOpenID', app.globalData.openid);
     query.equalTo('status', -1);
     query.first().then(function (status) {
       var todo = AV.Object.createWithoutData('DevicesStatus', status.id);
@@ -176,52 +174,90 @@ Page({
   },
 
 
+  // ok
   getBorrowedDevices: function () {
-    if (!this.data.openid) {
-      wx.showToast({
-        title: '无法获取到用户openid',
-        icon: "none"
-      });
-      return;
-    }
     var that = this;
-    //获取设备状态
-    var devices = [];
-    var borrowedOpenidQuery = new AV.Query('DevicesStatus');
-    borrowedOpenidQuery.equalTo("borrowedUserOpenID", this.data.openid);
-    var statusQuery = new AV.Query('DevicesStatus');
-    statusQuery.notEqualTo("status", 0);
-    var query = AV.Query.and(borrowedOpenidQuery, statusQuery);
-    query.find().then(function (results) {
-      if(results.length == 0){
-        that.setData({
-          devices: [],
-          showEmptyView:true,
-        })
-        return;
-      }
-      results.forEach(function (item, index) {
-        var queryDevices = new AV.Query('Devices');
-        queryDevices.equalTo('deviceID', item.attributes.deviceID);
-        queryDevices.first().then(function (result) {
-          if (result) {
 
-            var device = result.attributes;
-            device.status = item.attributes.status;
-            device.actionTime = that.formatDateTime(item.attributes.actionTimestamp);
-            devices.push(device);
-            that.setData({
-              devices: devices,
-              showEmptyView: false,
-            })
-          }
-        },function(error){
-          console.log(error);
+    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var query = new AV.Query('Devices');
+    query.equalTo('dependentUser', user);
+    query.include(['dependentModel.dependent']);
+    query.include(['dependentUser']);
+    query.include(['dependentDevicesStatus.dependentUser']);
+
+    query.find().then(function (results) {
+
+      wx.hideNavigationBarLoading();
+      wx.stopPullDownRefresh();
+      if (results.length > 0) {
+        var devices = [];
+        results.forEach(function (item, index) {
+          //设备信息
+          var deviceObjectID = item.id;
+          var deviceID = item.get('deviceID');
+          var OSVersion = item.get('OSVersion');
+          var companyCode = item.get('companyCode');
+          //型号
+          var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
+          var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
+          //品牌
+          var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').get('brand') : null) : null;
+          //状态
+          var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+          var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
+
+          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser') ? item.get('dependentDevicesStatus').get('dependentUser').id : null) : null;
+          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser') ? item.get('dependentDevicesStatus').get('dependentUser').get('employeeID') : null) : null;
+          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser') ? item.get('dependentDevicesStatus').get('dependentUser').get('employeeName') : null) : null;
+
+          //用户信息
+          var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
+          var employeeID = item.get('dependentUser') ? item.get('dependentUser').get('employeeID') : null;
+          var employeeName = item.get('dependentUser') ? item.get('dependentUser').get('employeeName') : null;
+          var employeeOpenID = item.get('dependentUser') ? item.get('dependentUser').get('openID') : null;
+          var obj = {};
+          obj.deviceObjectID = deviceObjectID;
+          obj.deviceID = deviceID;
+          obj.OSVersion = OSVersion;
+          obj.companyCode = companyCode;
+          obj.modelObjectID = modelObjectID;
+          obj.model = model;
+          obj.brand = brand;
+
+          obj.status = status;
+          obj.statusObjectID = statusObjectID;
+          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
+          obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
+          obj.statusActionEmployeeID = statusActionEmployeeID;
+          obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
+
+          obj.employeeObjectID = employeeObjectID;
+          obj.employeeID = employeeID;
+          obj.employeeName = employeeName;
+          obj.employeeOpenID = employeeOpenID;
+          devices.push(obj);
+          console.log(devices);
         });
-        });
-      }, function (error) {
-        console.log(error);
-      });
-    },
+        that.setData({
+          showEmptyView: false,
+          allDevices: devices,
+          devices: devices
+        })
+      } else {
+        that.setData({
+          showEmptyView: true,
+        })
+      }
+    }, function (error) {
+      wx.showToast({
+        title: '获取设备列表失败',
+        icon: 'none',
+      })
+    });
+
+  },
 
 })
