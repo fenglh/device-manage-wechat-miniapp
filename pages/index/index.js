@@ -116,28 +116,19 @@ Page({
   //ok
   getBorrowedDeviceCount: function () {
     var that = this;
-    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    //内嵌查询
+    var innerQuery = new AV.Query('DevicesStatus');
+    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    innerQuery.equalTo('dependentUser', borrowedUser);
+    innerQuery.notEqualTo('status', 0);
     var query = new AV.Query('Devices');
-    query.equalTo('dependentUser', user);
-    query.include(['dependentDevicesStatus']);
+    //执行内嵌操作
+    query.matchesQuery('dependentDevicesStatus', innerQuery);
     query.find().then(function (results) {
-      var i = 0
-      results.forEach(function(item, index){
-        var dependentDevicesStatus = item.get('dependentDevicesStatus');
-        if (dependentDevicesStatus){
-          var status = dependentDevicesStatus.get('status');
-          if (status && status != 0){
-            i++;
-          }
-        }
-      })
       that.setData({
-        borrowedDevicesCount: i,
+        borrowedDevicesCount: results.length,
       })
-    }, function (error) {
-
     });
-
   },
 
 

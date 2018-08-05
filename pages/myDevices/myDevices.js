@@ -11,8 +11,6 @@ Page({
   data: {
     showEmptyView: false,
     devices: [],
-    brands: {},
-    openid: null,
     slideStyle: '',
     startX: 0,
     slideMenuWidth: 150,
@@ -29,12 +27,6 @@ Page({
   onLoad: function (options) {
     wx.setNavigationBarTitle({
       title: '我的设备',
-    })
-
-    var brands = app.globalData.brandsInfo.brands || {};
-    this.setData({
-      openid: options.openid,
-      brands: brands,
     })
 
   },
@@ -354,7 +346,6 @@ Page({
         });
         that.setData({
           showEmptyView: false,
-          allDevices: devices,
           devices: devices
         })
       } else {

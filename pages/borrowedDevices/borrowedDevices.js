@@ -9,7 +9,6 @@ Page({
    */
   data: {
     devices: [],
-    brandsInfo: {},
     showEmptyView:false,
   },
 
@@ -20,20 +19,9 @@ Page({
     wx.setNavigationBarTitle({
       title: '借入设备',
     })
-    var brands = app.globalData.brandsInfo.brands || {};
-
-    this.setData({
-      brands: brands,
-    })
     this.getBorrowedDevices();
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-
-  },
 
   formatDateTime: function (inputTime) {
     var date = new Date(inputTime);
@@ -53,11 +41,6 @@ Page({
 
   bindTapExpand: function (e) {
     var tapIndex = e.currentTarget.dataset.index;
-
-    if (!this.data.devices[tapIndex].ownerEmployeeName && this.data.devices[tapIndex].ownerID) {
-      console.log('获取设备归属人信息');
-      this.getDeviceUserInfo(tapIndex)
-    }
     var devices = this.data.devices;
     var device = devices[tapIndex];
     if (!device.isExpand) {
@@ -151,36 +134,18 @@ Page({
     });
   },
 
-  getDeviceUserInfo: function (index) {
-    var that = this;
-    var openid = this.data.devices[index].ownerID;
-    var queryUser = new AV.Query('Users');
-    queryUser.equalTo("openID", openid);
-    queryUser.first().then(function (result) {
-      var ownerEmployeeID = result.attributes.employeeID;
-      var ownerEmployeeName = result.attributes.employeeName;
-      var devices = that.data.devices;
-      devices[index].ownerEmployeeID = ownerEmployeeID;
-      devices[index].ownerEmployeeName = ownerEmployeeName;
-      that.setData({
-        devices: devices,
-      })
-      console.log(devices);
-
-    }, function (error) {
-      console.log(error);
-    });
-
-  },
-
-
   // ok
   getBorrowedDevices: function () {
     var that = this;
 
-    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    //内嵌查询
+    var innerQuery = new AV.Query('DevicesStatus');
+    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    innerQuery.equalTo('dependentUser', borrowedUser);
+    innerQuery.notEqualTo('status', 0);
     var query = new AV.Query('Devices');
-    query.equalTo('dependentUser', user);
+    //执行内嵌操作
+    query.matchesQuery('dependentDevicesStatus', innerQuery);
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentUser']);
