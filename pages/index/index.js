@@ -342,14 +342,20 @@ Page({
           obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
           obj.statusActionEmployeeID = statusActionEmployeeID;
           obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
-          
+        
           obj.employeeObjectID = employeeObjectID;
           obj.employeeID = employeeID;
           obj.employeeName = employeeName;
           obj.employeeOpenID = employeeOpenID;
           devices.push(obj);
-
         });
+
+        //排序
+        devices.sort(function(a, b){
+          //降序
+          return b.status - a.status ;
+        });
+
         that.setData({
           showEmptyView: false,
           allDevices: devices,

@@ -56,6 +56,11 @@ Page({
 
   },
 
+  //拒绝申请
+  bindReject:function(index){
+    console.log('拒绝申请');
+  },
+
   // ok
   confirmReturn: function (index) {
     var that = this;
@@ -257,7 +262,7 @@ Page({
     query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
 
     query.find().then(function (results) {
-      
+
       wx.hideNavigationBarLoading();
       wx.stopPullDownRefresh();
       if (results.length > 0) {
@@ -314,6 +319,13 @@ Page({
           devices.push(obj);
 
         });
+
+        //排序
+        devices.sort(function (a, b) {
+          //降序
+          return b.status - a.status;
+        });
+
         that.setData({
           showEmptyView: false,
           devices: devices

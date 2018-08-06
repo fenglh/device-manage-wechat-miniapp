@@ -241,6 +241,12 @@ Page({
           devices.push(obj);
           console.log(devices);
         });
+        //排序
+        devices.sort(function (a, b) {
+          //降序
+          return b.status - a.status;
+        });
+        
         that.setData({
           showEmptyView: false,
           allDevices: devices,
