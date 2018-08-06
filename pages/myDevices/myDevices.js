@@ -61,38 +61,7 @@ Page({
     console.log('拒绝申请');
   },
 
-  // ok
-  confirmReturn: function (index) {
-    var that = this;
-    var device = this.data.devices[index];
-    var timestamp = Date.parse(new Date());
-    //
-    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-    //关联状态
-    var statusAVObject = new AV.Object('DevicesStatus');
-    statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
-    statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-    //关联借用人
-    var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-    //关联设备
-    statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
 
-    //关联状态
-    deviceAVObject.set('dependentDevicesStatus', statusAVObject);
-    deviceAVObject.save().then(function (result) {
-        wx.showToast({
-          title: '确认归还成功!',
-          icon: 'success',
-        });
-        that.getMyDevices();
-    }, function (error) {
-      wx.showToast({
-        title: '确认归还失败，请稍后再试',
-        icon: 'noen'
-      })
-    });
-  },
 
   //ok
   bindConfirmReturn: function (e) {
@@ -104,7 +73,24 @@ Page({
       content: '你确定已归还设备 ' + device.model + " ?",
       success: function (res) {
         if (res.confirm) {
-          that.confirmReturn(index);
+          wx.showLoading({
+            title: '',
+          });
+          that.addDevicesStatus(index, 0,{
+            success:function(){
+              wx.showToast({
+                title: '确认归还成功!',
+                icon: 'success',
+              });
+              that.getMyDevices();
+            },
+            fail:function(){
+              wx.showToast({
+                title: '确认归还失败，请稍后再试',
+                icon: 'noen'
+              });
+            }
+          })
         }
       }
     })

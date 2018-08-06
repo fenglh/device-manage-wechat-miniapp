@@ -64,7 +64,21 @@ Page({
       content: '你确定要归还设备 ' + device.model + " ?",
       success: function (res) {
         if (res.confirm) {
-          that.returnDevice(index);
+          that.addDevicesStatus(index, -3, {
+            success: function () {
+              wx.showToast({
+                title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
+                icon: 'none',
+              });
+              that.getBorrowedDevices();
+            },
+            fail: function () {
+              wx.showToast({
+                title: '归还提交失败，请稍后再试',
+                icon: 'none'
+              });
+            }
+          });
         }
       }
     })
@@ -81,85 +95,50 @@ Page({
         content: '你确定要取消申请 ' + device.model + " ?",
         success: function (res) {
           if (res.confirm) {
-            that.cancelBorrowingDevice(index);
+            that.addDevicesStatus(index,0, {
+              success:function(){
+                wx.showToast({
+                  title: "取消申请成功!",
+                  icon: 'success',
+                });
+                that.getBorrowedDevices();
+              },
+              fail:function(){
+                wx.showToast({
+                  title: '取消申请失败，请稍后再试',
+                  icon: 'none'
+                })
+              }
+            });
           }
         }
-      })
-
+      });
   },
 
-  //ok
-  returnDevice:function(index){
+
+  addDevicesStatus: function (index, status, { success, fail }) {
     var that = this;
     var device = this.data.devices[index];
-    // console.log(device);
-    var timestamp = Date.parse(new Date());
-
-    //
     var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-    //关联状态
-    var statusAVObject = new AV.Object('DevicesStatus');
-    statusAVObject.set('status', -3); //0闲置，-1 申请中，-2借出，-3归还中 
-    statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+    var timestamp = Date.parse(new Date());
+    var devicesStatusAVObject = new AV.Object('DevicesStatus');
+    devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
+    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
     //关联借用人
     var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
+    devicesStatusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
     //关联设备
-    statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
-
+    devicesStatusAVObject.set('dependentDevice', deviceAVObject);///状态关联关联设备（双向关联）
     //关联状态
-    deviceAVObject.set('dependentDevicesStatus', statusAVObject);
-
+    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
     deviceAVObject.save().then(function (result) {
-      wx.showToast({
-        title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
-        icon:'none',
-      });
-      that.getBorrowedDevices();
+      success ? success() : null;
     }, function (error) {
-      wx.showToast({
-        title: '归还提交失败，请稍后再试',
-        icon: 'noen'
-      })
+      fail ? fail() : null;
     });
   },
 
-  // ok
-
-  cancelBorrowingDevice:function(index){
-
-    var that = this;
-    var device = this.data.devices[index];
-    var timestamp = Date.parse(new Date());
-
-    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-    //关联状态
-    var statusAVObject = new AV.Object('DevicesStatus');
-    statusAVObject.set('status',0); //0闲置，-1 申请中，-2借出，-3归还中 
-    statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-    //关联借用人
-    var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-    //关联设备
-    statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
-
-    //关联状态
-    deviceAVObject.set('dependentDevicesStatus', statusAVObject);
-
-    deviceAVObject.save().then(function (result) {
-      wx.showToast({
-        title: "取消申请成功!",
-        icon: 'success',
-      });
-      that.getBorrowedDevices();
-    }, function (error) {
-      wx.showToast({
-        title: '取消申请，请稍后再试',
-        icon: 'noen'
-      })
-    });
-  },
-
+  
   // ok
   getBorrowedDevices: function () {
     var that = this;
@@ -249,11 +228,11 @@ Page({
 
         that.setData({
           showEmptyView: false,
-          allDevices: devices,
           devices: devices
         })
       } else {
         that.setData({
+          devices:[],
           showEmptyView: true,
         })
       }
