@@ -169,12 +169,14 @@ Page({
     var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     innerQuery.equalTo('dependentUser', borrowedUser);
     innerQuery.notEqualTo('status', 0);
+    innerQuery.notEqualTo('status', -99);
     var query = new AV.Query('Devices');
     //执行内嵌操作
     query.matchesQuery('dependentDevicesStatus', innerQuery);
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentUser']);
+
 
     query.find().then(function (results) {
 

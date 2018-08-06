@@ -286,17 +286,17 @@ Page({
           console.log("添加设备");
           //关联的型号
           var selectedModel = that.data.models[that.data.modelIndex];
-          var Models = AV.Object.createWithoutData('Models', selectedModel.objectID);
+          var modelAVObject = AV.Object.createWithoutData('Models', selectedModel.objectID);
           //关联用户
-          var User = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+          var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
 
-          var deviceObject = AV.Object('Devices');
-          deviceObject.set('dependentModel', Models);
-          deviceObject.set('dependentUser', User);
-          deviceObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-          deviceObject.set('deviceID', that.data.deviceCode)
-          deviceObject.set('companyCode', that.data.companyCode)
-          deviceObject.save().then(function (deviceObject) {
+          var deviceAVObject = AV.Object('Devices');
+          deviceAVObject.set('dependentModel', modelAVObject);
+          deviceAVObject.set('dependentUser', userAVObject);
+          deviceAVObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
+          deviceAVObject.set('deviceID', that.data.deviceCode)
+          deviceAVObject.set('companyCode', that.data.companyCode)
+          deviceAVObject.save().then(function (deviceObject) {
             wx.hideLoading();
             wx.navigateBack({
               delta: 1

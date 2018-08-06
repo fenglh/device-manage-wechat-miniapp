@@ -149,18 +149,21 @@ Page({
             title: '',
             mask:true,
           })
-          that.addDevicesStatus(index, -99, {
+          that.addDevicesStatus(index,-99,{
             success:function(){
-              wx.hideLoading();
-              that.getMyDevices();
+                wx.showToast({
+                  title: '删除设备成功',
+                });
+                that.getMyDevices();
             },
-            fail:function(){
+            fail:function(error){
               wx.showToast({
-                title: '设备删除失败',
-                icon: 'none'
+                title: '删除设备失败',
+                icon:'none',
               });
+              console.log(error);
             }
-          }) ;
+          })
         };
       },
       fail: function (res) {
@@ -194,29 +197,7 @@ Page({
     
   },
 
-  // 将设备移到DeleteDevices表,
-  deleteDevices: function (index, { success, fail }) {
-    var that = this;
-    var device = this.data.devices[index];
-
-    var deviceAVObject = AV.Object('DeleteDevices');
-    var timestamp = Date.parse(new Date());
-    var devicesStatusAVObject = new AV.Object('DevicesStatus');
-    devicesStatusAVObject.set('status', -99); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
-    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-    //关联操作用户
-    var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    devicesStatusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
-    //关联设备
-    devicesStatusAVObject.set('dependentDevice', deviceAVObject);//状态关联关联设备（双向关联）
-    //关联状态
-    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
-    deviceAVObject.save().then(function (result) {
-      success ? success() : null;
-    }, function (error) {
-      fail ? fail() : null;
-    });
-  },
+  
 
   addDevicesStatus:function(index,status, {success, fail}){
     var that = this;
@@ -269,6 +250,12 @@ Page({
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentUser']);
+
+    //内嵌查询,匹配 != -99 的记录
+    var innerQuery = new AV.Query('DevicesStatus');
+    innerQuery.equalTo('status', -99);
+    query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
+
     
     query.find().then(function (results) {
 
@@ -335,6 +322,7 @@ Page({
       } else {
         that.setData({
           showEmptyView: true,
+          devices:[],
         })
       }
     }, function (error) {

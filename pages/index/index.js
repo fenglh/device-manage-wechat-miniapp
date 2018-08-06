@@ -128,6 +128,13 @@ Page({
     var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     var query = new AV.Query('Devices');
     query.equalTo('dependentUser', user);
+
+    //内嵌查询,匹配 != -99 的记录
+    var innerQuery = new AV.Query('DevicesStatus');
+    innerQuery.equalTo('status', -99);
+    query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
+
+
     query.count().then(function (count) {
       that.setData({
         myDevicesCount: count,
@@ -140,14 +147,20 @@ Page({
   //ok
   getBorrowedDeviceCount: function () {
     var that = this;
-    //内嵌查询
+
+    var query = new AV.Query('Devices');
+
+    //内嵌查询1,匹配 借取用户==当前用户，以及状态 != 0 的记录
     var innerQuery = new AV.Query('DevicesStatus');
     var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     innerQuery.equalTo('dependentUser', borrowedUser);
     innerQuery.notEqualTo('status', 0);
-    var query = new AV.Query('Devices');
+    innerQuery.notEqualTo('status', -99);
+
     //执行内嵌操作
     query.matchesQuery('dependentDevicesStatus', innerQuery);
+    
+
     query.find().then(function (results) {
       that.setData({
         borrowedDevicesCount: results.length,
@@ -178,9 +191,6 @@ Page({
               return;
             }
           }
-
-          //设置
-          console.log('可以借用:', device);
 
           var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
           var timestamp = Date.parse(new Date());
@@ -266,15 +276,18 @@ Page({
 
   // ok
   getDevices: function () {
+
     var that = this;
     var query = new AV.Query('Devices');
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentUser']);
 
-  
+    //内嵌查询,匹配 != -99 的记录
+    var innerQuery = new AV.Query('DevicesStatus'); 
+    innerQuery.equalTo('status', -99);
+    query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
     
-
     query.find().then(function (results) {
 
       wx.hideNavigationBarLoading();
@@ -338,6 +351,8 @@ Page({
         })
       } else {
         that.setData({
+          allDevices:[],
+          devices:[],
           showEmptyView: true,
         })
         
