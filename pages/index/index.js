@@ -174,6 +174,30 @@ Page({
   },
 
 
+
+  addDevicesStatus: function (index, status, { success, fail }) {
+    var that = this;
+    var device = this.data.devices[index];
+    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+    var timestamp = Date.parse(new Date());
+    var devicesStatusAVObject = new AV.Object('DevicesStatus');
+    devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
+    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+    //关联借用人
+    var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    devicesStatusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
+    //关联设备
+    devicesStatusAVObject.set('dependentDevice', deviceAVObject);///状态关联关联设备（双向关联）
+    //关联状态
+    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
+    deviceAVObject.save().then(function (result) {
+      success ? success() : null;
+    }, function (error) {
+      fail ? fail() : null;
+    });
+  },
+
+
   //ok
   doBorrowDevice: function (index) {
 
@@ -181,6 +205,10 @@ Page({
     var query = new AV.Query('Devices');
     query.include(['dependentDevicesStatus']);
     var that = this;
+    wx.showLoading({
+      title: '',
+      mask:true,
+    });
     query.equalTo('deviceID', device.deviceID);
     query.first().then(function (result) {
         if(result){
@@ -196,34 +224,22 @@ Page({
               return;
             }
           }
-
-          var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-          var timestamp = Date.parse(new Date());
-          //关联状态
-          var statusAVObject = new AV.Object('DevicesStatus');
-          statusAVObject.set('status', -1); //0闲置，-1 申请中，-2借出，-3归还中 
-          statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-          //关联借用人
-          var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-          statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-          //关联设备
-          statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
-
-          //关联状态
-          deviceAVObject.set('dependentDevicesStatus', statusAVObject);
-          deviceAVObject.save().then(function(result){
-            wx.showToast({
-              title: '申请借取成功!',
-            });
-            that.getDevices();
-            that.getBorrowedDeviceCount();
-          },function(error){
-            wx.showToast({
-              title: '申请借取失败，请稍后再试',
-              icon:'none'
-            });
-            console.log(error);
-          }); 
+          that.addDevicesStatus(index, -1, {
+            success:function(){
+              wx.showToast({
+                title: '申请借取成功!',
+              });
+              that.getDevices();
+              that.getBorrowedDeviceCount();
+            },
+            fail:function(){
+              wx.showToast({
+                title: '申请借取失败，请稍后再试',
+                icon: 'none'
+              });
+            }
+          });
+ 
         }else{
           wx.showToast({
             title: '设备已被删除，请刷新列表',

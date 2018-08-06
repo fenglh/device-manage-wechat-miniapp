@@ -64,6 +64,10 @@ Page({
       content: '你确定要归还设备 ' + device.model + " ?",
       success: function (res) {
         if (res.confirm) {
+          wx.showLoading({
+            title: '',
+            mask: true,
+          });
           that.addDevicesStatus(index, -3, {
             success: function () {
               wx.showToast({
@@ -95,6 +99,10 @@ Page({
         content: '你确定要取消申请 ' + device.model + " ?",
         success: function (res) {
           if (res.confirm) {
+            wx.showLoading({
+              title: '',
+              mask: true,
+            });
             that.addDevicesStatus(index,0, {
               success:function(){
                 wx.showToast({
