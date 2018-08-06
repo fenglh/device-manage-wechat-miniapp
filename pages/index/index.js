@@ -290,8 +290,9 @@ Page({
 
     //内嵌查询,匹配 != -99 的记录
     var innerQuery = new AV.Query('DevicesStatus'); 
-    innerQuery.equalTo('status', -99);
-    query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
+    innerQuery.notEqualTo('status', -99);
+    query.matchesQuery('dependentDevicesStatus', innerQuery);
+    
     
     query.find().then(function (results) {
 
