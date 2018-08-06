@@ -163,25 +163,32 @@ Page({
   // ok
   getBorrowedDevices: function () {
     var that = this;
+  
+    //组合加内嵌查询
+    var innerQuery1 = new AV.Query('DevicesStatus');
+    innerQuery1.notEqualTo('status', 0);
+    var innerQuery2 = new AV.Query('DevicesStatus');
+    innerQuery2.notEqualTo('status', -99);
+    var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
 
-    //内嵌查询
-    var innerQuery = new AV.Query('DevicesStatus');
+    var innerQuery3 = new AV.Query('DevicesStatus');
     var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    innerQuery.equalTo('dependentUser', borrowedUser);
-    innerQuery.notEqualTo('status', 0);
-    innerQuery.notEqualTo('status', -99);
+    innerQuery3.equalTo('dependentUser', borrowedUser);
     var query = new AV.Query('Devices');
+
+    var query123 = AV.Query.and(innerQuery12, innerQuery3);
+
     //执行内嵌操作
-    query.matchesQuery('dependentDevicesStatus', innerQuery);
+    query.matchesQuery('dependentDevicesStatus', query123);
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentUser']);
-
 
     query.find().then(function (results) {
 
       wx.hideNavigationBarLoading();
       wx.stopPullDownRefresh();
+
       if (results.length > 0) {
         var devices = [];
         results.forEach(function (item, index) {
@@ -251,6 +258,12 @@ Page({
       })
     });
 
+  },
+
+
+  onPullDownRefresh: function () {
+    wx.showNavigationBarLoading();
+    this.getBorrowedDevices();
   },
 
 })

@@ -1,8 +1,5 @@
 
 {
-  "component": true,
-  "usingComponents": {
-    "bindDialog": "../components/bindDialog/bindDialog"
-  },
+
   "enablePullDownRefresh": true
 }

@@ -148,18 +148,23 @@ Page({
   getBorrowedDeviceCount: function () {
     var that = this;
 
+    //组合加内嵌查询
+    var innerQuery1 = new AV.Query('DevicesStatus');
+    innerQuery1.notEqualTo('status', 0);
+    var innerQuery2 = new AV.Query('DevicesStatus');
+    innerQuery2.notEqualTo('status', -99);
+    var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
+
+    var innerQuery3 = new AV.Query('DevicesStatus');
+    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    innerQuery3.equalTo('dependentUser', borrowedUser);
     var query = new AV.Query('Devices');
 
-    //内嵌查询1,匹配 借取用户==当前用户，以及状态 != 0 的记录
-    var innerQuery = new AV.Query('DevicesStatus');
-    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    innerQuery.equalTo('dependentUser', borrowedUser);
-    innerQuery.notEqualTo('status', 0);
-    innerQuery.notEqualTo('status', -99);
+    var query123 = AV.Query.and(innerQuery12, innerQuery3);
 
     //执行内嵌操作
-    query.matchesQuery('dependentDevicesStatus', innerQuery);
-    
+    query.matchesQuery('dependentDevicesStatus', query123);
+
 
     query.find().then(function (results) {
       that.setData({

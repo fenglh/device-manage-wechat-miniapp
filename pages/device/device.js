@@ -274,45 +274,75 @@ Page({
     else {
       var DevicesObject = AV.Object.extend('Devices');
       var that = this;
-      new AV.Query(DevicesObject).equalTo('deviceID', this.data.deviceCode).first().then(function (result) {
-        console.log(result);
+
+      var query = new AV.Query(DevicesObject);
+      query.include(['dependentDevicesStatus.dependentUser']);
+      query.equalTo('deviceID', this.data.deviceCode);
+      query.first().then(function (result) {
+        
+
+        var deviceAVObject = AV.Object('Devices');
         if (result) {
-          wx.hideLoading();
-          var str = '已存在编号为' + result.attributes.deviceID + "的设备";
-          that.showTips(str);
+          console.log(result);
+          var status = result.get('dependentDevicesStatus') && result.get('dependentDevicesStatus').get('status');
+          if(status && status == -99){
+            deviceAVObject = AV.Object.createWithoutData('Devices', result.id);
+          }else{
+            wx.hideLoading();
+            var str = '已存在编号为' + result.attributes.deviceID + "的设备";
+            that.showTips(str);
+            return;
+          }
+        }
 
-        } else {
+        console.log("添加设备");
+        var timestamp = Date.parse(new Date());
 
-          console.log("添加设备");
-          //关联的型号
-          var selectedModel = that.data.models[that.data.modelIndex];
-          var modelAVObject = AV.Object.createWithoutData('Models', selectedModel.objectID);
-          //关联用户
-          var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+        //关联的型号
+        var selectedModel = that.data.models[that.data.modelIndex];
+        var modelAVObject = AV.Object.createWithoutData('Models', selectedModel.objectID);
+        //关联用户
+        var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
 
-          var deviceAVObject = AV.Object('Devices');
-          deviceAVObject.set('dependentModel', modelAVObject);
-          deviceAVObject.set('dependentUser', userAVObject);
-          deviceAVObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-          deviceAVObject.set('deviceID', that.data.deviceCode)
-          deviceAVObject.set('companyCode', that.data.companyCode)
-          deviceAVObject.save().then(function (deviceObject) {
+        deviceAVObject.set('dependentModel', modelAVObject);
+        deviceAVObject.set('dependentUser', userAVObject);
+        deviceAVObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
+        deviceAVObject.set('deviceID', that.data.deviceCode)
+        deviceAVObject.set('companyCode', that.data.companyCode)
+        deviceAVObject.save().then(function (deviceObject) {
+
+          //先添加设备，再添加状态，否会提示循环
+          var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObject.id);
+          var statusAVObject = new AV.Object('DevicesStatus');
+          statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
+          statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+          //状态-借用人 关联
+          var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+          statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
+          //状态-设备关联
+          statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
+          //关联状态
+          deviceAVObject.set('dependentDevicesStatus', statusAVObject);
+          deviceAVObject.save().then(function(result){
             wx.hideLoading();
             wx.navigateBack({
               delta: 1
             })
-
             // 成功
             wx.showToast({
               title: '添加成功！',
               icon: 'success'
             })
-          }, function (error) {
+          }, function(error){
             wx.hideLoading();
-            that.showTips('添加设备失败');
-          });
+            that.showTips('添加设备状态失败');
+          })
+        }, function (error) {
+          wx.hideLoading();
+          that.showTips('添加设备失败');
+        });
 
-        }
+
       }, function (error) {
         wx.showToast({
           title: '服务器错误!',

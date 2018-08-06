@@ -256,9 +256,8 @@ Page({
     innerQuery.equalTo('status', -99);
     query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
 
-    
     query.find().then(function (results) {
-
+      
       wx.hideNavigationBarLoading();
       wx.stopPullDownRefresh();
       if (results.length > 0) {
@@ -426,5 +425,11 @@ Page({
         }
       }
     }
-  }
+  },
+
+  onPullDownRefresh: function () {
+    wx.showNavigationBarLoading();
+    this.onShow();
+  },
+
 })
