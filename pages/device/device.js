@@ -317,8 +317,8 @@ Page({
           statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
           statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
           //状态-借用人 关联
-          var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-          statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
+          var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+          statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
           //状态-设备关联
           statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
           //关联状态

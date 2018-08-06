@@ -157,7 +157,7 @@ Page({
 
     var innerQuery3 = new AV.Query('DevicesStatus');
     var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    innerQuery3.equalTo('dependentUser', borrowedUser);
+    innerQuery3.equalTo('dependentActionUser', borrowedUser);
     var query = new AV.Query('Devices');
 
     var query123 = AV.Query.and(innerQuery12, innerQuery3);
@@ -204,8 +204,8 @@ Page({
           statusAVObject.set('status', -1); //0闲置，-1 申请中，-2借出，-3归还中 
           statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
           //关联借用人
-          var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-          statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
+          var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+          statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
           //关联设备
           statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
 
@@ -286,7 +286,7 @@ Page({
     var query = new AV.Query('Devices');
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
-    query.include(['dependentDevicesStatus.dependentUser']);
+    query.include(['dependentDevicesStatus.dependentActionUser']);
 
     //内嵌查询,匹配 != -99 的记录
     var innerQuery = new AV.Query('DevicesStatus'); 
@@ -318,9 +318,9 @@ Page({
           var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
           var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
 
-          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser')?item.get('dependentDevicesStatus').get('dependentUser').id:null):null;
-          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser')?item.get('dependentDevicesStatus').get('dependentUser').get('employeeID'):null):null;
-          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentUser')?item.get('dependentDevicesStatus').get('dependentUser').get('employeeName'):null):null;
+          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id:null):null;
+          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeID'):null):null;
+          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeName'):null):null;
 
           //用户信息
           var employeeObjectID = item.get('dependentUser')?item.get('dependentUser').id:null;
