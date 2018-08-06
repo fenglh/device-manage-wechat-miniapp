@@ -3,7 +3,7 @@
 
   <view class="menu">
     <image class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
-    <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='bindgetuserinfo'>
+    <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='getUserInfo'>
     </button>
 
     <view class="vertical-line line-left"></view>

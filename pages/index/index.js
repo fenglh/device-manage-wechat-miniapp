@@ -13,7 +13,8 @@ Page({
     devices: [],
     allDevices: [],//搜索专用的所有设备
     myDevicesCount: 0,
-    borrowedDevicesCount: 0
+    borrowedDevicesCount: 0,
+    canIUse: wx.canIUse('button.open-type.getUserInfo')
   },
 
 
@@ -30,6 +31,31 @@ Page({
     wx.setNavigationBarTitle({
       title: '机可借',
     })
+    
+    if (app.globalData.userInfo) {
+      this.setData({
+        userInfo: app.globalData.userInfo,
+      })
+    } else if (this.data.canIUse) {
+      // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
+      // 所以此处加入 callback 以防止这种情况
+      app.userInfoReadyCallback = res => {
+        this.setData({
+          userInfo: res.userInfo,
+        })
+      }
+    } else {
+      // 在没有 open-type=getUserInfo 版本的兼容处理
+      wx.getUserInfo({
+        success: res => {
+          app.globalData.userInfo = res.userInfo
+          this.setData({
+            userInfo: res.userInfo,
+          })
+        }
+      })
+    }
+
     this.setData({
       userInfo: app.globalData.userInfo,
     })
@@ -326,35 +352,6 @@ Page({
     });
 
   },
-
-  // ok
-  getOpenId: function (code, callback = ((string) => (Void))) {
-    //获取openid
-    var data = app.globalData;//这里存储了appid、secret、token串  
-    var url = 'https://angelapi.bluemoon.com.cn/bmhr-control/demo/weixin';
-    wx.request({
-      url: url,
-      data: {
-        appid: data.appid,
-        secret: data.secret,
-        js_code: code,
-        grant_type: 'authorization_code'
-
-      },
-      method: 'GET',
-      success: function (res) {
-        callback(res.data.returnMsg.openid);
-      }, fail(error) {
-        console.log(error);
-        wx.showToast({
-          title: error.errMsg,
-          icon: 'none'
-        });
-        callback(null);
-      }
-    });
-  },
-
   showToast: function (content, duration = 3000) {
     wx.showToast({
       title: content,
@@ -364,7 +361,7 @@ Page({
   },
 
   //事件
-  bindgetuserinfo: function (e) {
+  getUserInfo: function (e) {
     console.log(e);
     if (!e.detail.rawData) {
       this.showToast('授权失败!请点击右上角“更多-关于-更多-设置”中开启权限', 5000);

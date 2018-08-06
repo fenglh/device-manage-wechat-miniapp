@@ -30,8 +30,7 @@ Page({
     console.log("个人信息:", app.globalData.employeeInfo);
       this.setData({
         employeeInfo: app.globalData.employeeInfo || {},
-        userInfo: wx.getStorageSync('userInfo') || {},
-        openIdInfo: wx.getStorageSync('openIdInfo') || {},
+        userInfo: app.globalData.userInfo || {},
       })
   },
 

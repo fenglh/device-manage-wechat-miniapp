@@ -22,8 +22,6 @@ App({
             success: res => {
               // 可以将 res 发送给后台解码出 unionId
               this.globalData.userInfo = res.userInfo
-              console.log(res.userInfo);
-
               // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
               // 所以此处加入 callback 以防止这种情况
               if (this.userInfoReadyCallback) {
@@ -109,12 +107,7 @@ App({
     
     appid: 'wx2fc1b68058a04d90',//appid需自己提供，
     secret: 'ece9a679463eb37126b3c5fb3df0073e',//secret需自己提供，
-    openid: wx.getStorageSync('openid') ||null,
-    employeeInfo: wx.getStorageSync('employeeInfo') || {},
-    userInfo: wx.getStorageSync('userInfo') || {},
-    brandsInfo: wx.getStorageSync('BrandsInfo') || {},//型号信息
-    modelsInfo: wx.getStorageSync('ModelsInfo') || {},//品牌信息
-
-
+    openid: wx.getStorageSync('openid') || null,
+    userInfo:  null,
   }
 })
