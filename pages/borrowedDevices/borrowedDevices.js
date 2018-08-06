@@ -105,8 +105,7 @@ Page({
     var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
     //关联设备
-    var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
-    statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
+    statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
 
     //关联状态
     deviceAVObject.set('dependentDevicesStatus', statusAVObject);
@@ -142,8 +141,7 @@ Page({
     var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
     //关联设备
-    var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
-    statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
+    statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
 
     //关联状态
     deviceAVObject.set('dependentDevicesStatus', statusAVObject);

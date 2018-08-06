@@ -109,7 +109,7 @@ Page({
     var device = this.data.devices[index];
     var that = this;
     wx.showModal({
-      title: '申请借取设备',
+      title: '申请借用设备',
       content: "你确定要申请设备 " + device.model + "?" ,
       cancelText: '稍后',
       confirmText: '申请',
@@ -192,8 +192,7 @@ Page({
           var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
           statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
           //关联设备
-          var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
-          statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
+          statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
 
           //关联状态
           deviceAVObject.set('dependentDevicesStatus', statusAVObject);
@@ -206,8 +205,9 @@ Page({
           },function(error){
             wx.showToast({
               title: '申请借取失败，请稍后再试',
-              icon:'noen'
-            })
+              icon:'none'
+            });
+            console.log(error);
           }); 
         }else{
           wx.showToast({

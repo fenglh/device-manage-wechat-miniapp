@@ -71,8 +71,7 @@ Page({
     var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     statusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
     //关联设备
-    var dependentDeviceAVObject = AV.Object.createWithoutData('Device', device.deviceObjectID);
-    statusAVObject.set('dependentDevice', dependentDeviceAVObject);//关联设备
+    statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
 
     //关联状态
     deviceAVObject.set('dependentDevicesStatus', statusAVObject);
@@ -195,24 +194,46 @@ Page({
     
   },
 
+  // 将设备移到DeleteDevices表,
+  deleteDevices: function (index, { success, fail }) {
+    var that = this;
+    var device = this.data.devices[index];
+
+    var deviceAVObject = AV.Object('DeleteDevices');
+    var timestamp = Date.parse(new Date());
+    var devicesStatusAVObject = new AV.Object('DevicesStatus');
+    devicesStatusAVObject.set('status', -99); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
+    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+    //关联操作用户
+    var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    devicesStatusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
+    //关联设备
+    devicesStatusAVObject.set('dependentDevice', deviceAVObject);//状态关联关联设备（双向关联）
+    //关联状态
+    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
+    deviceAVObject.save().then(function (result) {
+      success ? success() : null;
+    }, function (error) {
+      fail ? fail() : null;
+    });
+  },
 
   addDevicesStatus:function(index,status, {success, fail}){
     var that = this;
     var device = this.data.devices[index];
-    var deviceObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
     var timestamp = Date.parse(new Date());
-    var devicesStatus = new AV.Object('DevicesStatus');
-    devicesStatus.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
-    devicesStatus.set('actionTimestamp', timestamp);//当前操作时间
+    var devicesStatusAVObject = new AV.Object('DevicesStatus');
+    devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
+    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
     //关联借用人
-    var dependentUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    devicesStatus.set('dependentUser', dependentUser);//关联用户
+    var dependentUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    devicesStatusAVObject.set('dependentUser', dependentUserAVObject);//关联用户
     //关联设备
-    var dependentDevice = AV.Object.createWithoutData('Device', device.deviceObjectID);
-    devicesStatus.set('dependentDevice', dependentDevice);//关联设备
+    devicesStatusAVObject.set('dependentDevice', deviceAVObject);///状态关联关联设备（双向关联）
     //关联状态
-    deviceObject.set('dependentDevicesStatus', devicesStatus);
-    deviceObject.save().then(function (result) {
+    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
+    deviceAVObject.save().then(function (result) {
       success?success():null;
     }, function (error) {
       fail?fail():null;
