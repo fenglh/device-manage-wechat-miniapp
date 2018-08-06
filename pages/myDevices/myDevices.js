@@ -57,8 +57,37 @@ Page({
   },
 
   //拒绝申请
-  bindReject:function(index){
-    console.log('拒绝申请');
+  bindReject:function(e){
+    var index = e.currentTarget.dataset.index;
+    var device = this.data.devices[index];
+    var that = this;
+    wx.showModal({
+      title: '拒绝申请',
+      content: '你确定拒绝 "' + device.statusActionEmployeeObjectName + '"申请设备' + device.model + " ?",
+      success: function (res) {
+        if (res.confirm) {
+          wx.showLoading({
+            title: '',
+          });
+          that.addDevicesStatus(index, 0, {
+            success: function () {
+              wx.showToast({
+                title: '拒绝成功!',
+                icon: 'success',
+              });
+              that.getMyDevices();
+            },
+            fail: function () {
+              wx.showToast({
+                title: '决绝失败，请稍后再试',
+                icon: 'noen'
+              });
+            }
+          })
+        }
+      }
+    });
+
   },
 
 
@@ -93,7 +122,7 @@ Page({
           })
         }
       }
-    })
+    });
   },
 
   // ok
