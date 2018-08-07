@@ -1,6 +1,8 @@
 // pages/myDevices/myDevices.js
 
 const AV = require('../../utils/av-live-query-weapp-min');
+const leanCloudManager = require('../../utils/leanCloudManager');
+
 const now = Date.parse(new Date());//当前时间
 const app = getApp()
 Page({
@@ -69,7 +71,7 @@ Page({
           wx.showLoading({
             title: '',
           });
-          that.addDevicesStatus(index, 0, {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0, {
             success: function () {
               wx.showToast({
                 title: '拒绝成功!',
@@ -105,7 +107,7 @@ Page({
           wx.showLoading({
             title: '',
           });
-          that.addDevicesStatus(index, 0,{
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0, {
             success:function(){
               wx.showToast({
                 title: '确认归还成功!',
@@ -139,7 +141,7 @@ Page({
       confirmText: '同意',
       success: function (res) {
         if (res.confirm) {
-          that.addDevicesStatus(index, -2, {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, -2, {
             success:function(){
               that.getMyDevices();
             },
@@ -169,7 +171,7 @@ Page({
             title: '',
             mask:true,
           })
-          that.addDevicesStatus(index,-99,{
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, -99, {
             success:function(){
                 wx.showToast({
                   title: '删除设备成功',
@@ -218,29 +220,6 @@ Page({
   },
 
   
-
-  addDevicesStatus:function(index,status, {success, fail}){
-    var that = this;
-    var device = this.data.devices[index];
-    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-    var timestamp = Date.parse(new Date());
-    var devicesStatusAVObject = new AV.Object('DevicesStatus');
-    devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
-    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-    //关联借用人
-    var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    devicesStatusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-    //关联设备
-    devicesStatusAVObject.set('dependentDevice', deviceAVObject);///状态关联关联设备（双向关联）
-    //关联状态
-    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
-    deviceAVObject.save().then(function (result) {
-      success?success():null;
-    }, function (error) {
-      fail?fail():null;
-    });
-  },
-
   //ok
   formatDateTime: function (inputTime) {
     var date = new Date(inputTime);

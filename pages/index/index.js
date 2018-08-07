@@ -23,8 +23,23 @@ Page({
   /******************* */
   onShow: function () {
 
-    this.getBorrowedDeviceCount();
-    this.getMyDevicesCount();
+    var that = this;
+
+    leanCloudManager.getMyDevicesCount({
+      success:function(count){
+        that.setData({
+          myDevicesCount: count,
+        })
+      },
+    });
+    leanCloudManager.getBorrowedDeviceCount({
+      success: function (count) {
+        that.setData({
+          borrowedDevicesCount: count,
+        })
+      },
+    });
+
     this.getDevices();
 
   },
@@ -122,58 +137,6 @@ Page({
     })
   },
 
-  // ok
-  getMyDevicesCount: function () {
-
-    var that = this;
-    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    var query = new AV.Query('Devices');
-    query.equalTo('dependentUser', user);
-
-    //内嵌查询,匹配 != -99 的记录
-    var innerQuery = new AV.Query('DevicesStatus');
-    innerQuery.equalTo('status', -99);
-    query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
-
-
-    query.count().then(function (count) {
-      that.setData({
-        myDevicesCount: count,
-      })
-    }, function (error) {
-
-    });
-  },
-
-  //ok
-  getBorrowedDeviceCount: function () {
-    var that = this;
-
-    //组合加内嵌查询
-    var innerQuery1 = new AV.Query('DevicesStatus');
-    innerQuery1.notEqualTo('status', 0);
-    var innerQuery2 = new AV.Query('DevicesStatus');
-    innerQuery2.notEqualTo('status', -99);
-    var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
-
-    var innerQuery3 = new AV.Query('DevicesStatus');
-    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    innerQuery3.equalTo('dependentActionUser', borrowedUser);
-    var query = new AV.Query('Devices');
-
-    var query123 = AV.Query.and(innerQuery12, innerQuery3);
-
-    //执行内嵌操作
-    query.matchesQuery('dependentDevicesStatus', query123);
-
-
-    query.find().then(function (results) {
-      that.setData({
-        borrowedDevicesCount: results.length,
-      })
-    });
-  },
-
 
   //ok
   doBorrowDevice: function (index) {
@@ -208,7 +171,13 @@ Page({
                 title: '申请借取成功!',
               });
               that.getDevices();
-              that.getBorrowedDeviceCount();
+              leanCloudManager.getBorrowedDeviceCount({
+                success: function (count) {
+                  that.setData({
+                    borrowedDevicesCount: count,
+                  })
+                },
+              });
             },
             fail:function(){
               wx.showToast({
@@ -248,9 +217,6 @@ Page({
       devices: devices,
       allDevices: devices,
     });
-
-
-
   },
 
 
@@ -286,8 +252,6 @@ Page({
     var innerQuery = new AV.Query('DevicesStatus'); 
     innerQuery.notEqualTo('status', -99);
     query.matchesQuery('dependentDevicesStatus', innerQuery);
-    
-    
     query.find().then(function (results) {
 
       wx.hideNavigationBarLoading();

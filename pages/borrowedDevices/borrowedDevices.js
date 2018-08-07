@@ -1,5 +1,6 @@
 
 const AV = require('../../utils/av-live-query-weapp-min');
+const leanCloudManager = require('../../utils/leanCloudManager');
 const app = getApp()
 
 Page({
@@ -68,7 +69,7 @@ Page({
             title: '',
             mask: true,
           });
-          that.addDevicesStatus(index, -3, {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, -3, {
             success: function () {
               wx.showToast({
                 title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
@@ -103,7 +104,7 @@ Page({
               title: '',
               mask: true,
             });
-            that.addDevicesStatus(index,0, {
+            leanCloudManager.addDevicesStatus(device.deviceObjectID, 0, {
               success:function(){
                 wx.showToast({
                   title: "取消申请成功!",
@@ -121,29 +122,6 @@ Page({
           }
         }
       });
-  },
-
-
-  addDevicesStatus: function (index, status, { success, fail }) {
-    var that = this;
-    var device = this.data.devices[index];
-    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
-    var timestamp = Date.parse(new Date());
-    var devicesStatusAVObject = new AV.Object('DevicesStatus');
-    devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
-    devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-    //关联借用人
-    var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    devicesStatusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-    //关联设备
-    devicesStatusAVObject.set('dependentDevice', deviceAVObject);///状态关联关联设备（双向关联）
-    //关联状态
-    deviceAVObject.set('dependentDevicesStatus', devicesStatusAVObject);
-    deviceAVObject.save().then(function (result) {
-      success ? success() : null;
-    }, function (error) {
-      fail ? fail() : null;
-    });
   },
 
   
