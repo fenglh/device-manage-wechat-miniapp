@@ -7,8 +7,8 @@
     </button>
 
     <view class="vertical-line line-left"></view>
-    <!-- <image class="more" src="../images/more4.png" background-size="cover" bindtap='bindMoreEvent'></image>  -->
-    <!-- <view class="vertical-line line-right"></view> -->
+     <image class="more" src="../images/log.png" background-size="cover" bindtap='bindMoreEvent'></image>  
+     <view class="vertical-line line-right"></view> 
 
     <input class='search' bindinput='bindSearchInput' bindconfirm="bindSearchConfirm" placeholder='搜索：设备编码/系统版本/型号'></input>
   </view>

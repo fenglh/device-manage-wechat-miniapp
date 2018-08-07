@@ -1,6 +1,5 @@
 {
   "pages": [
-    
     "pages/launch/launch",
     "pages/login/login",
     "pages/index/index",
@@ -9,8 +8,8 @@
     "pages/user/user",
     "pages/device/device",
     "pages/myDevices/myDevices",
-    "pages/borrowedDevices/borrowedDevices"
-    
+    "pages/borrowedDevices/borrowedDevices",
+    "pages/log/log"
   ],
   "window": {
     "backgroundTextStyle": "light",
