@@ -1,5 +1,7 @@
 /* pages/menu/menu.wxss */
-
+page {
+    background-color: #fff;
+}
 .weui-grids {  
   position: relative;  
   overflow: hidden;

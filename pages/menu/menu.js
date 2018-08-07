@@ -10,9 +10,9 @@ Page({
   data: {
     routers: [
       {
-        name: '日志记录',
-        url: '',
-        icon: '../images/log.png'
+        name: '共享记录',
+        url: '../log/log',
+        icon: '../images/record.png'
       },
 
       {

@@ -1,1 +1,51 @@
-/* pages/log/log.wxss */
+page {
+    background-color: #fff;
+}
+
+
+.weui-cell-third{
+  background: #fff;
+}
+.weui-cell-list{
+  background: #fff;
+  margin: 5px;
+}
+.weui-cell-line{
+/* width: 100px; */
+margin-left: 5px;
+  border-left: 1px solid #ddd;
+  background: #fff
+}
+.weui-cell-circle{
+  border: 1px solid #000;
+  border-radius: 5px;
+  width: 10px;
+  height: 10px;
+  border-color: #dbdbdb;
+}
+.weui-cell-time{
+
+  float: left;
+  width: 100%;
+  font-size:18px;
+  padding-left: 15px;
+  color:#707070;
+ 
+}
+.weui-cell-name{
+  margin-left:15px;
+  font-size:12px;
+  color:#576b95;
+}
+
+.weui-cell-action{
+  font-size:12px;
+  color:#515151;
+}
+
+.weui-cell-model{
+  font-size:12px;
+  color:green;
+}
+
+

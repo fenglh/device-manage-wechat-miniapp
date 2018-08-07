@@ -1,2 +1,21 @@
-<!--pages/log/log.wxml-->
-<text>pages/log/log.wxml</text>
+<view class='weui-cell-third'>
+  <view class="weui-cells__title title ">最近30条设备共享记录</view>
+  <block wx:for="{{list}}" wx:key="*this">
+    <view class='weui-cell-list'>
+
+      <view class='weui-cell-circle'></view>
+
+      <view class='weui-cell-line'>
+
+        <view class='weui-cell-time'>{{item.actionDate}}</view>
+        <view style="width:100%;display:flex; flex-direction: row;padding-top:4px;">
+          <view class='weui-cell-name'>{{item.actionUserEmployeeName}}</view>
+          <view class='weui-cell-action'>{{item.action}}</view>
+          <view class='weui-cell-model'>{{item.deviceModel}}</view>
+        </view>
+      </view>
+
+    </view>
+
+  </block>
+</view>

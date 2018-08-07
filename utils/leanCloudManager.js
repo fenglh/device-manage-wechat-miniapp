@@ -249,6 +249,22 @@ var leanCloud = {
     });
   },
 
+  //获取前30条日志记录
+  getLogs: function ({ success, fail }){
+    var query = new AV.Query('DevicesStatus');
+    query.descending('actionTimestamp'); //降序
+    query.limit(30);
+    query.include(['dependentDevice.dependentModel']);
+    query.include(['dependentActionUser']);
+    query.find().then(function(results){
+      success ? success(results) : null;
+    },
+    function(error){
+      fail ? fail(error) : null;
+    });
+  },
+
+
   // ok
   formatDateTime: function (inputTime) {
     if(!inputTime){
