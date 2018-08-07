@@ -1,6 +1,7 @@
 // pages/Device/device.js
 
 const AV = require('../../utils/av-live-query-weapp-min');
+const leanCloudManager = require('../../utils/leanCloudManager');
 var crypto = require('../lib/cryptojs/cryptojs.js');
 const app = getApp()
 
@@ -244,17 +245,10 @@ Page({
     var that = this;
     //编辑
     if (this.data.isEdit) {
-      var deviceAVObject = AV.Object.createWithoutData('Devices', that.data.deviceObjectID);
-      //公司编码
-      deviceAVObject.set('companyCode', that.data.companyCode);
-
-      //关联型号（含品牌）
-      var modelObject = that.data.models[that.data.modelIndex];
-      var modelAVObject = AV.Object.createWithoutData('Models', modelObject.objectID);
-      deviceAVObject.set('dependentModel', modelAVObject);
-      //系统版本
-      deviceAVObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-      deviceAVObject.save().then(function(result){
+      var osVersion = that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3];
+      var modelObject=that.data.models[that.data.modelIndex];
+      leanCloudManager.editDevice(that.data.deviceObjectID, that.data.companyCode, modelObject.objectID, osVersion, {
+        success:function(result){
           wx.hideLoading();
           wx.navigateBack({
             delta: 1
@@ -263,12 +257,15 @@ Page({
             title: '修改成功！',
             icon: 'success'
           });
-      },function(error){
-        wx.showToast({
-          title: '修改失败,请稍后再试!',
-          icon:'none',
-        });
+        },
+        fail:function(error){
+          wx.showToast({
+            title: '修改失败,请稍后再试!',
+            icon: 'none',
+          });
+        }
       });
+
     } 
     //添加
     else {
@@ -279,8 +276,6 @@ Page({
       query.include(['dependentDevicesStatus.dependentUser']);
       query.equalTo('deviceID', this.data.deviceCode);
       query.first().then(function (result) {
-        
-
         var deviceAVObject = AV.Object('Devices');
         if (result) {
           console.log(result);
@@ -295,35 +290,11 @@ Page({
           }
         }
 
-        console.log("添加设备");
-        var timestamp = Date.parse(new Date());
+        var osVersion = that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3];
 
-        //关联的型号
         var selectedModel = that.data.models[that.data.modelIndex];
-        var modelAVObject = AV.Object.createWithoutData('Models', selectedModel.objectID);
-        //关联用户
-        var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-
-        deviceAVObject.set('dependentModel', modelAVObject);
-        deviceAVObject.set('dependentUser', userAVObject);
-        deviceAVObject.set('OSVersion', that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3])
-        deviceAVObject.set('deviceID', that.data.deviceCode)
-        deviceAVObject.set('companyCode', that.data.companyCode)
-        deviceAVObject.save().then(function (deviceObject) {
-
-          //先添加设备，再添加状态，否会提示循环
-          var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObject.id);
-          var statusAVObject = new AV.Object('DevicesStatus');
-          statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
-          statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-          //状态-借用人 关联
-          var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-          statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-          //状态-设备关联
-          statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
-          //关联状态
-          deviceAVObject.set('dependentDevicesStatus', statusAVObject);
-          deviceAVObject.save().then(function(result){
+        leanCloudManager.addDevice(that.data.deviceCode, that.data.companyCode, selectedModel.objectID, osVersion, {
+          success:function(result){
             wx.hideLoading();
             wx.navigateBack({
               delta: 1
@@ -332,17 +303,13 @@ Page({
             wx.showToast({
               title: '添加成功！',
               icon: 'success'
-            })
-          }, function(error){
+            });
+          },
+          fail:function(error){
             wx.hideLoading();
             that.showTips('添加设备状态失败');
-          })
-        }, function (error) {
-          wx.hideLoading();
-          that.showTips('添加设备失败');
+          }
         });
-
-
       }, function (error) {
         wx.showToast({
           title: '服务器错误!',
@@ -533,6 +500,7 @@ Page({
       fail? fail(): null;
     });
   },
+
 
 })
 
