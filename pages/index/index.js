@@ -42,6 +42,7 @@ Page({
 
     leanCloudManager.getDevices({
       success:function(devices){
+        wx.hideNavigationBarLoading();
         var show = false;
         if(devices.length <= 0){
           show = true;
@@ -192,6 +193,28 @@ Page({
               wx.showToast({
                 title: '申请借取成功!',
               });
+
+              leanCloudManager.getDevices({
+                success: function (devices) {
+                  wx.hideNavigationBarLoading();
+                  var show = false;
+                  if (devices.length <= 0) {
+                    show = true;
+                  }
+                  that.setData({
+                    showEmptyView: show,
+                    allDevices: devices,
+                    devices: devices
+                  })
+                },
+                fail: function (error) {
+                  wx.showToast({
+                    title: '获取设备列表失败',
+                    icon: 'none',
+                  });
+                }
+              });
+              
               leanCloudManager.getBorrowedDeviceCount({
                 success: function (count) {
                   that.setData({
@@ -241,22 +264,7 @@ Page({
   },
 
 
-  // ok
-  formatDateTime: function (inputTime) {
-    var date = new Date(inputTime);
-    var y = date.getFullYear();
-    var m = date.getMonth() + 1;
-    m = m < 10 ? ('0' + m) : m;
-    var d = date.getDate();
-    d = d < 10 ? ('0' + d) : d;
-    var h = date.getHours();
-    h = h < 10 ? ('0' + h) : h;
-    var minute = date.getMinutes();
-    var second = date.getSeconds();
-    minute = minute < 10 ? ('0' + minute) : minute;
-    // second = second < 10 ? ('0' + second) : second; 
-    return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
-  },
+
 
   //事件
   getUserInfo: function (e) {

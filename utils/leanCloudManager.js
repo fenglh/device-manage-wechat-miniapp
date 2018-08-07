@@ -47,6 +47,7 @@ var leanCloud = {
       var statusAVObject = new AV.Object('DevicesStatus');
       statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
       statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
+      statusAVObject.set('action', "add");
       //状态-借用人 关联
       var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
       statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
@@ -165,7 +166,7 @@ var leanCloud = {
 
           obj.status = status;
           obj.statusObjectID = statusObjectID;
-          obj.statusActionTimestamp = statusActionTimestamp && that.formatDateTime(statusActionTimestamp);
+          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp)
           obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
           obj.statusActionEmployeeID = statusActionEmployeeID;
           obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
@@ -236,6 +237,25 @@ var leanCloud = {
     });
   },
 
+  // ok
+  formatDateTime: function (inputTime) {
+    if(!inputTime){
+      return inputTime;
+    }
+    var date = new Date(inputTime);
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    m = m < 10 ? ('0' + m) : m;
+    var d = date.getDate();
+    d = d < 10 ? ('0' + d) : d;
+    var h = date.getHours();
+    h = h < 10 ? ('0' + h) : h;
+    var minute = date.getMinutes();
+    var second = date.getSeconds();
+    minute = minute < 10 ? ('0' + minute) : minute;
+    // second = second < 10 ? ('0' + second) : second; 
+    return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
+  },
 
 }
 
