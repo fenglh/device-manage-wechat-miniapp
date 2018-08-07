@@ -1,5 +1,5 @@
 // pages/menu/menu.js
-
+const leanCloudManager = require('../../utils/leanCloudManager');
 
 
 Page({
@@ -10,19 +10,20 @@ Page({
   data: {
     routers: [
       {
-        name: '生成设备二维码',
+        name: '日志记录',
         url: '',
-        icon: '../images/qrcode.png'
+        icon: '../images/log.png'
+      },
+
+      {
+        name: '',
+        url: '',
+        icon: ''
       },
       {
-        name: '资产识别',
+        name: '',
         url: '',
-        icon: '../images/scan.png'
-      },
-      {
-        name: '管理员设置',
-        url: '',
-        icon: '../images/guanliyuan.png'
+        icon: ''
       },
     ]
   }, 
@@ -31,14 +32,33 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-  
+
   },
 
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {
-  
+    //查询是否管理员
+    var that = this;
+    leanCloudManager.isAdmin({
+      success:function(result){
+        if(result){
+          //是管理员
+          console.log('是管理员')
+          var routers = that.data.routers;
+          routers[1] = {
+            name: '管理员设置',
+            url: '../admin/admin',
+            icon: '../images/guanliyuan.png'
+          };
+
+          that.setData({
+            routers: routers,
+          })
+        }
+      }
+    });
   },
 
   /**

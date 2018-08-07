@@ -4,6 +4,7 @@
     "pages/login/login",
     "pages/index/index",
     "pages/menu/menu",
+    "pages/admin/admin",
     "pages/search/search",
     "pages/user/user",
     "pages/device/device",

@@ -237,6 +237,18 @@ var leanCloud = {
     });
   },
 
+  //检查自己是否是管理员
+  isAdmin: function ({ success, fail }){
+    var query = new AV.Query('AdminUsers');
+    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    query.equalTo('dependentUser', user);
+    query.first().then(function(result){
+      success ? success(result) : null;
+    }, function(error){
+      fail ? fail(error) : null;
+    });
+  },
+
   // ok
   formatDateTime: function (inputTime) {
     if(!inputTime){

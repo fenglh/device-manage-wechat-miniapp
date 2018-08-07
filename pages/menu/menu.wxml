@@ -2,7 +2,7 @@
 <view class="container">  
   <view class="weui-grids">  
     <view class="weui-grid" wx:for="{{routers}}" wx:key="name">  
-      <navigator url="{{item.url}}">  
+      <navigator hover-class="none" url="{{item.url}}">  
         <view class="weui-grid__icon">  
           <image src=" {{item.icon}}" mode="scaleToFill" />  
         </view>  

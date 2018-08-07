@@ -17,6 +17,9 @@ Page({
    */
   onLoad: function (options) {
     this.getBrands();
+    wx.setNavigationBarTitle({
+      title: '添加型号',
+    })
   },
 
   /**

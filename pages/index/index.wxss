@@ -85,9 +85,11 @@
 .menu .more{
   /* background-color: red;  */
   float: right;
-   margin: 20rpx 20rpx; 
-  height: 60rpx;
-  width: 60rpx;
+  margin-top:10rpx;
+  margin-right:5rpx;
+  padding: 20rpx; 
+  height: 40rpx;
+  width: 40rpx;
 }
 
 

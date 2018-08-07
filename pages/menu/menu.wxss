@@ -5,34 +5,7 @@
   overflow: hidden;
   width: 100%; 
 }  
-.weui-grids:before {  
-  content: " ";  
-  position: absolute;  
-  left: 0;  
-  top: 0;  
-  right: 0;  
-  height: 0.5px;  
-  border-top: 0.5px solid #D9D9D9;  
-  color: #D9D9D9;  
-  -webkit-transform-origin: 0 0;  
-          transform-origin: 0 0;  
-  -webkit-transform: scaleY(0.5);  
-          transform: scaleY(0.5);  
-}  
-.weui-grids:after {  
-  content: " ";  
-  position: absolute;  
-  left: 0;  
-  top: 0;  
-  width: 0.5px;  
-  bottom: 0;  
-  border-left: 0.5px solid #D9D9D9;  
-  color: #D9D9D9;  
-  -webkit-transform-origin: 0 0;  
-          transform-origin: 0 0;  
-  -webkit-transform: scaleX(0.5);  
-          transform: scaleX(0.5);  
-}  
+
 .weui-grid {  
   position: relative;  
   float: left;  
@@ -40,37 +13,8 @@
   width: 33.33333333%;  
   box-sizing: border-box;  
 }  
-.weui-grid:before {  
-  content: " ";  
-  position: absolute;  
-  right: 0;  
-  top: 0;  
-  width: 0.5px;  
-  bottom: 0;  
-  border-right: 0.5px solid #D9D9D9;  
-  color: #D9D9D9;  
-  -webkit-transform-origin: 100% 0;  
-          transform-origin: 100% 0;  
-  -webkit-transform: scaleX(0.5);  
-          transform: scaleX(0.5);  
-}  
-.weui-grid:after {  
-  content: " ";  
-  position: absolute;  
-  left: 0;  
-  bottom: 0;  
-  right: 0;  
-  height: 0.5px;  
-  border-bottom: 0.5px solid #D9D9D9;  
-  color: #D9D9D9;  
-  -webkit-transform-origin: 0 100%;  
-          transform-origin: 0 100%;  
-  -webkit-transform: scaleY(0.5);  
-          transform: scaleY(0.5);  
-}  
-.weui-grid:active {  
-  background-color: #ECECEC;  
-}  
+
+
 .weui-grid__icon {  
   width: 32px;  
   height: 32px;  
@@ -87,7 +31,7 @@
 .weui-grid__label {  
   display: block;  
   text-align: center;  
-  /* font-weight: bold;   */
+  height: 40rpx;
   color: #333333;  
   font-size: 24rpx;  
   white-space: nowrap;  
