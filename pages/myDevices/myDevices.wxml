@@ -73,7 +73,6 @@
               </view>
             </view>
             <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
-              <view style='width:2rpx;height:80%;background:#eee;'></view>
               <view wx:if="{{item.status==-1}}">
                 <view class='status-base status-borrowing'>申请</view>
                 <view class='status-base status-borrowing'>待处理</view>

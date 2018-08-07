@@ -173,13 +173,13 @@ Page({
     query.equalTo('deviceID', device.deviceID);
     query.first().then(function (result) {
         if(result){
-          //设备被借取了
+          //设备被借用了
           var dependentDevicesStatus = result.get('dependentDevicesStatus');
           if (dependentDevicesStatus){
             var status = dependentDevicesStatus.get('status');
             if (status && status!= 0) {
               wx.showToast({
-                title: '借取失败，该设备已被借出!',
+                title: '借用失败，该设备已被借出!',
                 icon: "none",
               })
               return;
@@ -191,7 +191,7 @@ Page({
           leanCloudManager.addDevicesStatus(device, -1, "applying", {
             success:function(){
               wx.showToast({
-                title: '申请借取成功!',
+                title: '申请借用成功!',
               });
 
               leanCloudManager.getDevices({
@@ -225,7 +225,7 @@ Page({
             },
             fail:function(){
               wx.showToast({
-                title: '申请借取失败，请稍后再试',
+                title: '申请借用失败，请稍后再试',
                 icon: 'none'
               });
             }
@@ -286,7 +286,7 @@ Page({
 
   },
 
-  bindMoreEvent: function () {
+  bindLog: function () {
     wx.navigateTo({
       url: '../menu/menu',
     })

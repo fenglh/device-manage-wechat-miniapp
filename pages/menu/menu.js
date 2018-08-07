@@ -24,36 +24,6 @@ Page({
         url: '',
         icon: '../images/guanliyuan.png'
       },
-      {
-        name: '关于',
-        url: '',
-        icon: '../images/about2.png'
-      },
-      {
-        name: '设备管理',
-        url: '../device/device',
-        icon: '../images/device.png'
-      },
-      {
-        name: 'T6',
-        url: '',
-        icon: ''
-      },
-      {
-        name: 'T7',
-        url: '',
-        icon: ''
-      },
-      {
-        name: 'T8',
-        url: '',
-        icon: ''
-      },
-      {
-        name: 'T9',
-        url: '',
-        icon: ''
-      }
     ]
   }, 
 

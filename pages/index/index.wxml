@@ -7,7 +7,7 @@
     </button>
 
     <view class="vertical-line line-left"></view>
-     <image class="more" src="../images/log.png" background-size="cover" bindtap='bindMoreEvent'></image>  
+     <image class="more" src="../images/log.png" background-size="cover" bindtap='bindLog'></image>  
      <view class="vertical-line line-right"></view> 
 
     <input class='search' bindinput='bindSearchInput' bindconfirm="bindSearchConfirm" placeholder='搜索：设备编码/系统版本/型号'></input>
@@ -91,7 +91,7 @@
             </view>
           </view>
           <view style='display: flex;flex-direction: row;vertical-align: middle;align-items: center;'>
-            <view style='width:2rpx;height:80%;background:#eee;'></view>
+
 
             <view wx:if="{{item.status==-1}}">
               <view class='status-base status-borrowing'>申请中</view>
@@ -129,7 +129,7 @@
           </view>
 
 
-          <!-- <view>借取员工：</view> -->
+          <!-- <view>借用员工：</view> -->
           <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-index="{{index}}" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借用</button>
         </view>
       </view>
