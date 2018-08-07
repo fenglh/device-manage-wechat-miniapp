@@ -40,7 +40,25 @@ Page({
       },
     });
 
-    this.getDevices();
+    leanCloudManager.getDevices({
+      success:function(devices){
+        var show = false;
+        if(devices.length <= 0){
+          show = true;
+        }
+        that.setData({
+          showEmptyView: show,
+          allDevices: devices,
+          devices: devices
+        })
+      },
+      fail:function(error){
+        wx.showToast({
+          title: '获取设备列表失败',
+          icon: 'none',
+        });
+      }
+    });
 
   },
   onLoad: function () {
@@ -80,7 +98,9 @@ Page({
   // ok
   searchContent: function (content) {
     if (content == "") {
-      this.getDevices();
+      this.setData({
+        allDevices:that.data.devices,
+      });
       return;
     }
     var devices = [];
@@ -165,12 +185,13 @@ Page({
             }
           }
           var device = that.data.devices[index];
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -1, {
+          console.log(device);
+          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+          leanCloudManager.addDevicesStatus(device, -1, "applying", {
             success:function(){
               wx.showToast({
                 title: '申请借取成功!',
               });
-              that.getDevices();
               leanCloudManager.getBorrowedDeviceCount({
                 success: function (count) {
                   that.setData({
@@ -235,114 +256,6 @@ Page({
     minute = minute < 10 ? ('0' + minute) : minute;
     // second = second < 10 ? ('0' + second) : second; 
     return y + '-' + m + '-' + d + ' ' + h + ':' + minute;
-  },
-
-
-
-  // ok
-  getDevices: function () {
-
-    var that = this;
-    var query = new AV.Query('Devices');
-    query.include(['dependentModel.dependent']);
-    query.include(['dependentUser']);
-    query.include(['dependentDevicesStatus.dependentActionUser']);
-
-    //内嵌查询,匹配 != -99 的记录
-    var innerQuery = new AV.Query('DevicesStatus'); 
-    innerQuery.notEqualTo('status', -99);
-    query.matchesQuery('dependentDevicesStatus', innerQuery);
-    query.find().then(function (results) {
-
-      wx.hideNavigationBarLoading();
-      wx.stopPullDownRefresh();
-      if (results.length > 0) {
-        var devices = [];
-        results.forEach(function (item, index) {
-          //设备信息
-          var deviceObjectID = item.id;
-          var deviceID = item.get('deviceID');
-          var OSVersion = item.get('OSVersion');
-          var companyCode = item.get('companyCode');
-          //型号
-          var modelObjectID = item.get('dependentModel')?item.get('dependentModel').id:null;
-          var model = item.get('dependentModel')?item.get('dependentModel').get('model'):null;
-          //品牌
-          var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent')?item.get('dependentModel').get('dependent').get('brand'):null):null;
-          //状态
-          var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status'):null;
-          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id:null;
-
-          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
-          var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
-
-          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id:null):null;
-          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeID'):null):null;
-          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeName'):null):null;
-
-          //用户信息
-          var employeeObjectID = item.get('dependentUser')?item.get('dependentUser').id:null;
-          var employeeID = item.get('dependentUser')?item.get('dependentUser').get('employeeID'):null;
-          var employeeName = item.get('dependentUser')?item.get('dependentUser').get('employeeName'):null;
-          var employeeOpenID = item.get('dependentUser')?item.get('dependentUser').get('openID'):null;
-          var obj = {};
-          obj.deviceObjectID = deviceObjectID;
-          obj.deviceID = deviceID;
-          obj.OSVersion = OSVersion;
-          obj.companyCode = companyCode;
-          obj.modelObjectID = modelObjectID;
-          obj.model = model;
-          obj.brand = brand;
-
-          obj.status = status;
-          obj.statusObjectID = statusObjectID;
-          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
-          obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
-          obj.statusActionEmployeeID = statusActionEmployeeID;
-          obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
-        
-          obj.employeeObjectID = employeeObjectID;
-          obj.employeeID = employeeID;
-          obj.employeeName = employeeName;
-          obj.employeeOpenID = employeeOpenID;
-          devices.push(obj);
-        });
-
-        //排序
-        devices.sort(function(a, b){
-          //降序
-          return b.status - a.status ;
-        });
-
-        that.setData({
-          showEmptyView: false,
-          allDevices: devices,
-          devices: devices
-        })
-      } else {
-        that.setData({
-          allDevices:[],
-          devices:[],
-          showEmptyView: true,
-        })
-        
-      }
-
-
-    }, function (error) {
-      wx.showToast({
-        title: '获取设备列表失败',
-        icon:'none',
-      })
-    });
-
-  },
-  showToast: function (content, duration = 3000) {
-    wx.showToast({
-      title: content,
-      icon: "none",
-      duration: duration,
-    })
   },
 
   //事件

@@ -69,7 +69,8 @@ Page({
             title: '',
             mask: true,
           });
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -3, {
+          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+          leanCloudManager.addDevicesStatus(device, -3, "returning", {
             success: function () {
               wx.showToast({
                 title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
@@ -104,7 +105,8 @@ Page({
               title: '',
               mask: true,
             });
-            leanCloudManager.addDevicesStatus(device.deviceObjectID, 0, {
+            //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+            leanCloudManager.addDevicesStatus(device, 0,"cancel", {
               success:function(){
                 wx.showToast({
                   title: "取消申请成功!",

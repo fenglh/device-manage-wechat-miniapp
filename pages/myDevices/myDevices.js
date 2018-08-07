@@ -71,7 +71,8 @@ Page({
           wx.showLoading({
             title: '',
           });
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0, {
+          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+          leanCloudManager.addDevicesStatus(device, 0,"rejected", {
             success: function () {
               wx.showToast({
                 title: '拒绝成功!',
@@ -81,8 +82,8 @@ Page({
             },
             fail: function () {
               wx.showToast({
-                title: '决绝失败，请稍后再试',
-                icon: 'noen'
+                title: '拒绝失败，请稍后再试',
+                icon: 'none'
               });
             }
           })
@@ -107,7 +108,8 @@ Page({
           wx.showLoading({
             title: '',
           });
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0, {
+          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+          leanCloudManager.addDevicesStatus(device, 0,"returned", {
             success:function(){
               wx.showToast({
                 title: '确认归还成功!',
@@ -118,7 +120,7 @@ Page({
             fail:function(){
               wx.showToast({
                 title: '确认归还失败，请稍后再试',
-                icon: 'noen'
+                icon: 'none'
               });
             }
           })
@@ -141,7 +143,8 @@ Page({
       confirmText: '同意',
       success: function (res) {
         if (res.confirm) {
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -2, {
+          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+          leanCloudManager.addDevicesStatus(device, -2,"borrowed", {
             success:function(){
               that.getMyDevices();
             },
@@ -170,8 +173,9 @@ Page({
           wx.showLoading({
             title: '',
             mask:true,
-          })
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -99, {
+          });
+          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+          leanCloudManager.addDevicesStatus(device, -99,"delete", {
             success:function(){
                 wx.showToast({
                   title: '删除设备成功',
