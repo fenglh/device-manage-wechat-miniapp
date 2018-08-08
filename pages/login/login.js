@@ -398,7 +398,8 @@ Page({
       wx.showToast({
         title: '绑定失败,请稍后再试',
         icon: 'none',
-      })
+      });
+      console.log('错误日志：', error);
     });
   },
 
