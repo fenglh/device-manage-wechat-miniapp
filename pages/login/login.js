@@ -26,7 +26,7 @@ Page({
     pwd: '',
     pwdInputDisabled: true,
     pwdInputFocus: false,
-    userInputFocus: false,
+    userInputFocus: true,
     userInputDisabled: false,
     loginBtndisable: true,
     animating: false,
@@ -328,8 +328,9 @@ Page({
 
       },
       fail: function (res) {
+        var responseMsg = res.data.responseMsg;
         wx.showToast({
-          title: '请求失败',
+          title: responseMsg,
           icon: 'none',
         })
       }

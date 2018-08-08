@@ -54,6 +54,7 @@ Page({
   deleteBindOpenId: function ( youOpenId) {
     wx.showLoading({
       title: '',
+      mask:true,
     })
     var Users = AV.Object.extend('Users');
     var that = this;

@@ -5,10 +5,10 @@
   <image class='logo' src='../images/logo@2x.png'></image>
 
   <view class='input-view' animation='{{inputViewAnimation}}'>
-    <input animation='{{userInputAnimation}}' focus='{{userInputFocus}}' catchtouchstart="userBindtap" disabled='{{userInputDisabled}}' class='input-user' value='{{user}}' type='number' bindfocus='showInputTips' bindblur='hideInputTips' bindinput='userBindinput'
+    <input animation='{{userInputAnimation}}' focus='{{userInputFocus}}' catchtouchstart="userBindtap" disabled='{{userInputDisabled}}' class='input-user'  type='number' bindfocus='showInputTips' bindblur='hideInputTips' bindinput='userBindinput'
       placeholder='员工编号' confirm-type='next' maxlength='8'></input>
 
-    <input catchtouchstart="pwdBindtap" disabled='{{pwdInputDisabled}}' animation='{{pwdInputAnimation}}' class='input-pwd' value='{{pwd}}' focus='{{pwdInputFocus}}' password='true' bindfocus='showInputTips' bindblur='hideInputTips' bindinput='pwdBindinput'
+    <input catchtouchstart="pwdBindtap" disabled='{{pwdInputDisabled}}' animation='{{pwdInputAnimation}}' class='input-pwd'  focus='{{pwdInputFocus}}' password='true' bindfocus='showInputTips' bindblur='hideInputTips' bindinput='pwdBindinput'
       placeholder='员工密码' confirm-type='done'></input>
   </view>
 
