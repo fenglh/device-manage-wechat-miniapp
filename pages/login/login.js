@@ -352,7 +352,7 @@ Page({
         user.save().then(function (obj) {
           //保存
           var employeeInfo = {};
-          employeeInfo.objectID =obj.id;
+          employeeInfo.employeeObjectID =obj.id;
           employeeInfo.employeeID = obj.attributes["employeeID"];
           employeeInfo.employeeName = obj.attributes["employeeName"];
           app.globalData.employeeInfo = employeeInfo;
@@ -379,7 +379,7 @@ Page({
         user.save().then(function (obj) {
           //保存
           var employeeInfo = {};
-          employeeInfo.objectID = obj.id;
+          employeeInfo.employeeObjectID = obj.id;
           employeeInfo.employeeID = obj.attributes["employeeID"];
           employeeInfo.employeeName = obj.attributes["employeeName"];
           app.globalData.employeeInfo = employeeInfo;

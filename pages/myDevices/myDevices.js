@@ -249,6 +249,10 @@ Page({
 
     var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     var query = new AV.Query('Devices');
+    query.exists('dependentUser');
+    query.exists('dependentModel');
+    query.exists('dependentDevicesStatus');
+    
     query.equalTo('dependentUser', user);
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
@@ -338,7 +342,8 @@ Page({
       wx.showToast({
         title: '获取设备列表失败',
         icon: 'none',
-      })
+      });
+      console.log(error);
     });
 
   },
