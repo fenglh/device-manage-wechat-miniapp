@@ -12,7 +12,7 @@ AV.init({
 
 App({
   onLaunch: function () {
-
+    
     // 获取用户信息
     wx.getSetting({
       success: res => {
@@ -79,28 +79,6 @@ App({
   },
 
 
-  checkBindEmployeeInfo: function ({ openid, success, fail }) {
-    //在获取了openid的情况下，检查绑定关系
-    if (!openid) {
-      fail ? fail() : null
-      return;
-    }
-
-    var that = this;
-    var query = new AV.Query('Users');
-    query.equalTo('openID', openid);
-    query.first().then(function (result) {
-      if (!result) {
-        success ? success(null) : null
-      } else {
-        success ? success(result) : null
-      }
-    }, function (error) {
-      fail ? fail() : null;
-    })
-
-
-  },
 
 
   globalData: {

@@ -3,7 +3,30 @@ const AV = require('./av-live-query-weapp-min');
 const app = getApp()
 
 var leanCloud = {
-  
+
+
+
+  checkBindEmployeeInfo: function ({ openid, success, fail }) {
+    //在获取了openid的情况下，检查绑定关系
+    if (!openid) {
+      fail ? fail("openid 为空") : null
+      return;
+    }
+    var that = this;
+    var query = new AV.Query('Users');
+    query.equalTo('openID', openid);
+    query.first().then(function (result) {
+      if (!result) {
+        success ? success(null) : null
+      } else {
+        success ? success(result) : null
+      }
+    }, function (error) {
+      fail ? fail(error) : null;
+    });
+  },
+
+
   addMessageAction: function (source, destination, action, device) {
     //申请借用、拒绝、同意申请、归还提交、归还确认、增、删、改 分别对应
     //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
@@ -110,6 +133,66 @@ var leanCloud = {
     });
   },
 
+  //批量配置型号
+  test:function(){
+    var query = new AV.Query('Models');
+    query.ascending('brandID');
+    // query.skip(100);//查询限制是一次100条，总数量是148条，所以剩下的要第二次跳过前面100条继续批量插入
+    query.find().then(function(results){
+      console.log("查询结果",results);
+      var brand1000 = AV.Object.createWithoutData('Brands', "5b45b2e9fe88c200350738c5");//苹果
+      var brand1001 = AV.Object.createWithoutData('Brands', "5b45b2f5ee920a003b383b51");//华为
+      var brand1002 = AV.Object.createWithoutData('Brands', "5b45b2f9ee920a003b250388"); //小米
+
+      var brand1010 = AV.Object.createWithoutData('Brands', "5b4d43eb67f35600352f761f");//三星
+      var brand1009 = AV.Object.createWithoutData('Brands', "5b45c05eee920a003b261524");//魅族
+      var brand1007 = AV.Object.createWithoutData('Brands', "5b45b3689f5454003b212ee9");//酷派
+      var brand1008 = AV.Object.createWithoutData('Brands', "5b45c024ee920a003b2610b8");//中兴
+      var brand1006 = AV.Object.createWithoutData('Brands', "5b45b35cee920a003b384112");//oppo
+
+      var brand1005 = AV.Object.createWithoutData('Brands', "5b45b3069f5454003b7755b4");//联想
+      var brand1004 = AV.Object.createWithoutData('Brands', "5b45b3010b6160003c3e3c58");//锤子
+      var brand1003 = AV.Object.createWithoutData('Brands', "5b45b2fc9f5454003b775556");//vivo
+
+      results.forEach(function(item, index){
+
+        var modelAVObject = AV.Object.createWithoutData('Models', item.id);
+        var brandID =item.get("brandID");
+        if (brandID == "1000"){
+          modelAVObject.set('dependent', brand1000);
+        }else if (brandID == "1001") {
+          modelAVObject.set('dependent', brand1001);
+        }else if (brandID == "1002") {
+          modelAVObject.set('dependent', brand1002);
+        }else if(brandID == "1003"){
+          modelAVObject.set('dependent', brand1003);
+        } else if (brandID == "1004") {
+          modelAVObject.set('dependent', brand1004);
+        } else if (brandID == "1005") {
+          modelAVObject.set('dependent', brand1005);
+        } else if (brandID == "1006") {
+          modelAVObject.set('dependent', brand1006);
+        } else if (brandID == "1007") {
+          modelAVObject.set('dependent', brand1007);
+        } else if (brandID == "1008") {
+          modelAVObject.set('dependent', brand1008);
+        } else if (brandID == "1009") {
+          modelAVObject.set('dependent', brand1009);
+        } else if (brandID == "1010") {
+          modelAVObject.set('dependent', brand1010);
+        } 
+
+        modelAVObject.save().then(function(result){
+          console.log('保存成功');
+        }, function(error){
+          console.log('保存失败');
+        });
+        
+      });
+    }, function(error){
+
+    });
+  },
 
   getDevices: function ({ success, fail }) {
 
@@ -263,6 +346,7 @@ var leanCloud = {
       fail ? fail(error) : null;
     });
   },
+
 
 
   // ok

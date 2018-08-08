@@ -1,5 +1,6 @@
 
-
+const leanCloudManager = require('../../utils/leanCloudManager');
+const AV = require('../../utils/av-live-query-weapp-min');
 const request = require('../../utils/request.js')
 const app = getApp()
 Page({
@@ -9,10 +10,11 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {
+    
     if (!app.globalData.openid) {
       app.login({
         success: function (openid) {
-          app.checkBindEmployeeInfo({
+          leanCloudManager.checkBindEmployeeInfo({
             openid:openid,
             success:function(res){
                 if(res){
@@ -30,14 +32,19 @@ Page({
                   console.log("未绑定");
                   wx.redirectTo({
                     url: '../login/login',
-                  })
+                  });
                 }
             },
-            fail:function(){
+            fail:function(error){
+              console.log(error);
               wx.showToast({
-                title: '查询绑定员工信息失败!',
+                title: '查询绑定员工信息失败,请重新登录',
                 icon:'none'
-              })
+              });
+              
+              wx.redirectTo({
+                url: '../login/login',
+              });
             }
           })
         },
@@ -47,7 +54,7 @@ Page({
       });
     }else {
       console.log("获取缓存的openid:", app.globalData.openid);
-      app.checkBindEmployeeInfo({
+      leanCloudManager.checkBindEmployeeInfo({
         openid: app.globalData.openid,
         success: function (res) {
           if (res) {
@@ -67,16 +74,20 @@ Page({
             //跳转到登录
             wx.redirectTo({
               url: '../login/login',
-            })
+            });
           }
         },
         fail: function () {
           wx.showToast({
-            title: '查询绑定员工信息失败!',
+            title: '查询绑定员工信息失败,请重新登录',
             icon: 'none'
-          })
+          });
+          wx.redirectTo({
+            url: '../login/login',
+          });
         }
       });
     }
   },
+
 })
