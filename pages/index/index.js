@@ -27,40 +27,44 @@ Page({
 
     leanCloudManager.getMyDevicesCount({
       success:function(count){
+        wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();
         that.setData({
           myDevicesCount: count,
         })
       },
     });
-    // leanCloudManager.getBorrowedDeviceCount({
-    //   success: function (count) {
-    //     that.setData({
-    //       borrowedDevicesCount: count,
-    //     })
-    //   },
-    // });
+    leanCloudManager.getBorrowedDeviceCount({
+      success: function (count) {
+        wx.stopPullDownRefresh();
+        wx.hideNavigationBarLoading();
+        that.setData({
+          borrowedDevicesCount: count,
+        })
+      },
+    });
 
-    // leanCloudManager.getDevices({
-    //   success:function(devices){
-    //     wx.hideNavigationBarLoading();
-    //     var show = false;
-    //     if(devices.length <= 0){
-    //       show = true;
-    //     }
-    //     that.setData({
-    //       showEmptyView: show,
-    //       allDevices: devices,
-    //       devices: devices
-    //     })
-    //   },
-    //   fail:function(error){
-    //     wx.showToast({
-    //       title: '获取设备列表失败',
-    //       icon: 'none',
-    //     });
-    //   }
-    // });
+    leanCloudManager.getDevices({
+      success:function(devices){
+        wx.stopPullDownRefresh();
+        wx.hideNavigationBarLoading();
+        var show = false;
+        if(devices.length <= 0){
+          show = true;
+        }
+        that.setData({
+          showEmptyView: show,
+          allDevices: devices,
+          devices: devices
+        })
+      },
+      fail:function(error){
+        wx.showToast({
+          title: '获取设备列表失败',
+          icon: 'none',
+        });
+      }
+    });
 
   },
   onLoad: function () {
