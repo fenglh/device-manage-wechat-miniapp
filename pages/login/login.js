@@ -204,7 +204,7 @@ Page({
     if (this.data.animating) {
       var that = this;
       setTimeout(function () {
-        that.bindUserInputTap()
+        that.userBindtap()
       }.bind(this), 100)
       console.log('动画中，延时执行')
       return;
