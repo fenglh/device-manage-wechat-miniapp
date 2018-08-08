@@ -2,7 +2,7 @@
 <view style='  display: flex; flex-direction: column;'>
 
   <view class="menu">
-    <image class="avatar" src="{{userInfo.avatarUrl.length > 0 ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
+    <image class="avatar" src="{{userInfo  ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
     <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='getUserInfo'>
     </button>
 
