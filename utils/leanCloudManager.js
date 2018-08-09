@@ -220,7 +220,7 @@ var leanCloud = {
           //设备借用人
           var borrowEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').id : null) : null;
           var borrowEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeID') : null) : null;
-          var borrowEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
+          var borrowEmployeeName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
 
           //用户信息
           var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
@@ -243,7 +243,7 @@ var leanCloud = {
 
           obj.borrowEmployeeObjectID = borrowEmployeeObjectID;
           obj.borrowEmployeeID = borrowEmployeeID;
-          obj.borrowEmployeeObjectName = borrowEmployeeObjectName;
+          obj.borrowEmployeeName = borrowEmployeeName;
 
           obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
           obj.statusActionEmployeeID = statusActionEmployeeID;
@@ -327,7 +327,7 @@ var leanCloud = {
           //设备借用人
           var borrowEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').id : null) : null;
           var borrowEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeID') : null) : null;
-          var borrowEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
+          var borrowEmployeeName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
 
 
           //用户信息
@@ -354,7 +354,7 @@ var leanCloud = {
 
           obj.borrowEmployeeObjectID = borrowEmployeeObjectID;
           obj.borrowEmployeeID = borrowEmployeeID;
-          obj.borrowEmployeeObjectName = borrowEmployeeObjectName;
+          obj.borrowEmployeeName = borrowEmployeeName;
 
           obj.employeeObjectID = employeeObjectID;
           obj.employeeID = employeeID;
@@ -375,6 +375,108 @@ var leanCloud = {
       fail ? fail(error) : null;
     });
   },
+
+  // ok
+  getMyDevices: function ({ success, fail }) {
+    var that = this;
+    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var query = new AV.Query('Devices');
+    query.exists('dependentUser');
+    query.exists('dependentModel');
+    query.exists('dependentDevicesStatus');
+
+    query.equalTo('dependentUser', user);
+    query.include(['dependentModel.dependent']);
+    query.include(['dependentUser']);
+    query.include(['dependentDevicesStatus.dependentActionUser']);
+    query.include(['dependentDevicesStatus.dependentBorrowUser']);
+
+    //内嵌查询,匹配 != -99 的记录
+    var innerQuery = new AV.Query('DevicesStatus');
+    innerQuery.equalTo('status', -99);
+    query.doesNotMatchQuery('dependentDevicesStatus', innerQuery);
+
+    query.find().then(function (results) {
+      var devices = [];
+      if (results.length > 0) {
+        
+        results.forEach(function (item, index) {
+          //设备信息
+          var deviceObjectID = item.id;
+          var deviceID = item.get('deviceID');
+          var OSVersion = item.get('OSVersion');
+          var companyCode = item.get('companyCode');
+          var remark = item.get('remark');
+          //型号
+          var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
+          var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
+          //品牌
+          var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').get('brand') : null) : null;
+          var brandObjectID = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').id : null) : null;
+
+          //状态
+          var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+          var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
+
+          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id : null) : null;
+          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeID') : null) : null;
+          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeName') : null) : null;
+
+          //设备借用人
+          var borrowEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').id : null) : null;
+          var borrowEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeID') : null) : null;
+          var borrowEmployeeName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
+
+          //用户信息
+          var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
+          var employeeID = item.get('dependentUser') ? item.get('dependentUser').get('employeeID') : null;
+          var employeeName = item.get('dependentUser') ? item.get('dependentUser').get('employeeName') : null;
+          var employeeOpenID = item.get('dependentUser') ? item.get('dependentUser').get('openID') : null;
+          var obj = {};
+          obj.deviceObjectID = deviceObjectID;
+          obj.deviceID = deviceID;
+          obj.OSVersion = OSVersion;
+          obj.companyCode = companyCode;
+          obj.remark = remark;
+          obj.modelObjectID = modelObjectID;
+          obj.model = model;
+          obj.brand = brand;
+          obj.brandObjectID = brandObjectID;
+          obj.status = status;
+          obj.statusObjectID = statusObjectID;
+          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
+          obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
+          obj.statusActionEmployeeID = statusActionEmployeeID;
+          obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
+
+          obj.borrowEmployeeObjectID = borrowEmployeeObjectID;
+          obj.borrowEmployeeID = borrowEmployeeID;
+          obj.borrowEmployeeName = borrowEmployeeName;
+
+          obj.employeeObjectID = employeeObjectID;
+          obj.employeeID = employeeID;
+          obj.employeeName = employeeName;
+          obj.employeeOpenID = employeeOpenID;
+          devices.push(obj);
+
+        });
+
+        //排序
+        devices.sort(function (a, b) {
+          //降序
+          return b.status - a.status;
+        });
+      } 
+      success ? success(devices) : null;
+    }, function (error) {
+      fail ? fail(error) : null;
+    });
+
+  },
+
 
 
   //我的设备数量
@@ -436,13 +538,50 @@ var leanCloud = {
 
   //获取前30条日志记录
   getLogs: function ({ success, fail }){
+    var that = this;
     var query = new AV.Query('DevicesStatus');
     query.descending('actionTimestamp'); //降序
     query.limit(30);
     query.include(['dependentDevice.dependentModel']);
+    query.include(['dependentDevice.dependentUser']);
     query.include(['dependentActionUser']);
+    query.include(['dependentBorrowUser']);
     query.find().then(function(results){
-      success ? success(results) : null;
+
+      var devices = [];
+      results.forEach(function (item, index) {
+        var action = item.get('action');
+        var status = item.get('status');
+        var statusActionTimestamp = item.get('actionTimestamp');
+        var statusActionEmployeeObjectName = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeName') : null;
+        var statusActionEmployeeID = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeID') : null;
+
+        var borrowEmployeeName = item.get('dependentBorrowUser') ? item.get('dependentBorrowUser').get('employeeName') : null;
+        var borrowEmployeeID = item.get('dependentBorrowUser') ? item.get('dependentBorrowUser').get('employeeID') : null;
+
+        var borrowEmployeeName = item.get('dependentBorrowUser') ? item.get('dependentBorrowUser').get('employeeName') : null;
+        var borrowEmployeeID = item.get('dependentBorrowUser') ? item.get('dependentBorrowUser').get('employeeID') : null;
+
+        var deviceID = item.get('dependentDevice') ? item.get('dependentDevice').get('deviceID') : null;
+        var model = item.get('dependentDevice') ? (item.get('dependentDevice').get('dependentModel') ? item.get('dependentDevice').get('dependentModel').get('model') : null) : null;
+        var deviceOwnerEmployeeName = item.get('dependentDevice') ? (item.get('dependentDevice').get('dependentUser') ? item.get('dependentDevice').get('dependentUser').get("employeeName"):null):null;
+        var deviceOwnerEmployeeID = item.get('dependentDevice') ? (item.get('dependentDevice').get('dependentUser') ? item.get('dependentDevice').get('dependentUser').get("employeeID") : null) : null;
+        var obj = {};
+        obj.status = status;
+        obj.action = action;
+        obj.deviceID = deviceID;
+        obj.model = model;
+        
+        obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
+        obj.statusActionEmployeeID = statusActionEmployeeID;
+        obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
+        obj.borrowEmployeeID = borrowEmployeeID;
+        obj.borrowEmployeeName = borrowEmployeeName;
+        obj.deviceOwnerEmployeeName = deviceOwnerEmployeeName;
+        obj.deviceOwnerEmployeeID = deviceOwnerEmployeeID;
+        devices.push(obj);
+      });
+      success ? success(devices) : null;
     },
     function(error){
       fail ? fail(error) : null;

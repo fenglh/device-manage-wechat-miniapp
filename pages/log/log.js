@@ -10,7 +10,7 @@ Page({
 
   data: {
 
-    list:[],
+    devices:[],
 
   },
 
@@ -25,53 +25,34 @@ Page({
     });
     var that = this;
     leanCloudManager.getLogs({
-      success:function(results){
-        console.log(results);
-        var list = [];
-        results.forEach(function(item, index){
-          var action = item.get('action');
-          var status = item.get('status');
-          var actionTimestamp = item.get('actionTimestamp');
-          var actionUserEmployeeName = item.get('dependentActionUser')?item.get('dependentActionUser').get('employeeName'):null;
-          var actionUserEmployeeID = item.get('dependentActionUser')?item.get('dependentActionUser').get('employeeID'):null;
-          var deviceID = item.get('dependentDevice')?item.get('dependentDevice').get('deviceID'):null;
-          var deviceModel = item.get('dependentDevice') ? (item.get('dependentDevice').get('dependentModel') ? item.get('dependentDevice').get('dependentModel').get('model'):null):null;
-
-          var obj = {};
-          obj.actionDate = leanCloudManager.formatDateTime(actionTimestamp);
-          obj.actionUserEmployeeName = actionUserEmployeeName;
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-
-          if(action == "add"){
-            action = "新增了设备:"
-          }else if(action == "delete"){
-            action = "删除了设备:"
+      success: function (devices){
+        devices.forEach(function(item,index){
+          var action = item.action
+          if (action == "add") {
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "新增了设备:"
+          } else if (action == "delete") {
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "删除了设备:"
           } else if (action == "edit") {
-            action = "编辑了设备:"
+            action = "【" +item.statusActionEmployeeObjectName + "】" + "编辑了设备:"
           } else if (action == "applying") {
-            action = "申请了设备:"
+            action = "【" + item.borrowEmployeeName + "】" + "向" + "【" + item.deviceOwnerEmployeeName + "】"+ "提交申请设备:"
           } else if (action == "cancel") {
-            action = "取消申请了设备:"
+            action = "【" + item.borrowEmployeeName +"】"+ "取消了申请设备:"
           } else if (action == "borrowed") {
-            action = "借用了设备:"
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "同意了" + "【" + item.borrowEmployeeName + "】"+ "借用设备:"
           } else if (action == "returning") {
-            action = "归还设备:"
+            action = "【" + item.borrowEmployeeName + "】" + "向" + "【" + item.deviceOwnerEmployeeName + "】"+ "提交归还设备:"
           } else if (action == "returned") {
-            action = "确认归还了设备:"
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "确认了" + "【" + item.borrowEmployeeName + "】"+ "归还设备:"
           } else if (action == "rejected") {
-            action = "拒绝该设备被申请:"
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "拒绝了" + "【" + item.borrowEmployeeName + "】" + "申请设备:"
           } 
-          obj.action = action;
-          obj.deviceModel = deviceModel + "(" + deviceID + ")";
-          if (deviceID){
-            list.push(obj);
-          }
+          item.action = action;
 
         });
-
         that.setData({
-          list:list,
-        })
+          devices: devices,
+        });
       },
       fial:function(error){
         wx.showToast({

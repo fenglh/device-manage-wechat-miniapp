@@ -106,7 +106,7 @@ Page({
               mask: true,
             });
             //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-            leanCloudManager.addDoDevicesStatus(device.deviceObjectID,null, 0,"cancel", {
+            leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, 0,"cancel", {
               success:function(){
                 wx.showToast({
                   title: "取消申请成功!",
