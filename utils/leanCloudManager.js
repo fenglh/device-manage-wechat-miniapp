@@ -45,7 +45,7 @@ var leanCloud = {
     remark?deviceAVObject.set('remark', remark):null;
     deviceAVObject.save().then(function (deviceObject) {
 
-      that.addDevicesStatus(deviceObject.id, 0, "add", {
+      that.addDoDevicesStatus(deviceObject.id, null,0, "add", {
         success:function(result){
           success ? success(result) : null;
         },
@@ -71,7 +71,7 @@ var leanCloud = {
     deviceAVObject.set('OSVersion', OSVersion);
     deviceAVObject.set('remark', remark);
     deviceAVObject.save().then(function (result) {
-      that.addDevicesStatus(deviceObjectID,0, "edit", {
+      that.addDoDevicesStatus(deviceObjectID,null,0, "edit", {
         success:function(result){
           //增加编辑状态成功
           success ? success(result) : null;
@@ -87,8 +87,7 @@ var leanCloud = {
   },
 
 
-  //添加一个状态
-  addDevicesStatus: function(deviceObjectID, status, action, { success, fail }) {
+  addDoDevicesStatus: function (deviceObjectID,borrowUserObjectID, status, action, { success, fail }) {
     var that = this;
     var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObjectID);
     var timestamp = Date.parse(new Date());
@@ -96,9 +95,15 @@ var leanCloud = {
     devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
     devicesStatusAVObject.set('action', action);
     devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-    //关联借用人
+    //关联操作人
     var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     devicesStatusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
+    //关联（借用人）
+    if (borrowUserObjectID){
+      var dependentBorrowUserAVObject = AV.Object.createWithoutData('Users', borrowUserObjectID);
+      devicesStatusAVObject.set('dependentBorrowUser', dependentBorrowUserAVObject);//关联用户
+    }
+
     //关联设备
     devicesStatusAVObject.set('dependentDevice', deviceAVObject);///状态关联关联设备（双向关联）
     //关联状态
@@ -178,6 +183,7 @@ var leanCloud = {
     query.include(['dependentModel.dependent']);
     query.include(['dependentUser']);
     query.include(['dependentDevicesStatus.dependentActionUser']);
+    query.include(['dependentDevicesStatus.dependentBorrowUser']);
 
     //内嵌查询,匹配 != -99 且，状态不存在的记录
     var innerQuery = new AV.Query('DevicesStatus');
@@ -206,10 +212,15 @@ var leanCloud = {
 
           var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
           var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
-
+          //状态操作人
           var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id : null) : null;
           var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeID') : null) : null;
           var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeName') : null) : null;
+
+          //设备借用人
+          var borrowEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').id : null) : null;
+          var borrowEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeID') : null) : null;
+          var borrowEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
 
           //用户信息
           var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
@@ -229,9 +240,15 @@ var leanCloud = {
           obj.status = status;
           obj.statusObjectID = statusObjectID;
           obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp)
+
+          obj.borrowEmployeeObjectID = borrowEmployeeObjectID;
+          obj.borrowEmployeeID = borrowEmployeeID;
+          obj.borrowEmployeeObjectName = borrowEmployeeObjectName;
+
           obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
           obj.statusActionEmployeeID = statusActionEmployeeID;
           obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
+
 
           obj.employeeObjectID = employeeObjectID;
           obj.employeeID = employeeID;
@@ -252,6 +269,112 @@ var leanCloud = {
     });
   },
 
+
+  // ok
+  getBorrowedDevices: function ({ success, fail }) {
+    var that = this;
+
+    //组合加内嵌查询
+    var innerQuery1 = new AV.Query('DevicesStatus');
+    innerQuery1.notEqualTo('status', 0);
+    var innerQuery2 = new AV.Query('DevicesStatus');
+    innerQuery2.notEqualTo('status', -99);
+    var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
+
+    var innerQuery3 = new AV.Query('DevicesStatus');
+    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    innerQuery3.equalTo('dependentBorrowUser', borrowedUser);
+    var query = new AV.Query('Devices');
+
+    var query123 = AV.Query.and(innerQuery12, innerQuery3);
+
+    //执行内嵌操作
+    query.matchesQuery('dependentDevicesStatus', query123);
+    query.include(['dependentModel.dependent']);
+    query.include(['dependentUser']);
+    query.include(['dependentDevicesStatus.dependentActionUser']);
+    query.include(['dependentDevicesStatus.dependentBorrowUser']);
+
+    query.find().then(function (results) {
+
+      var devices = [];
+      if (results.length > 0) {
+        
+        results.forEach(function (item, index) {
+          //设备信息
+          var deviceObjectID = item.id;
+          var deviceID = item.get('deviceID');
+          var OSVersion = item.get('OSVersion');
+          var companyCode = item.get('companyCode');
+          var remark = item.get('remark');
+          //型号
+          var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
+          var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
+          //品牌
+          var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').get('brand') : null) : null;
+          //状态
+          var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+
+          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
+          var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
+
+          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id : null) : null;
+          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeID') : null) : null;
+          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeName') : null) : null;
+
+
+          //设备借用人
+          var borrowEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').id : null) : null;
+          var borrowEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeID') : null) : null;
+          var borrowEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentBorrowUser') ? item.get('dependentDevicesStatus').get('dependentBorrowUser').get('employeeName') : null) : null;
+
+
+          //用户信息
+          var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
+          var employeeID = item.get('dependentUser') ? item.get('dependentUser').get('employeeID') : null;
+          var employeeName = item.get('dependentUser') ? item.get('dependentUser').get('employeeName') : null;
+          var employeeOpenID = item.get('dependentUser') ? item.get('dependentUser').get('openID') : null;
+          var obj = {};
+          obj.deviceObjectID = deviceObjectID;
+          obj.deviceID = deviceID;
+          obj.OSVersion = OSVersion;
+          obj.companyCode = companyCode;
+          obj.remark = remark;
+          obj.modelObjectID = modelObjectID;
+          obj.model = model;
+          obj.brand = brand;
+
+          obj.status = status;
+          obj.statusObjectID = statusObjectID;
+          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
+          obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
+          obj.statusActionEmployeeID = statusActionEmployeeID;
+          obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
+
+          obj.borrowEmployeeObjectID = borrowEmployeeObjectID;
+          obj.borrowEmployeeID = borrowEmployeeID;
+          obj.borrowEmployeeObjectName = borrowEmployeeObjectName;
+
+          obj.employeeObjectID = employeeObjectID;
+          obj.employeeID = employeeID;
+          obj.employeeName = employeeName;
+          obj.employeeOpenID = employeeOpenID;
+          devices.push(obj);
+          console.log(devices);
+        });
+        //排序
+        devices.sort(function (a, b) {
+          //降序
+          return b.status - a.status;
+        });
+      } 
+      success ? success(devices) : null;
+
+    }, function (error) {
+      fail ? fail(error) : null;
+    });
+  },
 
 
   //我的设备数量
@@ -285,7 +408,7 @@ var leanCloud = {
 
     var innerQuery3 = new AV.Query('DevicesStatus');
     var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    innerQuery3.equalTo('dependentActionUser', borrowedUser);
+    innerQuery3.equalTo('dependentBorrowUser', borrowedUser);
     var query = new AV.Query('Devices');
 
     var query123 = AV.Query.and(innerQuery12, innerQuery3);

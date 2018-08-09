@@ -70,7 +70,7 @@ Page({
             mask: true,
           });
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -3, "returning", {
+          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, -3, "returning", {
             success: function () {
               wx.showToast({
                 title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
@@ -106,7 +106,7 @@ Page({
               mask: true,
             });
             //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-            leanCloudManager.addDevicesStatus(device.deviceObjectID, 0,"cancel", {
+            leanCloudManager.addDoDevicesStatus(device.deviceObjectID,null, 0,"cancel", {
               success:function(){
                 wx.showToast({
                   title: "取消申请成功!",
@@ -130,109 +130,26 @@ Page({
   // ok
   getBorrowedDevices: function () {
     var that = this;
-  
-    //组合加内嵌查询
-    var innerQuery1 = new AV.Query('DevicesStatus');
-    innerQuery1.notEqualTo('status', 0);
-    var innerQuery2 = new AV.Query('DevicesStatus');
-    innerQuery2.notEqualTo('status', -99);
-    var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
-
-    var innerQuery3 = new AV.Query('DevicesStatus');
-    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-    innerQuery3.equalTo('dependentActionUser', borrowedUser);
-    var query = new AV.Query('Devices');
-
-    var query123 = AV.Query.and(innerQuery12, innerQuery3);
-
-    //执行内嵌操作
-    query.matchesQuery('dependentDevicesStatus', query123);
-    query.include(['dependentModel.dependent']);
-    query.include(['dependentUser']);
-    query.include(['dependentDevicesStatus.dependentActionUser']);
-
-    query.find().then(function (results) {
-
-      wx.hideNavigationBarLoading();
-      wx.stopPullDownRefresh();
-
-      if (results.length > 0) {
-        var devices = [];
-        results.forEach(function (item, index) {
-          //设备信息
-          var deviceObjectID = item.id;
-          var deviceID = item.get('deviceID');
-          var OSVersion = item.get('OSVersion');
-          var companyCode = item.get('companyCode');
-          var remark = item.get('remark');
-          //型号
-          var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
-          var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
-          //品牌
-          var brand = item.get('dependentModel') ? (item.get('dependentModel').get('dependent') ? item.get('dependentModel').get('dependent').get('brand') : null) : null;
-          //状态
-          var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
-          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
-
-          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
-          var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
-
-          var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id : null) : null;
-          var statusActionEmployeeID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeID') : null) : null;
-          var statusActionEmployeeObjectName = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').get('employeeName') : null) : null;
-
-          //用户信息
-          var employeeObjectID = item.get('dependentUser') ? item.get('dependentUser').id : null;
-          var employeeID = item.get('dependentUser') ? item.get('dependentUser').get('employeeID') : null;
-          var employeeName = item.get('dependentUser') ? item.get('dependentUser').get('employeeName') : null;
-          var employeeOpenID = item.get('dependentUser') ? item.get('dependentUser').get('openID') : null;
-          var obj = {};
-          obj.deviceObjectID = deviceObjectID;
-          obj.deviceID = deviceID;
-          obj.OSVersion = OSVersion;
-          obj.companyCode = companyCode;
-          obj.remark = remark;
-          obj.modelObjectID = modelObjectID;
-          obj.model = model;
-          obj.brand = brand;
-
-          obj.status = status;
-          obj.statusObjectID = statusObjectID;
-          obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
-          obj.statusActionEmployeeObjectID = statusActionEmployeeObjectID;
-          obj.statusActionEmployeeID = statusActionEmployeeID;
-          obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
-
-          obj.employeeObjectID = employeeObjectID;
-          obj.employeeID = employeeID;
-          obj.employeeName = employeeName;
-          obj.employeeOpenID = employeeOpenID;
-          devices.push(obj);
-          console.log(devices);
-        });
-        //排序
-        devices.sort(function (a, b) {
-          //降序
-          return b.status - a.status;
-        });
-
+    leanCloudManager.getBorrowedDevices({
+      success: function (devices) {
+        wx.stopPullDownRefresh();
+        wx.hideNavigationBarLoading();
+        var show = false;
+        if (devices.length <= 0) {
+          show = true;
+        }
         that.setData({
-          showEmptyView: false,
+          showEmptyView: show,
           devices: devices
         })
-      } else {
-        that.setData({
-          devices:[],
-          showEmptyView: true,
-        })
+      },
+      fail: function (error) {
+        wx.showToast({
+          title: '获取设备列表失败',
+          icon: 'none',
+        });
       }
-    }, function (error) {
-      wx.showToast({
-        title: '获取设备列表失败',
-        icon: 'none',
-      })
     });
-
   },
 
 

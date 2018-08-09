@@ -72,7 +72,7 @@ Page({
             title: '',
           });
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0,"rejected", {
+          leanCloudManager.addDoDevicesStatus(device.deviceObjectID,null, 0,"rejected", {
             success: function () {
               wx.showToast({
                 title: '拒绝成功!',
@@ -109,7 +109,7 @@ Page({
             title: '',
           });
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0,"returned", {
+          leanCloudManager.addDoDevicesStatus(device.deviceObjectID,null, 0,"returned", {
             success:function(){
               wx.showToast({
                 title: '确认归还成功!',
@@ -144,7 +144,7 @@ Page({
       success: function (res) {
         if (res.confirm) {
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -2,"borrowed", {
+          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, -2,"borrowed", {
             success:function(){
               that.getMyDevices();
             },
@@ -179,7 +179,7 @@ Page({
               mask: true,
             });
             //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-            leanCloudManager.addDevicesStatus(device.deviceObjectID, -99, "delete", {
+            leanCloudManager.addDoDevicesStatus(device.deviceObjectID,null, -99, "delete", {
               success: function () {
                 wx.showToast({
                   title: '删除设备成功',

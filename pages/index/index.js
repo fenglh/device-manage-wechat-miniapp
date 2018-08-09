@@ -23,50 +23,13 @@ Page({
   /******************* */
   onShow: function () {
 
-    var that = this;
 
-    leanCloudManager.getMyDevicesCount({
-      success:function(count){
-        wx.stopPullDownRefresh();
-        wx.hideNavigationBarLoading();
-        that.setData({
-          myDevicesCount: count,
-        })
-      },
-    });
-    leanCloudManager.getBorrowedDeviceCount({
-      success: function (count) {
-        wx.stopPullDownRefresh();
-        wx.hideNavigationBarLoading();
-        that.setData({
-          borrowedDevicesCount: count,
-        })
-      },
-    });
-
-    leanCloudManager.getDevices({
-      success:function(devices){
-        wx.stopPullDownRefresh();
-        wx.hideNavigationBarLoading();
-        var show = false;
-        if(devices.length <= 0){
-          show = true;
-        }
-        that.setData({
-          showEmptyView: show,
-          allDevices: devices,
-          devices: devices
-        })
-      },
-      fail:function(error){
-        wx.showToast({
-          title: '获取设备列表失败',
-          icon: 'none',
-        });
-      }
-    });
+    this.getBorrowedDeviceCount();
+    this.getMyDevicesCount();
+    this.getDevices();
 
   },
+
   onLoad: function () {
     wx.setNavigationBarTitle({
       title: '机可借',
@@ -196,40 +159,14 @@ Page({
           var device = that.data.devices[index];
           console.log(device);
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device.deviceObjectID, -1, "applying", {
+          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, app.globalData.employeeInfo.employeeObjectID, -1, "applying", {
             success:function(){
               wx.showToast({
                 title: '申请借用成功!',
               });
 
-              leanCloudManager.getDevices({
-                success: function (devices) {
-                  wx.hideNavigationBarLoading();
-                  var show = false;
-                  if (devices.length <= 0) {
-                    show = true;
-                  }
-                  that.setData({
-                    showEmptyView: show,
-                    allDevices: devices,
-                    devices: devices
-                  })
-                },
-                fail: function (error) {
-                  wx.showToast({
-                    title: '获取设备列表失败',
-                    icon: 'none',
-                  });
-                }
-              });
-              
-              leanCloudManager.getBorrowedDeviceCount({
-                success: function (count) {
-                  that.setData({
-                    borrowedDevicesCount: count,
-                  })
-                },
-              });
+              that.getDevices();              
+              that.getBorrowedDeviceCount();
             },
             fail:function(){
               wx.showToast({
@@ -270,7 +207,54 @@ Page({
     });
   },
 
-
+  getBorrowedDeviceCount:function(){
+    var that = this;
+    leanCloudManager.getBorrowedDeviceCount({
+      success: function (count) {
+        wx.stopPullDownRefresh();
+        wx.hideNavigationBarLoading();
+        that.setData({
+          borrowedDevicesCount: count,
+        })
+      },
+    });
+  },
+  getMyDevicesCount:function(){
+    var that = this;
+    leanCloudManager.getMyDevicesCount({
+      success: function (count) {
+        wx.stopPullDownRefresh();
+        wx.hideNavigationBarLoading();
+        that.setData({
+          myDevicesCount: count,
+        })
+      },
+    });
+  },
+  getDevices:function(){
+    var that = this;
+    leanCloudManager.getDevices({
+      success: function (devices) {
+        wx.stopPullDownRefresh();
+        wx.hideNavigationBarLoading();
+        var show = false;
+        if (devices.length <= 0) {
+          show = true;
+        }
+        that.setData({
+          showEmptyView: show,
+          allDevices: devices,
+          devices: devices
+        })
+      },
+      fail: function (error) {
+        wx.showToast({
+          title: '获取设备列表失败',
+          icon: 'none',
+        });
+      }
+    });
+  },
 
 
   //事件
