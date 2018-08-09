@@ -10,7 +10,7 @@
      <image class="more" src="../images/more7.png" background-size="cover" bindtap='bindMore'></image>  
      <view class="vertical-line line-right"></view> 
 
-    <input class='search' bindinput='bindSearchInput' bindconfirm="bindSearchConfirm" placeholder='搜索：设备编码/系统版本/型号'></input>
+    <input class='search' bindinput='bindSearchInput' bindconfirm="bindSearchConfirm" placeholder='搜索：设备编码/系统版本/型号/姓名等'></input>
   </view>
 
   <view class='page__bd_spacing ' style=' margin-top:100rpx;'>
@@ -122,6 +122,9 @@
           <view class='detail-label'>设备编号：{{item.deviceID}}</view>
           <view class='detail-label'>公司编号：{{item.companyCode}}</view>
           <view class='detail-label'>设备归属：{{item.employeeName}}</view>
+          <view wx:if="{{item.remark}}">
+            <view class='detail-label'>备注：{{item.remark}}</view>
+          </view>
 
           <view wx:if="{{item.status && item.status != 0}}">
             <view class='status-borrowing' style='padding:2px;'>{{item.status==-1?'申请人':(item.status==-2 ?"借用人":(item.status==-3?"归还人":""))}}：{{item.statusActionEmployeeObjectName}}</view>

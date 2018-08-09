@@ -27,35 +27,14 @@ var leanCloud = {
   },
 
 
-  addMessageAction: function (source, destination, action, device) {
-    //申请借用、拒绝、同意申请、归还提交、归还确认、增、删、改 分别对应
-    //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-    //message包含4个要素:source、destination、timestmap、action 
-    var timestamp = Date.parse(new Date());
-
-    var messageAVObject = AV.Object('Messages');
-    action && messageAVObject.set('action', action);
-    source && messageAVObject.set('dependentSource', source);
-    destination && messageAVObject.set('dependentDestination', destination);
-    device && messageAVObject.set('dependentDevice', device);
-    messageAVObject.set('actionTimestamp', timestamp);
-    messageAVObject.save().then(function (result) {
-      console.log('消息保存成功!');
-    }, function (error) {
-      console.log('消息保存失败!');
-    });
-  },
-
-  addDevice: function (deviceCode, companyCode, modelObjectID, osVersion, { success, fail }){
+  addDevice: function (deviceCode, companyCode, modelObjectID, osVersion,remark, { success, fail }){
 
     var that = this;
     var timestamp = Date.parse(new Date());
-
     var deviceAVObject = AV.Object('Devices');
     //关联的型号
     var modelAVObject = AV.Object.createWithoutData('Models', modelObjectID);
     deviceAVObject.set('dependentModel', modelAVObject);
-
     //关联用户
     var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
     deviceAVObject.set('dependentUser', userAVObject);
@@ -63,34 +42,24 @@ var leanCloud = {
     deviceAVObject.set('OSVersion', osVersion);
     deviceAVObject.set('deviceID', deviceCode);
     deviceAVObject.set('companyCode', companyCode);
+    remark?deviceAVObject.set('remark', remark):null;
     deviceAVObject.save().then(function (deviceObject) {
 
-      //再添加状态，否会提示循环
-      var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObject.id);
-      var statusAVObject = new AV.Object('DevicesStatus');
-      statusAVObject.set('status', 0); //0闲置，-1 申请中，-2借出，-3归还中 
-      statusAVObject.set('actionTimestamp', timestamp);//当前操作时间
-      statusAVObject.set('action', "add");
-      //状态-借用人 关联
-      var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-      statusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
-      //状态-设备关联
-      statusAVObject.set('dependentDevice', deviceAVObject);//关联设备
-      //关联状态
-      deviceAVObject.set('dependentDevicesStatus', statusAVObject);
-      deviceAVObject.save().then(function (result) {
-        that.addMessageAction(userAVObject, null, "add", deviceAVObject);
-        success ? success(result) : null;
-      }, function (error) {
-        fail ? fail(error) : null;
-      })
+      that.addDevicesStatus(deviceObject.id, 0, "add", {
+        success:function(result){
+          success ? success(result) : null;
+        },
+        fail:function(error){
+          fail ? fail(error) : null;
+        }
+      });
     }, function (error) {
       fail ? fail(error) : null;
     });
   },
 
   //编辑设备
-  editDevice: function (deviceObjectID, companyCode,modelObjectID, OSVersion, {success, fail}){
+  editDevice: function (deviceObjectID, companyCode,modelObjectID, OSVersion,remark, {success, fail}){
     var that = this;
     var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObjectID);
     //公司编码
@@ -100,10 +69,18 @@ var leanCloud = {
     deviceAVObject.set('dependentModel', modelAVObject);
     //系统版本
     deviceAVObject.set('OSVersion', OSVersion);
+    deviceAVObject.set('remark', remark);
     deviceAVObject.save().then(function (result) {
-      var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
-      that.addMessageAction(userAVObject, null, "edit", deviceAVObject);
-      success? success(result):null;
+      that.addDevicesStatus(deviceObjectID,0, "edit", {
+        success:function(result){
+          //增加编辑状态成功
+          success ? success(result) : null;
+        },
+        fail:function(error){
+          //增加编辑状态失败
+          fail ? fail(error) : null;
+        }
+      });
     }, function (error) {
       fail ? fail(error) : null;
     });
@@ -111,9 +88,9 @@ var leanCloud = {
 
 
   //添加一个状态
-  addDevicesStatus: function (device, status, action, { success, fail }) {
+  addDevicesStatus: function(deviceObjectID, status, action, { success, fail }) {
     var that = this;
-    var deviceAVObject = AV.Object.createWithoutData('Devices', device.deviceObjectID);
+    var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObjectID);
     var timestamp = Date.parse(new Date());
     var devicesStatusAVObject = new AV.Object('DevicesStatus');
     devicesStatusAVObject.set('status', status); //0闲置，-1 申请中，-2借出，-3归还中 -99删除
@@ -217,6 +194,7 @@ var leanCloud = {
           var deviceID = item.get('deviceID');
           var OSVersion = item.get('OSVersion');
           var companyCode = item.get('companyCode');
+          var remark = item.get('remark');
           //型号
           var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
           var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
@@ -243,6 +221,7 @@ var leanCloud = {
           obj.deviceID = deviceID;
           obj.OSVersion = OSVersion;
           obj.companyCode = companyCode;
+          obj.remark = remark;
           obj.modelObjectID = modelObjectID;
           obj.model = model;
           obj.brand = brand;

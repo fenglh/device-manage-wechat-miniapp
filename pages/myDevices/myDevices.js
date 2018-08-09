@@ -72,7 +72,7 @@ Page({
             title: '',
           });
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device, 0,"rejected", {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0,"rejected", {
             success: function () {
               wx.showToast({
                 title: '拒绝成功!',
@@ -109,7 +109,7 @@ Page({
             title: '',
           });
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device, 0,"returned", {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, 0,"returned", {
             success:function(){
               wx.showToast({
                 title: '确认归还成功!',
@@ -144,7 +144,7 @@ Page({
       success: function (res) {
         if (res.confirm) {
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device, -2,"borrowed", {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, -2,"borrowed", {
             success:function(){
               that.getMyDevices();
             },
@@ -167,47 +167,78 @@ Page({
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
     var that = this;
-    wx.showActionSheet({
-      itemList: ['删除'],
-      success: function (res) {
-        if(res.tapIndex == 0){
-          wx.showLoading({
-            title: '',
-            mask:true,
-          });
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device, -99,"delete", {
-            success:function(){
+    //闲置状态下才可删除
+    if (!device.status || device.status == 0) {
+      wx.showActionSheet({
+        itemList: ['删除'],
+        success: function (res) {
+          that.closeSlide(index);
+          if (res.tapIndex == 0) {
+            wx.showLoading({
+              title: '',
+              mask: true,
+            });
+            //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+            leanCloudManager.addDevicesStatus(device.deviceObjectID, -99, "delete", {
+              success: function () {
                 wx.showToast({
                   title: '删除设备成功',
                 });
                 that.getMyDevices();
-            },
-            fail:function(error){
-              wx.showToast({
-                title: '删除设备失败',
-                icon:'none',
-              });
-              console.log(error);
-            }
-          })
-        };
-      },
-      fail: function (res) {
-        that.closeSlide(index);
-      }
-    })
+              },
+              fail: function (error) {
+                wx.showToast({
+                  title: '删除设备失败',
+                  icon: 'none',
+                });
+                console.log(error);
+              }
+            })
+          };
+        },
+        fail: function (res) {
+          that.closeSlide(index);
+        }
+      })
+    } else {
+      wx.showModal({
+        title: '提示',
+        content: '请在设备“闲置”状态时，进行删除操作',
+        showCancel: false,
+        success: function (res) {
+          that.closeSlide(index);
+        }
+      })
+    }
+    
+
   },
 
   //ok
   bindEdit:function(e){
     var index = e.currentTarget.dataset.index;
     var device = this.data.devices[index];
-    wx.navigateTo({
-      url: '../device/device?' + "device=" + JSON.stringify(device) + "&isEdit=true",
-    });
-    this.closeSlide(index);
+    var that = this;
+    if (!device.status || device.status == 0 ){
+      wx.navigateTo({
+        url: '../device/device?' + "device=" + JSON.stringify(device) + "&isEdit=true",
+      });
+      that.closeSlide(index);
+    }else {
+      wx.showModal({
+        title: '提示',
+        content: '请在设备“闲置”状态时，进行修编辑作',
+        showCancel:false,
+        success: function (res) {
+          that.closeSlide(index);
+        }
+      })
+    }
+
+
+    
   },
+
 
 
   //ok
@@ -276,6 +307,7 @@ Page({
           var deviceID = item.get('deviceID');
           var OSVersion = item.get('OSVersion');
           var companyCode = item.get('companyCode');
+          var remark = item.get('remark');
           //型号
           var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
           var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
@@ -304,6 +336,7 @@ Page({
           obj.deviceID = deviceID;
           obj.OSVersion = OSVersion;
           obj.companyCode = companyCode;
+          obj.remark = remark;
           obj.modelObjectID = modelObjectID;
           obj.model = model;
           obj.brand = brand;

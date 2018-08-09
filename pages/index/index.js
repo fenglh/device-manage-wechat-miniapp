@@ -103,9 +103,10 @@ Page({
 
   // ok
   searchContent: function (content) {
+    var that = this;
     if (content == "") {
       this.setData({
-        allDevices:that.data.devices,
+        devices: that.data.allDevices,
       });
       return;
     }
@@ -113,6 +114,8 @@ Page({
     this.data.allDevices.forEach(function (item, index) {
       if (item.model.toUpperCase().indexOf(content.toUpperCase()) != -1 ||
         item.OSVersion.indexOf(content) != -1 ||
+        item.employeeName.indexOf(content) != -1 ||
+        (item.remark && item.remark.indexOf(content) != -1) ||
         item.deviceID.indexOf(content) != -1) {
         devices.push(item);
       }
@@ -193,7 +196,7 @@ Page({
           var device = that.data.devices[index];
           console.log(device);
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device, -1, "applying", {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, -1, "applying", {
             success:function(){
               wx.showToast({
                 title: '申请借用成功!',
@@ -264,7 +267,6 @@ Page({
 
     this.setData({
       devices: devices,
-      allDevices: devices,
     });
   },
 

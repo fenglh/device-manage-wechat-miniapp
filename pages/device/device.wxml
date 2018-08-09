@@ -1,21 +1,21 @@
 <view class="page" xmlns:wx="http://www.w3.org/1999/xhtml">
 
-      <view class="page__hd {{isEdit?'page__hd_hide':''}}" >
+  <view class="page__hd {{isEdit?'page__hd_hide':''}}">
 
-      <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">{{topTips}}</view>
-      
-        <view class='hd_scan' bindtap='bindScanClick'>
-          <view  >          
-            <view class="page__title">资产识别</view>
-            <view class="page__desc">点击扫描设备黄色标签</view>
-          </view>
-          <image style='width:60px; height:60px' src='../images/scan3.png'>
-          </image>
-          <image style='width:30px; height:30px' src='../images/right.png'>
-          </image>
+    <view class="weui-toptips weui-toptips_warn" wx:if="{{showTopTips}}">{{topTips}}</view>
 
-        </view>
+    <view class='hd_scan' bindtap='bindScanClick'>
+      <view>
+        <view class="page__title">资产识别</view>
+        <view class="page__desc">点击扫描设备黄色标签</view>
+      </view>
+      <image style='width:60px; height:60px' src='../images/scan3.png'>
+      </image>
+      <image style='width:30px; height:30px' src='../images/right.png'>
+      </image>
+
     </view>
+  </view>
 
   <view class="page__bd">
 
@@ -41,24 +41,24 @@
       </view>
 
 
-        <view class="weui-cell weui-cell_select">
+      <view class="weui-cell weui-cell_select">
         <view class="weui-cell__hd weui-cell__hd_in-select-after">
           <view class="weui-label">设备品牌</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindBrandChange" value="{{brandIndex}}" range-key="brand"  range="{{brands}}">
+          <picker bindchange="bindBrandChange" value="{{brandIndex}}" range-key="brand" range="{{brands}}">
             <view class="weui-select weui-select_in-select-after">{{brands[brandIndex].brand}}</view>
           </picker>
         </view>
       </view>
 
 
-       <view class="weui-cell weui-cell_select">
+      <view class="weui-cell weui-cell_select">
         <view class="weui-cell__hd weui-cell__hd_in-select-after">
           <view class="weui-label">设备型号</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindModelChange" value="{{modelIndex}}"  bindtap='bindModelTap' range-key="model" range="{{models}}">
+          <picker bindchange="bindModelChange" value="{{modelIndex}}" bindtap='bindModelTap' range-key="model" range="{{models}}">
             <view class="weui-select weui-select_in-select-after">{{models[modelIndex].model}}</view>
           </picker>
         </view>
@@ -69,13 +69,26 @@
           <view class="weui-label">系统版本</view>
         </view>
         <view class="weui-cell__bd">
-          <picker bindchange="bindSystemVersionChange" mode = "multiSelector" value="{{[systemVersionIndex1,systemVersionIndex2,systemVersionIndex3]}}" range="{{OSVersions}}">
+          <picker bindchange="bindSystemVersionChange" mode="multiSelector" value="{{[systemVersionIndex1,systemVersionIndex2,systemVersionIndex3]}}" range="{{OSVersions}}">
             <view class="weui-select weui-select_in-select-after">{{OSVersions[0][systemVersionIndex1]}}.{{OSVersions[1][systemVersionIndex2]}}.{{OSVersions[2][systemVersionIndex3]}}</view>
           </picker>
         </view>
       </view>
+
     </view>
-    
+
+    <view class="weui-cells__title">备注</view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell">
+        <view class="weui-cell__bd">
+          <textarea class="weui-textarea" maxlength="32" value='{{remark}}' bindinput="bindRemarkInput" placeholder="请输入文本" style="height: 46px;" />
+          <view class="weui-textarea-counter">{{remark.length ? remark.length :0}}/32</view>
+        </view>
+      </view>
+    </view>
+
+
+
     <view class="weui-btn-area">
       <button class="weui-btn" type="primary" bindtap="bindSubmit">确定</button>
     </view>

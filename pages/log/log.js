@@ -32,10 +32,10 @@ Page({
           var action = item.get('action');
           var status = item.get('status');
           var actionTimestamp = item.get('actionTimestamp');
-          var actionUserEmployeeName = item.get('dependentActionUser').get('employeeName');
-          var actionUserEmployeeID = item.get('dependentActionUser').get('employeeID');
-          var deviceID = item.get('dependentDevice').get('deviceID');
-          var deviceModel = item.get('dependentDevice').get('dependentModel').get('model');
+          var actionUserEmployeeName = item.get('dependentActionUser')?item.get('dependentActionUser').get('employeeName'):null;
+          var actionUserEmployeeID = item.get('dependentActionUser')?item.get('dependentActionUser').get('employeeID'):null;
+          var deviceID = item.get('dependentDevice')?item.get('dependentDevice').get('deviceID'):null;
+          var deviceModel = item.get('dependentDevice') ? (item.get('dependentDevice').get('dependentModel') ? item.get('dependentDevice').get('dependentModel').get('model'):null):null;
 
           var obj = {};
           obj.actionDate = leanCloudManager.formatDateTime(actionTimestamp);
@@ -63,7 +63,10 @@ Page({
           } 
           obj.action = action;
           obj.deviceModel = deviceModel + "(" + deviceID + ")";
-          list.push(obj);
+          if (deviceID){
+            list.push(obj);
+          }
+
         });
 
         that.setData({

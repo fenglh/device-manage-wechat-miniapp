@@ -70,7 +70,7 @@ Page({
             mask: true,
           });
           //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDevicesStatus(device, -3, "returning", {
+          leanCloudManager.addDevicesStatus(device.deviceObjectID, -3, "returning", {
             success: function () {
               wx.showToast({
                 title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
@@ -106,7 +106,7 @@ Page({
               mask: true,
             });
             //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-            leanCloudManager.addDevicesStatus(device, 0,"cancel", {
+            leanCloudManager.addDevicesStatus(device.deviceObjectID, 0,"cancel", {
               success:function(){
                 wx.showToast({
                   title: "取消申请成功!",
@@ -164,6 +164,7 @@ Page({
           var deviceID = item.get('deviceID');
           var OSVersion = item.get('OSVersion');
           var companyCode = item.get('companyCode');
+          var remark = item.get('remark');
           //型号
           var modelObjectID = item.get('dependentModel') ? item.get('dependentModel').id : null;
           var model = item.get('dependentModel') ? item.get('dependentModel').get('model') : null;
@@ -190,6 +191,7 @@ Page({
           obj.deviceID = deviceID;
           obj.OSVersion = OSVersion;
           obj.companyCode = companyCode;
+          obj.remark = remark;
           obj.modelObjectID = modelObjectID;
           obj.model = model;
           obj.brand = brand;

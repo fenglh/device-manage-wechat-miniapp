@@ -345,7 +345,7 @@ Page({
       if (data) {       //更新
         // 声明类型
         var user = AV.Object.createWithoutData('Users', data.id);
-        // 修改属性
+        // 编辑属性
         user.set('employeeID', employeeId);
         user.set('employeeName', employeeName);
         // 保存到云端

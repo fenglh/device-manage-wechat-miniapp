@@ -27,6 +27,7 @@ Page({
     systemVersionIndex3: 0,
     companyCode: 'A000',
     deviceCode: null,
+    remark:null,
 
   },
 
@@ -34,13 +35,13 @@ Page({
   onLoad: function (options) {
     var title = "新增设备";
     if (options.isEdit) {
-     title = "修改设备";
+     title = "编辑设备";
      this.setData({
        isEdit: true,
      })
     }
     wx.setNavigationBarTitle({
-      title: '修改设备',
+      title: '编辑设备',
     })
 
     this.data.ocrSign = this.generateOCRSign();
@@ -57,7 +58,7 @@ Page({
           var device = JSON.parse(options.device);
           that.data.deviceObjectID = device.deviceObjectID;
           console.log(device);
-          //初始化修改设备的数据
+          //初始化编辑设备的数据
           //隐藏头部
           //计算品牌
           var brandIndex = null;
@@ -98,7 +99,7 @@ Page({
           //计算版本
           var versions = device.OSVersion.split(".") || [];
           that.setData({
-            
+            remark:device.remark,
             deviceCode: device.deviceID,
             companyCode: device.companyCode,
             brandIndex: brandIndex,
@@ -247,20 +248,20 @@ Page({
     if (this.data.isEdit) {
       var osVersion = that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3];
       var modelObject=that.data.models[that.data.modelIndex];
-      leanCloudManager.editDevice(that.data.deviceObjectID, that.data.companyCode, modelObject.objectID, osVersion, {
+      leanCloudManager.editDevice(that.data.deviceObjectID, that.data.companyCode, modelObject.objectID, osVersion, that.data.remark,{
         success:function(result){
           wx.hideLoading();
           wx.navigateBack({
             delta: 1
           });
           wx.showToast({
-            title: '修改成功！',
+            title: '编辑成功！',
             icon: 'success'
           });
         },
         fail:function(error){
           wx.showToast({
-            title: '修改失败,请稍后再试!',
+            title: '编辑失败,请稍后再试!',
             icon: 'none',
           });
         }
@@ -293,7 +294,7 @@ Page({
         var osVersion = that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3];
 
         var selectedModel = that.data.models[that.data.modelIndex];
-        leanCloudManager.addDevice(that.data.deviceCode, that.data.companyCode, selectedModel.objectID, osVersion, {
+        leanCloudManager.addDevice(that.data.deviceCode, that.data.companyCode, selectedModel.objectID, osVersion, that.data.remark,{
           success:function(result){
             wx.hideLoading();
             wx.navigateBack({
@@ -317,6 +318,12 @@ Page({
         });
       });
     }
+  },
+  bindRemarkInput:function(e){
+    this.setData({
+      remark: e.detail.value
+    });
+    console.log(e.detail.value);
   },
 
   bindScanClick: function () {
