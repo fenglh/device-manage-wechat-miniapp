@@ -36,7 +36,7 @@ Component({
 
       if (!this.data.employeeId){
         wx.showToast({
-          title: '请填写员工编号',
+          title: '请填写员工手机号码',
           icon:'none',
         })
         this.setData({
@@ -47,7 +47,7 @@ Component({
 
       if (!this.data.employeeName) {
         wx.showToast({
-          title: '请填写员工姓名',
+          title: '请填写员工编号',
           icon: 'none',
         });
         this.setData({
@@ -58,7 +58,7 @@ Component({
       //绑定员工数据
 
       wx.showLoading({
-        title: '保存中...',
+        title: '',
         mask: true,
       })
 

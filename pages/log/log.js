@@ -39,11 +39,11 @@ Page({
           } else if (action == "cancel") {
             action = "【" + item.borrowEmployeeName +"】"+ "取消了申请设备:"
           } else if (action == "borrowed") {
-            action = "【" + item.statusActionEmployeeObjectName + "】" + "同意了" + "【" + item.borrowEmployeeName + "】"+ "借用设备:"
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "借用了" + "【" + item.borrowEmployeeName + "】"+ "闲置的设备:"
           } else if (action == "returning") {
             action = "【" + item.borrowEmployeeName + "】" + "向" + "【" + item.deviceOwnerEmployeeName + "】"+ "提交归还设备:"
           } else if (action == "returned") {
-            action = "【" + item.statusActionEmployeeObjectName + "】" + "确认了" + "【" + item.borrowEmployeeName + "】"+ "归还设备:"
+            action = "【" + item.statusActionEmployeeObjectName + "】" + "取回了" + "【" + item.borrowEmployeeName + "】"+ "借用的设备:"
           } else if (action == "rejected") {
             action = "【" + item.statusActionEmployeeObjectName + "】" + "拒绝了" + "【" + item.borrowEmployeeName + "】" + "申请设备:"
           } 

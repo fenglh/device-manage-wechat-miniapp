@@ -111,7 +111,7 @@ var leanCloud = {
     deviceAVObject.save().then(function (result) {
       success ? success(result) : null;
     }, function (error) {
-      fail ? fail() : null;
+      fail ? fail(error) : null;
     });
   },
 
@@ -209,8 +209,6 @@ var leanCloud = {
           //状态
           var status = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('status') : null;
           var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
-
-          var statusObjectID = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').id : null;
           var statusActionTimestamp = item.get('dependentDevicesStatus') ? item.get('dependentDevicesStatus').get('actionTimestamp') : null;
           //状态操作人
           var statusActionEmployeeObjectID = item.get('dependentDevicesStatus') ? (item.get('dependentDevicesStatus').get('dependentActionUser') ? item.get('dependentDevicesStatus').get('dependentActionUser').id : null) : null;
@@ -273,6 +271,9 @@ var leanCloud = {
   // ok
   getBorrowedDevices: function ({ success, fail }) {
     var that = this;
+
+
+    console.log("========",app.globalData);
 
     //组合加内嵌查询
     var innerQuery1 = new AV.Query('DevicesStatus');
@@ -499,7 +500,9 @@ var leanCloud = {
   },
 
   //借用设备数量
-  getBorrowedDeviceCount: function ({ success, fail }) {
+  getBorrowedDeviceCount: function ({success, fail }) {
+
+    console.log('=======1=',app);
     var that = this;
     //组合加内嵌查询
     var innerQuery1 = new AV.Query('DevicesStatus');

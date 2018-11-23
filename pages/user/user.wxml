@@ -1,17 +1,17 @@
 
 
 <view class="weui-cells weui-cells_after-title">
-  <view class="weui-cell weui-cell_input">
-    <view class="weui-cell__hd">
-      <view class="weui-label">微信昵称</view>
+  <view class="weui-cell " >
+    <view class="weui-cell__hd" >
+      <view class="weui-label" style='color:gray;font-size:14px;'>微信昵称</view>
     </view>
-    <view class="weui-cell__bd">
-      <input class="weui-input" disabled="true" value='{{userInfo.nickName}}' />
-    </view>
+    <input class="weui-input"  disabled="true" value='{{userInfo.nickName}}' />
+      
+
   </view>
 </view>
 
-
+<view wx:if="{{bind}}">
 <view class="weui-cells__title">绑定员工信息</view>
 <view class="weui-cells weui-cells_after-title">
   <view class="weui-cell weui-cell_input" style='height:40px;'>
@@ -37,4 +37,5 @@
 
 <view class="weui-btn-area">
   <button class="weui-btn" type="primary"  bindtap="bindLogout">解除绑定</button>
+</view>
 </view>

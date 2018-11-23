@@ -1,6 +1,10 @@
 <!--index.wxml-->
-<view style='  display: flex; flex-direction: column;'>
 
+
+
+<bindDialog showModalStatus='{{showBindDialog}}' ></bindDialog> 
+
+<view style='  display: flex; flex-direction: column;'>
   <view class="menu">
     <image class="avatar" src="{{userInfo  ? userInfo.avatarUrl : '../images/avatar.png'}}" background-size="cover"></image>
     <button open-type="getUserInfo" class='avatar-btn' bindgetuserinfo='getUserInfo'>
@@ -16,16 +20,21 @@
   <view class='page__bd_spacing ' style=' margin-top:100rpx;'>
     <view class='item-container'>
       <view class='item-base' bindtap='bindMyDevices'>
-        <image class='item-logo' src='../images/my1.png'></image>
-        <view style='margin-left:8px;'>我的设备</view>
-        <view class="weui-badge badge-position" hidden='{{myDevicesCount > 0 ? "" : "hidden"}}'>{{myDevicesCount}}</view>
+        <view class='flex-row '>
+          <image class='item-logo' src='../images/my1.png'></image>
+          <view style='margin-left:8px;'>我的设备</view>
+        </view>
+        <view class="number-text" hidden='{{myDevicesCount > 0 ? "" : "hidden"}}'>({{myDevicesCount}}台)</view>
       </view>
 
 
       <view class='item-base' bindtap='bindBorrowedDevices'>
-        <image class='item-logo' src='../images/borrowed1.png'></image>
-        <view style='margin-left:8px;'>借入设备</view>
-        <view class="weui-badge badge-position" hidden='{{borrowedDevicesCount > 0 ? "" : "hidden"}}'>{{borrowedDevicesCount}}</view>
+        <view class="flex-row">
+          <image class='item-logo' src='../images/borrowed1.png'></image>
+          <view style='margin-left:8px;'>借入设备</view>
+        </view>
+
+        <view class="number-text" hidden='{{borrowedDevicesCount > 0 ? "" : "hidden"}}'>({{borrowedDevicesCount}}台)</view>
       </view>
     </view>
 
@@ -133,13 +142,18 @@
 
 
           <!-- <view>借用员工：</view> -->
-          <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-index="{{index}}" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借用</button>
+          <!-- <button style='background-color:white;color:#333;margin-top:4px;' type="primary" catchtap="bindBorrowed" data-index="{{index}}" data-item="{{item}}" hidden='{{(item.status==0 || !item.status) ? "" : "hidden"}}'>申请借用</button> -->
         </view>
       </view>
     </block>
   </view>
 
-
+<view class='float-view'>
+<view class='scan-btn' bindtap='scanClick'>
+<image class='scan-image' src='../images/scan.png'></image>
+<view class='scan-text'>扫码借取</view>
+</view>
+</view>
 
 
 

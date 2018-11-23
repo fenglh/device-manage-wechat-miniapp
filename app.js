@@ -87,5 +87,6 @@ App({
     secret: 'ece9a679463eb37126b3c5fb3df0073e',//secret需自己提供，
     openid: wx.getStorageSync('openid') || null,
     userInfo:  null,
+    bind:false,
   }
 })

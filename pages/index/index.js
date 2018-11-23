@@ -1,10 +1,13 @@
 //index.js
-const AV = require('../../utils/av-live-query-weapp-min');
-const leanCloudManager = require('../../utils/leanCloudManager');
 
 
 //获取应用实例
 const app = getApp()
+
+const AV = require('../../utils/av-live-query-weapp-min');
+const leanCloudManager = require('../../utils/leanCloudManager');
+
+
 
 const now = Date.parse(new Date());//当前时间
 Page({
@@ -15,6 +18,7 @@ Page({
     allDevices: [],//搜索专用的所有设备
     myDevicesCount: 0,
     borrowedDevicesCount: 0,
+    showBindDialog:false,
     canIUse: wx.canIUse('button.open-type.getUserInfo')
   },
 
@@ -24,8 +28,10 @@ Page({
   onShow: function () {
 
 
-    this.getBorrowedDeviceCount();
-    this.getMyDevicesCount();
+    if(app.globalData.bind){
+      this.getBorrowedDeviceCount();
+      this.getMyDevicesCount();
+    }
     this.getDevices();
 
   },
@@ -34,6 +40,13 @@ Page({
     wx.setNavigationBarTitle({
       title: '机可借',
     })
+
+    if (!app.globalData.bind) {
+      this.setData({
+        showBindDialog: true
+      })
+    }
+
     
     if (app.globalData.userInfo) {
       this.setData({
@@ -46,6 +59,7 @@ Page({
         this.setData({
           userInfo: res.userInfo,
         })
+        //检查绑定
       }
     } else {
       // 在没有 open-type=getUserInfo 版本的兼容处理
@@ -73,13 +87,21 @@ Page({
       });
       return;
     }
+    content = content.toUpperCase()
     var devices = [];
     this.data.allDevices.forEach(function (item, index) {
-      if (item.model.toUpperCase().indexOf(content.toUpperCase()) != -1 ||
-        item.OSVersion.indexOf(content) != -1 ||
-        item.employeeName.indexOf(content) != -1 ||
-        (item.remark && item.remark.indexOf(content) != -1) ||
-        item.deviceID.indexOf(content) != -1) {
+      var model = item.model && item.model.toUpperCase();
+      var OSVersion = item.OSVersion && item.OSVersion.toUpperCase();
+      var employeeName = item.employeeName && item.employeeName.toUpperCase();
+      var remark = item.remark && item.remark.toUpperCase();
+      var deviceID = item.deviceID && item.deviceID.toUpperCase();
+      console.log(model, OSVersion, remark, deviceID);
+
+      if ((model && model.indexOf(content) != -1) ||
+        (OSVersion && OSVersion.indexOf(content) != -1) ||
+        (employeeName && employeeName.indexOf(content) != -1) ||
+        (remark && remark.indexOf(content) != -1) ||
+        (deviceID && deviceID.indexOf(content) != -1)) {
         devices.push(item);
       }
     });
@@ -99,88 +121,128 @@ Page({
   },
   // ok
   bindMyDevices: function (e) {
-    //跳转
-    wx.navigateTo({
-      url: '../myDevices/myDevices',
-    })
+
+    if (!app.globalData.bind) {
+      this.setData({
+        showBindDialog: true
+      });
+      return;
+    }
+      //跳转
+      wx.navigateTo({
+        url: '../myDevices/myDevices',
+      })
+    
+
+
   },
   // ok
   bindBorrowedDevices: function (e) {
-    //跳转
+    if (!app.globalData.bind) {
+      this.setData({
+        showBindDialog: true
+      });
+      return;
+    }
+          //跳转
     wx.navigateTo({
       url: '../borrowedDevices/borrowedDevices',
     })
+    
+
   },
   // ok
   bindBorrowed: function (e) {
-    var index = e.currentTarget.dataset.index;
-    var device = this.data.devices[index];
-    var that = this;
-    wx.showModal({
-      title: '申请借用设备',
-      content: "你确定要申请设备 " + device.model + "?" ,
-      cancelText: '稍后',
-      confirmText: '申请',
-      success: function (res) {
-        if (res.confirm) {
-          that.doBorrowDevice(index);
-        }
-      }
-    })
+    // var index = e.currentTarget.dataset.index;
+    // var device = this.data.devices[index];
+    // var that = this;
+    // wx.showModal({
+    //   title: '申请借用设备',
+    //   content: "你确定要申请设备 " + device.model + "?" ,
+    //   cancelText: '稍后',
+    //   confirmText: '申请',
+    //   success: function (res) {
+    //     if (res.confirm) {
+    //       that.doBorrowDevice(index);
+    //     }
+    //   }
+    // })
   },
 
 
   //ok
-  doBorrowDevice: function (index) {
+  doBorrowDevice: function (deviceID) {
 
-    var device = this.data.devices[index];
+
     var query = new AV.Query('Devices');
-    query.include(['dependentDevicesStatus']);
+    query.include(['dependentUser']);
+    query.include(['dependentModel']);
     var that = this;
+    query.equalTo('deviceID', deviceID);
     wx.showLoading({
       title: '',
-      mask:true,
+      mask: true,
     });
-    query.equalTo('deviceID', device.deviceID);
     query.first().then(function (result) {
         if(result){
-          //设备被借用了
-          var dependentDevicesStatus = result.get('dependentDevicesStatus');
-          if (dependentDevicesStatus){
-            var status = dependentDevicesStatus.get('status');
-            if (status && status!= 0) {
-              wx.showToast({
-                title: '借用失败，该设备已被借出!',
-                icon: "none",
-              })
-              return;
-            }
-          }
-          var device = that.data.devices[index];
-          console.log(device);
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, app.globalData.employeeInfo.employeeObjectID, -1, "applying", {
-            success:function(){
-              wx.showToast({
-                title: '申请借用成功!',
-              });
+          wx.hideLoading();
+          console.log(result);
+          var deviceEmployeeObjectID = result.attributes.dependentUser.id; 
+          var model = result.attributes.dependentModel.attributes.model;
+          var prefix = "";
+          var status = 0;
+          var action = ""
 
-              that.getDevices();              
-              that.getBorrowedDeviceCount();
-            },
-            fail:function(){
-              wx.showToast({
-                title: '申请借用失败，请稍后再试',
-                icon: 'none'
-              });
+          if (deviceEmployeeObjectID == app.globalData.employeeInfo.employeeObjectID) {
+            //收回设备
+            prefix = "收回"
+            status = 0
+            action = "returned"
+          } else {
+            //借出设备
+            titleSuccess = "借用";
+            status = -2
+            action = "borrowed"
+          }
+
+
+
+          var that = this;
+          wx.showModal({
+            title: prefix+'设备',
+            content: "你确定要"+prefix+"设备 " + model + "?",
+            cancelText: '稍后',
+            confirmText: prefix,
+            success: function (res) {
+              if (res.confirm) {
+                //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+                leanCloudManager.addDoDevicesStatus(result.id, app.globalData.employeeInfo.employeeObjectID, status, action, {
+                  success: function () {
+                    wx.showToast({
+                      title: prefix+"成功!",
+                    });
+
+                    that.getDevices();
+                    that.getBorrowedDeviceCount();
+                  },
+                  fail: function (error) {
+                    wx.showToast({
+                      title: prefix+"失败,请稍后再试!",
+                      icon: 'none'
+                    });
+                    console.log(error);
+                  }
+                });
+              }
             }
-          });
+          })
  
         }else{
           wx.showToast({
-            title: '设备已被删除，请刷新列表',
+            title: '设备不存在',
             icon: 'none',
           })
+          
         }
     }, function(error){
         wx.showToast({
@@ -258,6 +320,41 @@ Page({
 
 
   //事件
+  scanClick:function(e) {
+    if (!app.globalData.bind) {
+      this.setData({
+        showBindDialog: true
+      });
+      return;
+    }
+
+    var that = this;
+    var show;
+    wx.scanCode({
+      success: (res) => {
+
+        var param = JSON.parse(res.result)
+        console.log(param);
+        var brand = param["brand"];
+        var companyCode = param["companyCode"];
+        var deviceCode = param["deviceCode"];
+        var model = param["model"];
+        var OSVersion = param["OSVersion"];
+        var remark = param["remark"];
+        that.doBorrowDevice(deviceCode);
+      },
+      fail: (res) => {
+        wx.showToast({
+          title: '失败',
+          icon: 'success',
+          duration: 2000
+        })
+      },
+      complete: (res) => {
+      }
+    })
+  },
+
   getUserInfo: function (e) {
     console.log(e);
     if (!e.detail.rawData) {
@@ -278,6 +375,13 @@ Page({
   },
 
   bindMore: function () {
+    if (!app.globalData.bind) {
+      this.setData({
+        showBindDialog: true
+      });
+      return;
+    }
+    
     wx.navigateTo({
       url: '../menu/menu',
     })

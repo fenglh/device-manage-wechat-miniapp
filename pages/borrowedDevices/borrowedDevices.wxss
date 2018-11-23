@@ -1,1 +1,7 @@
 /* pages/borrowedDevices/borrowedDevices.wxss */
+
+.remark-text {
+  margin-top: 40rpx;
+  color: orange;
+  font-size: 12px;
+}
