@@ -5,6 +5,9 @@ const des = require('./des.js')
 
 
 const host = 'https://angel.bluemoon.com.cn'
+
+
+var url_get_user_info_by_mobile = host + '/bluemoon-control/user/getUserInfoByMobileNo'
 var url_login = host + '/bluemoon-control/user/ssoLogin'
 var url_get_user_info = host + '/bluemoon-control/user/getUserInfo'
 
@@ -81,6 +84,36 @@ var request = {
     }
     return keys
   },
+
+
+  //用手机号码获取用户信息
+  getkUserInfoByMobile: function ({ mobileNo, success, fail}) {
+    //
+    var url = url_get_user_info_by_mobile
+    var queryString = this.getPublicQueryString();
+    url = url + '?' + queryString
+    wx.request({
+      url: url,
+      method: 'POST',
+      data: {
+        mobileNo: mobileNo,
+      },
+      success: function (res) {
+        var responseCode = res.data.responseCode
+        var responseMsg = res.data.responseMsg
+        if (responseCode == 0) {
+
+          if (success) { success(res) }
+        } else {
+          if (fail) { fail(res) }
+        }
+      },
+      fail: function (res) {
+        if (fail) { fail(res) }
+      },
+    })
+  },
+
 
 
   //登录

@@ -1,7 +1,7 @@
-
+ 
 //index.js
 const AV = require('../../../utils/av-live-query-weapp-min');
-
+const request = require('../../../utils/request.js')
 
 Component({
   /**
@@ -10,17 +10,16 @@ Component({
   properties: {
     showModalStatus: Boolean,
     openid: String,
-
   },
 
   /**
    * 组件的初始数据
    */
   data: {
-    employeeId: null,
-    employeeName: null,
-    employeeIdFocus: false,
-    employeeNameFocus: false,
+    employeeMobile: null,
+    employeeCode: null,
+    employeeMobileFocus: false,
+    employeeCodeFocus: false,
   },
 
   /**
@@ -34,44 +33,83 @@ Component({
     },
     bindOKEvent: function (e) {
 
-      if (!this.data.employeeId){
+      if (!this.data.employeeMobile){
         wx.showToast({
-          title: '请填写员工手机号码',
+          title: '请填写员工手机号',
           icon:'none',
         })
         this.setData({
-          employeeIdFocus:true,
+          employeeMobileFocus:true,
         })
         return;
       }
 
-      if (!this.data.employeeName) {
+      if (!this.data.employeeCode) {
         wx.showToast({
           title: '请填写员工编号',
           icon: 'none',
         });
         this.setData({
-          employeeNameFocus: true,
+          employeeCodeFocus: true,
         })
         return;
       }
-      //绑定员工数据
 
       wx.showLoading({
         title: '',
         mask: true,
       })
+      var that = this;
+      console.log("employeeMobile:", this.data.employeeMobile, "employeeCode:", this.data.employeeCode)
+      request.getkUserInfoByMobile({
+        mobileNo: this.data.employeeMobile,
+        success: function (res) {
+          console.log(res.data);
+          var account = res.data.user.account;
+          var name = res.data.user.realName;
+          if (account != that.data.employeeCode){
+            wx.showToast({
+              title: '手机号与员工编号不匹配!',
+              duration:3000,
+              icon:"none",
+            })
+          }else{
+            console.log('进行绑定');
+            that.bindEmployeeInfo(that.properties.openid, that.data.employeeMobile, account, name)
+          }
+        },
+        fail: function (res) {
+          var responseMsg = res.data.responseMsg;
+          wx.showToast({
+            title: responseMsg,
+            icon:'none'
+          })
+        }
+      });
+    },
+
+
+    bindEmployeeInfo:function(openId, mobile, employeeCode, employeeName){
+
+      if(!openId){
+        wx.showToast({
+          title: 'openId为空，无法绑定!',
+          icon:'none'
+        })
+        return;
+      }
 
       var query = new AV.Query('Users');
-      query.equalTo('openID', this.properties.openid);
+      query.equalTo('openID', openId);
       var that = this;
       query.first().then(function (data) {
         if(data){       //更新
           // 声明类型
           var user = AV.Object.createWithoutData('Users', data.id);
           // 编辑属性
-          user.set('employeeID', that.data.employeeId);
-          user.set('employeeName', that.data.employeeName);
+          user.set('employeeID', employeeCode);
+          user.set('employeeName', employeeName);
+          user.set('employeeMobile', mobile);
           // 保存到云端
           user.save().then(function (obj) {
             that.util("close");
@@ -80,7 +118,17 @@ Component({
               icon: 'success',
             })
             console.log('更新成功: ' + obj);
-            that.triggerBindResult();
+
+            var employeeInfo = {};
+
+            employeeInfo.employeeID = employeeCode;
+            employeeInfo.employeeMobile = mobile;
+            employeeInfo.employeeName = employeeName;
+
+            that.triggerEvent('successEvent', employeeInfo, null);
+
+            // console.log('绑定成功，回调绑定信息: ', employeeInfo);
+
           }, function (error) {
             console.error(error);
             wx.showToast({
@@ -88,23 +136,31 @@ Component({
               icon: 'none',
             })
           });
-  
+
         }else{        //插入
           // 声明类型
           var Users = AV.Object.extend('Users');
           // 新建对象
           var user = new Users();
-          user.set('openID', that.properties.openid);
-          user.set('employeeID', that.data.employeeId);
-          user.set('employeeName', that.data.employeeName);
+          user.set('openID', openId);
+          user.set('employeeID', employeeCode);
+          user.set('employeeName', employeeName);
+          user.set('employeeMobile', mobile);
           user.save().then(function (obj) {
           that.util("close");
           wx.showToast({
             title: '绑定成功!',
             icon:'success',
           })
-          that.triggerBindResult();
-          console.log('保存成功: ' + obj);
+
+          var employeeInfo = {};
+            employeeInfo.employeeID = employeeCode;
+            employeeInfo.employeeMobile = mobile;
+            employeeInfo.employeeName = employeeName;
+
+
+            that.triggerEvent('successEvent', employeeInfo, null);
+          // console.log('绑定成功，回调绑定信息: ', employeeInfo);
         }, function (error) {
           console.error(error);
           wx.showToast({
@@ -120,24 +176,19 @@ Component({
         })
       });
     },
-    bindEmployeeIdChange:function(e){
+
+    bindEmployeeMobileChange:function(e){
       this.setData({
-        employeeId: e.detail.value
+        employeeMobile: e.detail.value
       })
     },
-    bindEmployeeNameChange: function (e) {
+    bindEmployeeCodeChange: function (e) {
       this.setData({
-        employeeName: e.detail.value
+        employeeCode: e.detail.value
       })
     },
     
-    triggerBindResult:function(){
-      var employeeInfo = {};
-      employeeInfo.employeeID = this.data.employeeId;
-      employeeInfo.employeeName = this.data.employeeName;
-      employeeInfo.expiredDate = Date.parse(new Date()) + 600 * 1000; //10分钟有效期 
-      this.triggerEvent('bindEmployee', employeeInfo, null);
-    },
+
 
     util: function (currentStatu) {
       /* 动画部分 */

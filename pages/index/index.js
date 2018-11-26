@@ -12,13 +12,16 @@ const leanCloudManager = require('../../utils/leanCloudManager');
 const now = Date.parse(new Date());//当前时间
 Page({
   data: {
+    wxUserInfo:null,
     showEmptyView: false,
-    userInfo: {},
     devices: [],
     allDevices: [],//搜索专用的所有设备
     myDevicesCount: 0,
     borrowedDevicesCount: 0,
+    isBind:false,
     showBindDialog:false,
+    openid:null,//传递给bindDialog
+    employeeInfo:null,//传递给bindDialog
     canIUse: wx.canIUse('button.open-type.getUserInfo')
   },
 
@@ -28,7 +31,7 @@ Page({
   onShow: function () {
 
 
-    if(app.globalData.bind){
+    if(this.data.isBind){
       this.getBorrowedDeviceCount();
       this.getMyDevicesCount();
     }
@@ -41,23 +44,19 @@ Page({
       title: '机可借',
     })
 
-    if (!app.globalData.bind) {
-      this.setData({
-        showBindDialog: true
-      })
-    }
+    this.setData({
+      openid:app.globalData.openid,
+      wxUserInfo: app.globalData.wxUserInfo,
+    })
 
-    
-    if (app.globalData.userInfo) {
-      this.setData({
-        userInfo: app.globalData.userInfo,
-      })
-    } else if (this.data.canIUse) {
+    //异步请求回来的
+    if(this.data.canIUse) {
       // 由于 getUserInfo 是网络请求，可能会在 Page.onLoad 之后才返回
       // 所以此处加入 callback 以防止这种情况
-      app.userInfoReadyCallback = res => {
+      app.userInfoReadyCallback = userInfo => {
+        console.log('userInfoReadyCallback');
         this.setData({
-          userInfo: res.userInfo,
+          wxUserInfo: userInfo,
         })
         //检查绑定
       }
@@ -65,17 +64,91 @@ Page({
       // 在没有 open-type=getUserInfo 版本的兼容处理
       wx.getUserInfo({
         success: res => {
-          app.globalData.userInfo = res.userInfo
           this.setData({
-            userInfo: res.userInfo,
+            wxUserInfo: res.userInfo,
           })
         }
       })
     }
 
-    this.setData({
-      userInfo: app.globalData.userInfo,
+
+    app.openidReadyCallback = openid => {
+      //因网络请求是异步，如果网络延迟，index page都加载完，回调才回来那么,重新检查一遍
+      this.setData({
+        openid:openid
+      })
+      if(!this.data.isBind){
+        this.checkEmployeeBindInfo(app.globalData.openid);
+      }
+    }
+    //检查绑定关系
+    this.checkEmployeeBindInfo(app.globalData.openid);
+
+  },
+
+
+  //检查绑定关系
+  checkEmployeeBindInfo:function(openid){
+    var that = this;
+    if(!openid){
+      console.log('openid为空');
+      return;
+    }
+
+    leanCloudManager.checkBindEmployeeInfo({
+      openid: openid,
+      success: function (res) {
+
+        if (res) {
+          console.log('已经绑定:', openid);
+          var employeeID = res.attributes.employeeID;
+          var employeeMobile = res.attributes.employeeMobile;
+          var employeeName = res.attributes.employeeName;
+          var employeeInfo = {};
+          employeeInfo.employeeID = employeeID;
+          employeeInfo.employeeMobile = employeeMobile;
+          employeeInfo.employeeName = employeeName;
+
+          that.setData({
+            isBind: true,
+            showBindDialog: false,
+            employeeInfo: employeeInfo
+          });
+          that.getBorrowedDeviceCount();
+          that.getMyDevicesCount();
+        } else {
+          that.setData({
+            isBind: false,
+            showBindDialog: true,
+          })
+        }
+      },
+      fail: function (error) {
+        wx.showToast({
+          title: '接口请求失败：检查是否绑定员工信息！',
+          icon: 'none'
+        })
+      }
     })
+  },
+
+  cleanBindInfo: function () {
+    console.log('清除绑定关系');
+    this.setData({
+      isBind: false,
+      employeeInfo: null,
+    })
+  },
+
+  //dialog 回调
+
+  onSuccessEvent:function(e){
+    console.log('员工绑定成功:',e.detail);
+    this.setData({
+      isBind:true,
+      employeeInfo: e.detail,
+    })
+
   },
 
   // ok
@@ -122,7 +195,7 @@ Page({
   // ok
   bindMyDevices: function (e) {
 
-    if (!app.globalData.bind) {
+    if (!this.data.isBind) {
       this.setData({
         showBindDialog: true
       });
@@ -138,7 +211,7 @@ Page({
   },
   // ok
   bindBorrowedDevices: function (e) {
-    if (!app.globalData.bind) {
+    if (!this.data.isBind) {
       this.setData({
         showBindDialog: true
       });
@@ -272,6 +345,7 @@ Page({
   getBorrowedDeviceCount:function(){
     var that = this;
     leanCloudManager.getBorrowedDeviceCount({
+      employeeObjectID:'',
       success: function (count) {
         wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();
@@ -284,6 +358,7 @@ Page({
   getMyDevicesCount:function(){
     var that = this;
     leanCloudManager.getMyDevicesCount({
+      employeeObjectID: '',
       success: function (count) {
         wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();
@@ -321,7 +396,7 @@ Page({
 
   //事件
   scanClick:function(e) {
-    if (!app.globalData.bind) {
+    if (!this.data.isBind) {
       this.setData({
         showBindDialog: true
       });
@@ -360,22 +435,36 @@ Page({
     if (!e.detail.rawData) {
       this.showToast('授权失败!请点击右上角“更多-关于-更多-设置”中开启权限', 5000);
     } else {
-      //授权，保存信息
+
+      app.globalData.wxUserInfo = e.detail.userInfo;
       this.setData({
-        userInfo: e.detail.userInfo,
+        wxUserInfo: e.detail.userInfo,
       })
-      app.globalData.userInfo = e.detail.userInfo;
 
       //跳转
+      var url = '../user/user?isBind=' + this.data.isBind +
+        "&openid=" + this.data.openid +
+        "&wxNickName=" + this.data.wxUserInfo.nickName;
+      if(this.data.isBind){
+        var url = '../user/user?isBind=' + this.data.isBind +
+          "&openid=" + this.data.openid +
+          "&employeeID=" + this.data.employeeInfo.employeeID +
+          "&employeeMobile=" + this.data.employeeInfo.employeeMobile +
+          "&employeeName=" + this.data.employeeInfo.employeeName +
+          "&wxNickName=" + this.data.wxUserInfo.nickName;
+      }
+
       wx.navigateTo({
-        url: '../user/user',
+        url: url,
       })
     }
 
   },
 
+
+
   bindMore: function () {
-    if (!app.globalData.bind) {
+    if (!this.data.isBind) {
       this.setData({
         showBindDialog: true
       });

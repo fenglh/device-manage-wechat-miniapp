@@ -5,13 +5,13 @@
     <view class="weui-cell__hd" >
       <view class="weui-label" style='color:gray;font-size:14px;'>微信昵称</view>
     </view>
-    <input class="weui-input"  disabled="true" value='{{userInfo.nickName}}' />
+    <input class="weui-input"  disabled="true" value='{{wxNickName}}' />
       
 
   </view>
 </view>
 
-<view wx:if="{{bind}}">
+<view wx:if="{{isBind}}">
 <view class="weui-cells__title">绑定员工信息</view>
 <view class="weui-cells weui-cells_after-title">
   <view class="weui-cell weui-cell_input" style='height:40px;'>
@@ -20,7 +20,7 @@
     </view>
     <view class="weui-cell__bd">
       <!-- <input class="weui-input" disabled='true' value='{{employeeInfo.employeeID}}' focus="{{focus}}" placeholder="请输入员工编号" /> -->
-      <label class="weui-input " >{{employeeInfo.employeeID}}</label>
+      <label class="weui-input " >{{employeeID}}</label>
     </view>
   </view>
   <view class="weui-cell weui-cell_input" style='height:40px;'>
@@ -30,7 +30,7 @@
 
     <view class="weui-cell__bd" >
       <!-- <input class="weui-input"   value='{{employeeInfo.employeeName}}' placeholder="请输入员工姓名" /> -->
-      <label class="weui-input">{{employeeInfo.employeeName}}</label>
+      <label class="weui-input">{{employeeName}}</label>
     </view>
   </view>
 </view>

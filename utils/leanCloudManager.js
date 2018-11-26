@@ -481,10 +481,10 @@ var leanCloud = {
 
 
   //我的设备数量
-  getMyDevicesCount: function ({ success, fail }) {
+  getMyDevicesCount: function ({ employeeObjectID, success, fail }) {
 
     var that = this;
-    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var user = AV.Object.createWithoutData('Users', employeeObjectID);
     var query = new AV.Query('Devices');
     query.equalTo('dependentUser', user);
 
@@ -500,9 +500,8 @@ var leanCloud = {
   },
 
   //借用设备数量
-  getBorrowedDeviceCount: function ({success, fail }) {
+  getBorrowedDeviceCount: function ({employeeObjectID,success, fail }) {
 
-    console.log('=======1=',app);
     var that = this;
     //组合加内嵌查询
     var innerQuery1 = new AV.Query('DevicesStatus');
@@ -512,7 +511,7 @@ var leanCloud = {
     var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
 
     var innerQuery3 = new AV.Query('DevicesStatus');
-    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var borrowedUser = AV.Object.createWithoutData('Users',employeeObjectID);
     innerQuery3.equalTo('dependentBorrowUser', borrowedUser);
     var query = new AV.Query('Devices');
 

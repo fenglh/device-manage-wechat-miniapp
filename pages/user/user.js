@@ -3,7 +3,6 @@ const AV = require('../../utils/av-live-query-weapp-min');
 
 const app = getApp()
 
-const userInfo = wx.getStorageSync('userInfo');
 
 Page({
   
@@ -11,11 +10,15 @@ Page({
    * 页面的初始数据
    */
   data: {
-    employeeInfo:  {},
-    userInfo:{},
     binBtnHide:false,
     focus:false,
-    bind: false,
+    isBind: false,
+    openid:null,
+    employeeID:null,
+    employeeMobile:null,
+    employeeName:null,
+    wxNickName:null,
+
   },
 
 
@@ -24,17 +27,29 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    this.setData({
-      bind:app.globalData.bind,
-    })
+    console.log("options:",options);
+
+    var isBind = options.isBind === 'true';
+
     wx.setNavigationBarTitle({
       title: '个人信息',
     })
-    console.log("个人信息:", app.globalData.employeeInfo);
+
+    this.setData({
+      openid:options.openid,
+      isBind: isBind,
+      wxNickName: options.wxNickName,
+    })
+
+    if (isBind){
       this.setData({
-        employeeInfo: app.globalData.employeeInfo || {},
-        userInfo: app.globalData.userInfo || {},
-      })
+        employeeID: options.employeeID,
+        employeeMobile: options.employeeID,
+        employeeName: options.employeeName,
+      }) 
+    }
+
+
   },
 
   bindLogout:function(e){
@@ -45,7 +60,7 @@ Page({
       success: function (res) {
         
         if (res.confirm) {
-          that.deleteBindOpenId(app.globalData.openid);
+          that.deleteBindOpenId(that.data.openid);
         }
       }
     })
@@ -66,9 +81,12 @@ Page({
     query.first().then(function (result) {
       var user = AV.Object.createWithoutData('Users', result.id);
       user.destroy().then(function (success) {
-        wx.clearStorage();
-        wx.reLaunch({
-          url: '../login/login',
+        let pages = getCurrentPages();//当前页面
+        let prevPage = pages[pages.length - 2];//上一页面
+        prevPage.cleanBindInfo();
+        //解除绑定成功
+        wx.navigateBack({
+          delta:1,
         })
 
       }, function (error) {

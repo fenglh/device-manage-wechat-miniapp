@@ -3,10 +3,10 @@
     <view class="drawer_title">请绑定员工信息</view>
     <view class="drawer_content">
       <view class="top grid">
-        <input class="input_base input_h30 col-1" type='number' bindchange="bindEmployeeIdChange" focus='{{employeeIdFocus}}' value='{{employeeId}}' placeholder='员工手机号码'  ></input>
+        <input class="input_base input_h30 col-1" type='number' bindchange="bindEmployeeMobileChange" focus='{{employeeMobileFocus}}' value='{{employeeMobile}}' placeholder='员工手机号'  ></input>
       </view>
       <view class="top grid">
-        <input class="input_base input_h30 col-1"  bindchange="bindEmployeeNameChange" focus='{{employeeNameFocus}}' value='{{employeeName}}' placeholder='员工编码'  ></input>
+        <input class="input_base input_h30 col-1"  bindchange="bindEmployeeCodeChange" focus='{{employeeCodeFocus}}' value='{{employeeCode}}' placeholder='员工编号'  ></input>
       </view>
     </view>
     <view class="btn_ok" bindtap="bindOKEvent" data-statu="close">确定</view>
