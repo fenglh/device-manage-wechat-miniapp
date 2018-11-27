@@ -253,7 +253,7 @@ Page({
     var query = new AV.Query('Devices');
     query.include(['dependentUser']);
     query.include(['dependentModel']);
-    query.include(['dependentDevicesStatus.dependentBorrowUser']);
+    query.include(['dependentDevicesStatus.dependentActionUser']);
     query.equalTo('deviceID', deviceID);
     wx.showLoading({
       title: '',
@@ -269,8 +269,8 @@ Page({
           
           
           var dependentDevicesStatus = result.attributes.dependentDevicesStatus;
-          var dependentBorrowUser = dependentDevicesStatus ? dependentDevicesStatus.attributes.dependentBorrowUser :null;
-          var curBorrowedUserObjectID = dependentBorrowUser ? dependentBorrowUser.id : null;
+          var dependentActionUser = dependentDevicesStatus ? dependentDevicesStatus.attributes.dependentActionUser :null;
+          var curBorrowedUserObjectID = dependentActionUser ? dependentActionUser.id : null;
 
 
           //当前借用人objectID
