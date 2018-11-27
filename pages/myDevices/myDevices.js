@@ -2,6 +2,7 @@
 
 const AV = require('../../utils/av-live-query-weapp-min');
 const leanCloudManager = require('../../utils/leanCloudManager');
+const QRCode = require('../lib/qrcode/weapp-qrcode.js')
 
 const now = Date.parse(new Date());//当前时间
 const app = getApp()
@@ -11,6 +12,7 @@ Page({
    * 页面的初始数据
    */
   data: {
+    employeeObjectID:null,
     showEmptyView: false,
     devices: [],
     slideStyle: '',
@@ -24,19 +26,27 @@ Page({
    */
 
   onShow: function () {
+
     this.getMyDevices();
   },
   onLoad: function (options) {
     wx.setNavigationBarTitle({
       title: '我的设备',
-    })
+    });
+
+    this.setData({
+      employeeObjectID: options.employeeObjectID,
+      
+    });
+
+
 
   },
 
   //ok
   bindAddDevice: function (e) {
     wx.navigateTo({
-      url: '../device/device',
+      url: '../device/device?'+ "&employeeObjectID=" + this.data.employeeObjectID,
     })
   },
 
@@ -47,6 +57,38 @@ Page({
     var tapIndex = e.currentTarget.dataset.index;
     var devices = this.data.devices;
     var device = devices[tapIndex];
+
+    var param = {}
+    
+    param.deviceID = device.deviceID;
+    param.companyCode = device.companyCode;
+    param.OSVersion = device.OSVersion;
+    param.brand = device.brand;
+    param.model = device.model;
+    param.remark = device.remark;
+
+    var qrcodeText = JSON.stringify(param);
+    
+    console.log("qrcodeText:", qrcodeText)
+
+    // var param = JSON.parse(qrcodeText);
+    // console.log("param:",param)
+
+    //生成二维码
+    if(!device.qrcode){
+      //传入wxml中二维码canvas的canvas-id
+      var qrcode = new QRCode(device.deviceID, {
+        // usingIn: this,
+        text: qrcodeText,
+        width: 150,
+        height: 150,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+      device.qrcode = qrcode;
+    }
+
     if (!device.isExpand) {
       device.isExpand = true;
     } else {
@@ -58,108 +100,32 @@ Page({
 
   },
 
-  //拒绝申请
-  bindReject:function(e){
-    var index = e.currentTarget.dataset.index;
+  // 长按保存
+  save: function (e) {
+
+    var index = e.target.dataset.index;
     var device = this.data.devices[index];
-    var that = this;
-    wx.showModal({
-      title: '拒绝申请',
-      content: '你确定拒绝 "' + device.borrowEmployeeName + '"申请设备' + device.model + " ?",
+    var qrcode = device.qrcode;
+    console.log('qrcode：',qrcode);
+    wx.showActionSheet({
+      itemList: ['保存图片'],
       success: function (res) {
-        if (res.confirm) {
-          wx.showLoading({
-            title: '',
-          });
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, 0,"rejected", {
-            success: function () {
-              wx.showToast({
-                title: '拒绝成功!',
-                icon: 'success',
-              });
-              that.getMyDevices();
-            },
-            fail: function () {
-              wx.showToast({
-                title: '拒绝失败，请稍后再试',
-                icon: 'none'
-              });
-            }
+        console.log(res.tapIndex)
+        if (res.tapIndex == 0) {
+          qrcode.exportImage(function (path) {
+            wx.saveImageToPhotosAlbum({
+              filePath: path,
+            })
           })
-        }
-      }
-    });
-
-  },
-
-
-
-  //ok
-  bindConfirmReturn: function (e) {
-    var index = e.currentTarget.dataset.index;
-    var device = this.data.devices[index];
-    var that = this;
-    wx.showModal({
-      title: '确认归还',
-      content: '你确定已归还设备 ' + device.model + " ?",
-      success: function (res) {
-        if (res.confirm) {
-          wx.showLoading({
-            title: '',
-          });
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, 0,"returned", {
-            success:function(){
-              wx.showToast({
-                title: '确认归还成功!',
-                icon: 'success',
-              });
-              that.getMyDevices();
-            },
-            fail:function(){
-              wx.showToast({
-                title: '确认归还失败，请稍后再试',
-                icon: 'none'
-              });
-            }
-          })
-        }
-      }
-    });
-  },
-
-  // ok 
-  bindPass: function (e) {
-    var index = e.currentTarget.dataset.index;
-    var device = this.data.devices[index];
-    var that = this;
-    var borrowEmployeeName = device.borrowEmployeeName;
-    wx.showModal({
-      title: device.model + '借用申请',
-      content: "“" + borrowEmployeeName + "”" + "向你申请借用设备",
-      cancelText: '稍后',
-      confirmText: '同意',
-      success: function (res) {
-        if (res.confirm) {
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, -2,"borrowed", {
-            success:function(){
-              that.getMyDevices();
-            },
-            fail:function(){
-              wx.showToast({
-                title: '通过借用申请失败',
-                icon: 'none'
-              });
-            }
-          });
-        } else if (res.cancel) {
-          console.log('用户点击取消')
         }
       }
     })
   },
+
+
+
+
+  
   
 
   bindDelete:function(e){
@@ -178,7 +144,7 @@ Page({
               mask: true,
             });
             //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-            leanCloudManager.addDoDevicesStatus(device.deviceObjectID,null, -99, "delete", {
+            leanCloudManager.addDoDevicesStatus(that.data.employeeObjectID,device.deviceObjectID,null, -99, "delete", {
               success: function () {
                 wx.showToast({
                   title: '删除设备成功',
@@ -220,7 +186,7 @@ Page({
     var that = this;
     if (!device.status || device.status == 0 ){
       wx.navigateTo({
-        url: '../device/device?' + "device=" + JSON.stringify(device) + "&isEdit=true",
+        url: '../device/device?' + "device=" + JSON.stringify(device) + "&isEdit=true" + "&employeeObjectID=" + that.data.employeeObjectID,
       });
       that.closeSlide(index);
     }else {
@@ -276,8 +242,10 @@ Page({
 
   // ok
   getMyDevices: function () {
+    console.log('employeeObjectID', this.data.employeeObjectID);
     var that = this;
     leanCloudManager.getMyDevices({
+      employeeObjectID: that.data.employeeObjectID,
       success: function (devices) {
         wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();

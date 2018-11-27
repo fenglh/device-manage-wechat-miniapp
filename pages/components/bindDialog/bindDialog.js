@@ -120,14 +120,13 @@ Component({
             console.log('更新成功: ' + obj);
 
             var employeeInfo = {};
-
+            employeeInfo.employeeObjectID = data.id;
             employeeInfo.employeeID = employeeCode;
             employeeInfo.employeeMobile = mobile;
             employeeInfo.employeeName = employeeName;
 
+            console.log('绑定成功，回调绑定信息: ', employeeInfo);
             that.triggerEvent('successEvent', employeeInfo, null);
-
-            // console.log('绑定成功，回调绑定信息: ', employeeInfo);
 
           }, function (error) {
             console.error(error);
@@ -154,13 +153,14 @@ Component({
           })
 
           var employeeInfo = {};
+            employeeInfo.employeeObjectID = obj.id;
             employeeInfo.employeeID = employeeCode;
             employeeInfo.employeeMobile = mobile;
             employeeInfo.employeeName = employeeName;
 
-
+            console.log('绑定成功，回调绑定信息: ', employeeInfo);
             that.triggerEvent('successEvent', employeeInfo, null);
-          // console.log('绑定成功，回调绑定信息: ', employeeInfo);
+         
         }, function (error) {
           console.error(error);
           wx.showToast({

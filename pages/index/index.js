@@ -78,11 +78,11 @@ Page({
         openid:openid
       })
       if(!this.data.isBind){
-        this.checkEmployeeBindInfo(app.globalData.openid);
+        this.checkEmployeeBindInfo(this.data.openid);
       }
     }
     //检查绑定关系
-    this.checkEmployeeBindInfo(app.globalData.openid);
+    this.checkEmployeeBindInfo(this.data.openid);
 
   },
 
@@ -101,14 +101,16 @@ Page({
 
         if (res) {
           console.log('已经绑定:', openid);
+          var employeeObjectID  = res.id;
           var employeeID = res.attributes.employeeID;
           var employeeMobile = res.attributes.employeeMobile;
           var employeeName = res.attributes.employeeName;
           var employeeInfo = {};
+          employeeInfo.employeeObjectID = employeeObjectID;
           employeeInfo.employeeID = employeeID;
           employeeInfo.employeeMobile = employeeMobile;
           employeeInfo.employeeName = employeeName;
-
+          console.log("employeeInfo:", employeeInfo);
           that.setData({
             isBind: true,
             showBindDialog: false,
@@ -203,7 +205,7 @@ Page({
     }
       //跳转
       wx.navigateTo({
-        url: '../myDevices/myDevices',
+        url: '../myDevices/myDevices?employeeObjectID=' + this.data.employeeInfo.employeeObjectID,
       })
     
 
@@ -219,7 +221,7 @@ Page({
     }
           //跳转
     wx.navigateTo({
-      url: '../borrowedDevices/borrowedDevices',
+      url: '../borrowedDevices/borrowedDevices?employeeObjectID=' + this.data.employeeInfo.employeeObjectID
     })
     
 
@@ -246,70 +248,153 @@ Page({
   //ok
   doBorrowDevice: function (deviceID) {
 
-
+    var that = this;
+    
     var query = new AV.Query('Devices');
     query.include(['dependentUser']);
     query.include(['dependentModel']);
-    var that = this;
+    query.include(['dependentDevicesStatus.dependentBorrowUser']);
     query.equalTo('deviceID', deviceID);
     wx.showLoading({
       title: '',
       mask: true,
     });
     query.first().then(function (result) {
+
         if(result){
           wx.hideLoading();
-          console.log(result);
+          console.log('借取设备查询：',result);
           var deviceEmployeeObjectID = result.attributes.dependentUser.id; 
           var model = result.attributes.dependentModel.attributes.model;
-          var prefix = "";
-          var status = 0;
-          var action = ""
-
-          if (deviceEmployeeObjectID == app.globalData.employeeInfo.employeeObjectID) {
-            //收回设备
-            prefix = "收回"
-            status = 0
-            action = "returned"
-          } else {
-            //借出设备
-            titleSuccess = "借用";
-            status = -2
-            action = "borrowed"
-          }
+          
+          
+          var dependentDevicesStatus = result.attributes.dependentDevicesStatus;
+          var dependentBorrowUser = dependentDevicesStatus ? dependentDevicesStatus.attributes.dependentBorrowUser :null;
+          var curBorrowedUserObjectID = dependentBorrowUser ? dependentBorrowUser.id : null;
 
 
+          //当前借用人objectID
+          if (!dependentDevicesStatus || !curBorrowedUserObjectID) {//没有设备状态,或者没有借用人
+            if (deviceEmployeeObjectID == that.data.employeeInfo.employeeObjectID) { //归属者是自己，
+              wx.showModal({
+                title: "收回设备",
+                content: model + '设备已处于闲置状态，无需进行收回',
+                showCancel: false,
+              })
+            }else{//归属者不是自己
+              //进行借用
+                // var that = this;
+                wx.showModal({
+                  title: '借用设备',
+                  content: "你确定要借用设备 " + model + "?",
+                  cancelText: '稍后',
+                  confirmText: '确定',
+                  success: function (res) {
+                    if (res.confirm) {
+                      //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, that.data.employeeInfo.employeeObjectID, -2, 'borrowed', {
+                        success: function () {
+                          wx.showToast({
+                            title: "借用成功!",
+                          });
 
-          var that = this;
-          wx.showModal({
-            title: prefix+'设备',
-            content: "你确定要"+prefix+"设备 " + model + "?",
-            cancelText: '稍后',
-            confirmText: prefix,
-            success: function (res) {
-              if (res.confirm) {
-                //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-                leanCloudManager.addDoDevicesStatus(result.id, app.globalData.employeeInfo.employeeObjectID, status, action, {
-                  success: function () {
-                    wx.showToast({
-                      title: prefix+"成功!",
-                    });
-
-                    that.getDevices();
-                    that.getBorrowedDeviceCount();
-                  },
-                  fail: function (error) {
-                    wx.showToast({
-                      title: prefix+"失败,请稍后再试!",
-                      icon: 'none'
-                    });
-                    console.log(error);
+                          that.getDevices();
+                          that.getBorrowedDeviceCount();
+                        },
+                        fail: function (error) {
+                          wx.showToast({
+                            title: "借用失败,请稍后再试!",
+                            icon: 'none'
+                          });
+                          console.log(error);
+                        }
+                      });
+                    }
                   }
-                });
+                })
+
+
+            }
+          }else{ //有借用人
+            if (curBorrowedUserObjectID == that.data.employeeInfo.employeeObjectID) {//借用人是自己
+              if (deviceEmployeeObjectID == that.data.employeeInfo.employeeObjectID) { //归属者是自己，（即可自己已经进行回收过了）
+                wx.showModal({
+                  title: '收回设备',
+                  content: model + '已处于闲置状态，无需进行收回',
+                  showCancel: false,
+                })
+              }else{
+                wx.showModal({
+                  title: "借用设备",
+                  content: model + '已被您借用，无需重复借用',
+                  showCancel: false,
+                })
+              }
+            }else {//借用人不是自己
+              if (deviceEmployeeObjectID == that.data.employeeInfo.employeeObjectID) { //归属者是自己，即自己收回已借出(借用人不是自己)的设备
+                //进行收回
+
+                wx.showModal({
+                  title: '收回设备',
+                  content: "你确定收回设备 " + model + "?",
+                  cancelText: '稍后',
+                  confirmText: '确定',
+                  success: function (res) {
+                    if (res.confirm) {
+                      //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, null, 0, 'returned', {
+                        success: function () {
+                          wx.showToast({
+                            title: "收回成功!",
+                          });
+
+                          that.getDevices();
+                          that.getBorrowedDeviceCount();
+                        },
+                        fail: function (error) {
+                          wx.showToast({
+                            title: "收回失败,请稍后再试!",
+                            icon: 'none'
+                          });
+                          console.log(error);
+                        }
+                      });
+                    }
+                  }
+                })
+              }else{
+                //进行借用
+                wx.showModal({
+                  title: '借用设备',
+                  content: "你确定要借用设备 " + model + "?",
+                  cancelText: '稍后',
+                  confirmText: '确定',
+                  success: function (res) {
+                    if (res.confirm) {
+                      //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
+                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, that.data.employeeInfo.employeeObjectID, -2, 'borrowed', {
+                        success: function () {
+                          wx.showToast({
+                            title: "借用成功!",
+                          });
+
+                          that.getDevices();
+                          that.getBorrowedDeviceCount();
+                        },
+                        fail: function (error) {
+                          wx.showToast({
+                            title: "借用失败,请稍后再试!",
+                            icon: 'none'
+                          });
+                          console.log(error);
+                        }
+                      });
+                    }
+                  }
+                })
               }
             }
-          })
- 
+          }
         }else{
           wx.showToast({
             title: '设备不存在',
@@ -343,9 +428,11 @@ Page({
   },
 
   getBorrowedDeviceCount:function(){
+
+
     var that = this;
     leanCloudManager.getBorrowedDeviceCount({
-      employeeObjectID:'',
+      employeeObjectID: that.data.employeeInfo.employeeObjectID,
       success: function (count) {
         wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();
@@ -358,7 +445,7 @@ Page({
   getMyDevicesCount:function(){
     var that = this;
     leanCloudManager.getMyDevicesCount({
-      employeeObjectID: '',
+      employeeObjectID: that.data.employeeInfo.employeeObjectID,
       success: function (count) {
         wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();
@@ -407,16 +494,18 @@ Page({
     var show;
     wx.scanCode({
       success: (res) => {
+        console.log("res.result:",res.result);
 
-        var param = JSON.parse(res.result)
-        console.log(param);
+ 
+        var param = JSON.parse(res.result.trim());
+        console.log("param:", param);
         var brand = param["brand"];
         var companyCode = param["companyCode"];
-        var deviceCode = param["deviceCode"];
+        var deviceID = param["deviceID"];
         var model = param["model"];
         var OSVersion = param["OSVersion"];
         var remark = param["remark"];
-        that.doBorrowDevice(deviceCode);
+        that.doBorrowDevice(deviceID);
       },
       fail: (res) => {
         wx.showToast({
@@ -472,7 +561,7 @@ Page({
     }
     
     wx.navigateTo({
-      url: '../menu/menu',
+      url: '../menu/menu?employeeObjectID=' + this.data.employeeInfo.employeeObjectID,
     })
 
   },

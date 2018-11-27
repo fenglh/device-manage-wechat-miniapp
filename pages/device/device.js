@@ -13,6 +13,7 @@ Page({
   data: {
     ocrSign:null,
     showTopTips: false,
+    employeeObjectID:null,
     deviceObjectID:null,
     topTips: '',
     models: [],
@@ -34,6 +35,12 @@ Page({
 
   onLoad: function (options) {
     var title = "新增设备";
+
+    this.setData({
+      employeeObjectID: options.employeeObjectID,
+    })
+
+    console.log('employeeObjectID:', this.data.employeeObjectID);
     if (options.isEdit) {
      title = "编辑设备";
      this.setData({
@@ -248,7 +255,8 @@ Page({
     if (this.data.isEdit) {
       var osVersion = that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3];
       var modelObject=that.data.models[that.data.modelIndex];
-      leanCloudManager.editDevice(that.data.deviceObjectID, that.data.companyCode, modelObject.objectID, osVersion, that.data.remark,{
+
+      leanCloudManager.editDevice(that.data.employeeObjectID,that.data.deviceObjectID, that.data.companyCode, modelObject.objectID, osVersion, that.data.remark,{
         success:function(result){
           wx.hideLoading();
           wx.navigateBack({
@@ -276,10 +284,11 @@ Page({
       var query = new AV.Query(DevicesObject);
       query.include(['dependentDevicesStatus.dependentUser']);
       query.equalTo('deviceID', this.data.deviceCode);
+
       query.first().then(function (result) {
         var deviceAVObject = AV.Object('Devices');
         if (result) {
-          console.log(result);
+          
           var status = result.get('dependentDevicesStatus') && result.get('dependentDevicesStatus').get('status');
           if(status && status == -99){
             deviceAVObject = AV.Object.createWithoutData('Devices', result.id);
@@ -290,11 +299,11 @@ Page({
             return;
           }
         }
-
+        
         var osVersion = that.data.OSVersions[0][that.data.systemVersionIndex1] + "." + that.data.OSVersions[1][that.data.systemVersionIndex2] + "." + that.data.OSVersions[2][that.data.systemVersionIndex3];
-
         var selectedModel = that.data.models[that.data.modelIndex];
-        leanCloudManager.addDevice(that.data.deviceCode, that.data.companyCode, selectedModel.objectID, osVersion, that.data.remark,{
+        console.log("添加设备", osVersion, selectedModel);
+        leanCloudManager.addDevice(that.data.employeeObjectID,that.data.deviceCode, that.data.companyCode, selectedModel.objectID, osVersion, that.data.remark,{
           success:function(result){
             wx.hideLoading();
             wx.navigateBack({
@@ -327,137 +336,168 @@ Page({
   },
 
   bindScanClick: function () {
-    console.log('照相机拍照')
+
     var that = this
 
-    //相机拍照
-    wx.chooseImage({
-      count: 1, // 默认9
-      sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
-      sourceType: ['camera'], // 可以指定来源是相册还是相机，默认二者都有
-      success: function (res) {
-
-        that.setData({
-          modelIndex: null,
-          brandIndex: null,
-          systemVersionIndex1: 0,
-          systemVersionIndex2: 0,
-          systemVersionIndex3: 0,
-          companyCode: null,
-          deviceCode: null,
+    wx.scanCode({
+      success: (res) => {
+        console.log("result=", res.result);
+        var param = JSON.parse(res.result)
+        console.log(param);
+        var brand = param["brand"];
+        var deviceID = param["deviceID"];
+        var companyCode = param["companyCode"];
+        var deviceCode = param["deviceCode"];
+        var model = param["model"];
+        var OSVersion = param["OSVersion"];
+        var remark = param["remark"];
+        console.log("brand",brand);
+        console.log("deviceID", deviceID);
+        console.log("companyCode", companyCode);
+        console.log("deviceCode", deviceCode);
+        console.log("model", model);
+        console.log("OSVersion", OSVersion);
+        console.log("remark", remark);
+      },
+      fail: (res) => {
+        wx.showToast({
+          title: '失败',
+          icon: 'success',
+          duration: 2000
         })
-
-
-        var tempFilePaths = res.tempFilePaths;
-        wx.showLoading({
-          title: '资产识别中...',
-        })
-        
-        wx.uploadFile({
-          url: 'https://recognition.image.myqcloud.com/ocr/general',
-          filePath: tempFilePaths[0],
-          name: 'image',
-          header: {
-            "authorization": that.data.ocrSign,
-          },
-          formData: {
-            "appid": "1256097546",
-          },
-          success: function (res) {
-            wx.hideLoading();
-            var result = JSON.parse(res.data)
-            var items = result['data']['items']
-
-            //按照x轴升序排序
-            var srotYItems = items.sort(function (a, b) {
-              return a.itemcoord.y - b.itemcoord.y
-            })
-            console.log(srotYItems)
-            var flagIndex = null;
-            srotYItems.forEach(function (item, index) {
-              var str = item['itemstring'];
-              var iscontain = str.indexOf("蓝月亮") == -1 ? false : true;
-              if (iscontain) {
-                flagIndex = index;
-              }
-            });
-
-            if (flagIndex !== null) {
-              //设备编码标签索引
-              var deviceCodeIndex = 0
-              if (flagIndex == 0) {
-                deviceCodeIndex = flagIndex + 1
-              } else {
-                //取出距离y轴距离最近的元素的索引
-                var offsetToPrev = Math.abs(srotYItems[flagIndex - 1]['itemcoord']['y'] - srotYItems[flagIndex]['itemcoord']['y']);
-                var offsetToNext = Math.abs(srotYItems[flagIndex + 1]['itemcoord']['y'] - srotYItems[flagIndex]['itemcoord']['y']);
-                deviceCodeIndex = offsetToPrev < offsetToNext ? flagIndex - 1 : flagIndex + 1;
-              }
-              //得到设备编码，去掉所有空格
-              var deviceCode = srotYItems[deviceCodeIndex]["itemstring"].replace(/[ ]/g, "");
-              //去除非数字
-              deviceCode = deviceCode.replace(/[^\d.]/g, "");
-              //公司编码
-              var companyCodeIndex = deviceCodeIndex > flagIndex ? deviceCodeIndex + 1 : flagIndex + 1;
-              var companyCode = srotYItems[companyCodeIndex]["itemstring"].replace(/[ ]/g, "");
-              //将I、l换成1
-              companyCode = companyCode.replace(/[Il]/g, "1");
-              //型号描述
-              var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
-              var brandIndex = null;
-              var iscontain = false;
-              for (var index = 0; index < that.data.brands.length; index++){
-                var item = that.data.brands[index];
-                iscontain = deviceDesc.indexOf(item.brand) == -1 ? false : true;
-                if (iscontain) {
-                  brandIndex = index;
-                  break;
-                }
-              }
-              //加载可选的型号
-              if(brandIndex != null){
-                that.getBrandModels(item.objectID, {
-                  success: function (models) {
-                    that.setData({
-                      models: models,
-                    });
-                  },
-                  fail: function () {
-                    wx.showToast({
-                      title: '加载型号列表失败',
-                      icon: 'none',
-                    });
-                  }
-                });
-              }
-   
-              that.setData({
-                deviceCode: deviceCode,
-                companyCode: companyCode,
-                brandIndex: brandIndex,
-              })
-              // wx.showToast({
-              //   title: '资产识成功!',
-              //   icon:'success',
-              // })
-
-            } else {
-              wx.showToast({
-                title: '资产识别失败,请手动填写或重新识别',
-                icon: 'none'
-              })
-            }
-
-          },
-          fail: function () {
-            wx.hideLoading();
-            wx.showToast({
-              title: '资产识别出错，请重新识别',
-            })
-          }
-        })
+      },
+      complete: (res) => {
       }
     })
+
+    //相机拍照
+    // wx.chooseImage({
+    //   count: 1, // 默认9
+    //   sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+    //   sourceType: ['camera'], // 可以指定来源是相册还是相机，默认二者都有
+    //   success: function (res) {
+
+    //     that.setData({
+    //       modelIndex: null,
+    //       brandIndex: null,
+    //       systemVersionIndex1: 0,
+    //       systemVersionIndex2: 0,
+    //       systemVersionIndex3: 0,
+    //       companyCode: null,
+    //       deviceCode: null,
+    //     })
+
+
+    //     var tempFilePaths = res.tempFilePaths;
+    //     wx.showLoading({
+    //       title: '资产识别中...',
+    //     })
+        
+    //     wx.uploadFile({
+    //       url: 'https://recognition.image.myqcloud.com/ocr/general',
+    //       filePath: tempFilePaths[0],
+    //       name: 'image',
+    //       header: {
+    //         "authorization": that.data.ocrSign,
+    //       },
+    //       formData: {
+    //         "appid": "1256097546",
+    //       },
+    //       success: function (res) {
+    //         wx.hideLoading();
+    //         var result = JSON.parse(res.data)
+    //         var items = result['data']['items']
+
+    //         //按照x轴升序排序
+    //         var srotYItems = items.sort(function (a, b) {
+    //           return a.itemcoord.y - b.itemcoord.y
+    //         })
+    //         console.log(srotYItems)
+    //         var flagIndex = null;
+    //         srotYItems.forEach(function (item, index) {
+    //           var str = item['itemstring'];
+    //           var iscontain = str.indexOf("蓝月亮") == -1 ? false : true;
+    //           if (iscontain) {
+    //             flagIndex = index;
+    //           }
+    //         });
+
+    //         if (flagIndex !== null) {
+    //           //设备编码标签索引
+    //           var deviceCodeIndex = 0
+    //           if (flagIndex == 0) {
+    //             deviceCodeIndex = flagIndex + 1
+    //           } else {
+    //             //取出距离y轴距离最近的元素的索引
+    //             var offsetToPrev = Math.abs(srotYItems[flagIndex - 1]['itemcoord']['y'] - srotYItems[flagIndex]['itemcoord']['y']);
+    //             var offsetToNext = Math.abs(srotYItems[flagIndex + 1]['itemcoord']['y'] - srotYItems[flagIndex]['itemcoord']['y']);
+    //             deviceCodeIndex = offsetToPrev < offsetToNext ? flagIndex - 1 : flagIndex + 1;
+    //           }
+    //           //得到设备编码，去掉所有空格
+    //           var deviceCode = srotYItems[deviceCodeIndex]["itemstring"].replace(/[ ]/g, "");
+    //           //去除非数字
+    //           deviceCode = deviceCode.replace(/[^\d.]/g, "");
+    //           //公司编码
+    //           var companyCodeIndex = deviceCodeIndex > flagIndex ? deviceCodeIndex + 1 : flagIndex + 1;
+    //           var companyCode = srotYItems[companyCodeIndex]["itemstring"].replace(/[ ]/g, "");
+    //           //将I、l换成1
+    //           companyCode = companyCode.replace(/[Il]/g, "1");
+    //           //型号描述
+    //           var deviceDesc = srotYItems[companyCodeIndex + 1]["itemstring"].replace(/[ ]/g, "");
+    //           var brandIndex = null;
+    //           var iscontain = false;
+    //           for (var index = 0; index < that.data.brands.length; index++){
+    //             var item = that.data.brands[index];
+    //             iscontain = deviceDesc.indexOf(item.brand) == -1 ? false : true;
+    //             if (iscontain) {
+    //               brandIndex = index;
+    //               break;
+    //             }
+    //           }
+    //           //加载可选的型号
+    //           if(brandIndex != null){
+    //             that.getBrandModels(item.objectID, {
+    //               success: function (models) {
+    //                 that.setData({
+    //                   models: models,
+    //                 });
+    //               },
+    //               fail: function () {
+    //                 wx.showToast({
+    //                   title: '加载型号列表失败',
+    //                   icon: 'none',
+    //                 });
+    //               }
+    //             });
+    //           }
+   
+    //           that.setData({
+    //             deviceCode: deviceCode,
+    //             companyCode: companyCode,
+    //             brandIndex: brandIndex,
+    //           })
+    //           // wx.showToast({
+    //           //   title: '资产识成功!',
+    //           //   icon:'success',
+    //           // })
+
+    //         } else {
+    //           wx.showToast({
+    //             title: '资产识别失败,请手动填写或重新识别',
+    //             icon: 'none'
+    //           })
+    //         }
+
+    //       },
+    //       fail: function () {
+    //         wx.hideLoading();
+    //         wx.showToast({
+    //           title: '资产识别出错，请重新识别',
+    //         })
+    //       }
+    //     })
+    //   }
+    // })
   },
 
 

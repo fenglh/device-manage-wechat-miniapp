@@ -8,7 +8,8 @@
     "pages/device/device",
     "pages/myDevices/myDevices",
     "pages/borrowedDevices/borrowedDevices",
-    "pages/log/log"
+    "pages/log/log",
+    "pages/group/group"
   ],
   "window": {
     "backgroundTextStyle": "light",

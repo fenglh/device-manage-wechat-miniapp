@@ -27,7 +27,7 @@ var leanCloud = {
   },
 
 
-  addDevice: function (deviceCode, companyCode, modelObjectID, osVersion,remark, { success, fail }){
+  addDevice: function (employeeObjectID, deviceCode, companyCode, modelObjectID, osVersion,remark, { success, fail }){
 
     var that = this;
     var timestamp = Date.parse(new Date());
@@ -36,16 +36,17 @@ var leanCloud = {
     var modelAVObject = AV.Object.createWithoutData('Models', modelObjectID);
     deviceAVObject.set('dependentModel', modelAVObject);
     //关联用户
-    var userAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var userAVObject = AV.Object.createWithoutData('Users', employeeObjectID);
     deviceAVObject.set('dependentUser', userAVObject);
     //管理设备信息
     deviceAVObject.set('OSVersion', osVersion);
     deviceAVObject.set('deviceID', deviceCode);
     deviceAVObject.set('companyCode', companyCode);
     remark?deviceAVObject.set('remark', remark):null;
+    console.log('sss');
     deviceAVObject.save().then(function (deviceObject) {
 
-      that.addDoDevicesStatus(deviceObject.id, null,0, "add", {
+      that.addDoDevicesStatus(employeeObjectID,deviceObject.id, null,0, "add", {
         success:function(result){
           success ? success(result) : null;
         },
@@ -59,7 +60,7 @@ var leanCloud = {
   },
 
   //编辑设备
-  editDevice: function (deviceObjectID, companyCode,modelObjectID, OSVersion,remark, {success, fail}){
+  editDevice: function (employeeObjectID,deviceObjectID, companyCode,modelObjectID, OSVersion,remark, {success, fail}){
     var that = this;
     var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObjectID);
     //公司编码
@@ -71,7 +72,7 @@ var leanCloud = {
     deviceAVObject.set('OSVersion', OSVersion);
     deviceAVObject.set('remark', remark);
     deviceAVObject.save().then(function (result) {
-      that.addDoDevicesStatus(deviceObjectID,null,0, "edit", {
+      that.addDoDevicesStatus(employeeObjectID,deviceObjectID,null,0, "edit", {
         success:function(result){
           //增加编辑状态成功
           success ? success(result) : null;
@@ -87,7 +88,7 @@ var leanCloud = {
   },
 
 
-  addDoDevicesStatus: function (deviceObjectID,borrowUserObjectID, status, action, { success, fail }) {
+  addDoDevicesStatus: function (employeeObjectID, deviceObjectID,borrowUserObjectID, status, action, { success, fail }) {
     var that = this;
     var deviceAVObject = AV.Object.createWithoutData('Devices', deviceObjectID);
     var timestamp = Date.parse(new Date());
@@ -96,7 +97,7 @@ var leanCloud = {
     devicesStatusAVObject.set('action', action);
     devicesStatusAVObject.set('actionTimestamp', timestamp);//当前操作时间
     //关联操作人
-    var dependentActionUserAVObject = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var dependentActionUserAVObject = AV.Object.createWithoutData('Users',employeeObjectID);
     devicesStatusAVObject.set('dependentActionUser', dependentActionUserAVObject);//关联用户
     //关联（借用人）
     if (borrowUserObjectID){
@@ -269,11 +270,8 @@ var leanCloud = {
 
 
   // ok
-  getBorrowedDevices: function ({ success, fail }) {
+  getBorrowedDevices: function ({ employeeObjectID, success, fail }) {
     var that = this;
-
-
-    console.log("========",app.globalData);
 
     //组合加内嵌查询
     var innerQuery1 = new AV.Query('DevicesStatus');
@@ -283,7 +281,7 @@ var leanCloud = {
     var innerQuery12 = AV.Query.and(innerQuery1, innerQuery2);
 
     var innerQuery3 = new AV.Query('DevicesStatus');
-    var borrowedUser = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var borrowedUser = AV.Object.createWithoutData('Users', employeeObjectID);
     innerQuery3.equalTo('dependentBorrowUser', borrowedUser);
     var query = new AV.Query('Devices');
 
@@ -378,9 +376,9 @@ var leanCloud = {
   },
 
   // ok
-  getMyDevices: function ({ success, fail }) {
+  getMyDevices: function ({ employeeObjectID, success, fail }) {
     var that = this;
-    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var user = AV.Object.createWithoutData('Users', employeeObjectID);
     var query = new AV.Query('Devices');
     query.exists('dependentUser');
     query.exists('dependentModel');
@@ -527,9 +525,9 @@ var leanCloud = {
   },
 
   //检查自己是否是管理员
-  isAdmin: function ({ success, fail }){
+  isAdmin: function ({ employeeObjectID, success, fail }){
     var query = new AV.Query('AdminUsers');
-    var user = AV.Object.createWithoutData('Users', app.globalData.employeeInfo.employeeObjectID);
+    var user = AV.Object.createWithoutData('Users',employeeObjectID);
     query.equalTo('dependentUser', user);
     query.first().then(function(result){
       success ? success(result) : null;

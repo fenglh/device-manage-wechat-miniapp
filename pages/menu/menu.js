@@ -8,6 +8,7 @@ Page({
    * 页面的初始数据
    */
   data: {
+    employeeObjectID:null,
     routers: [
       {
         name: '共享记录',
@@ -16,9 +17,9 @@ Page({
       },
 
       {
-        name: '',
-        url: '',
-        icon: ''
+        name: '组别',
+        url: '../group/group',
+        icon: '../images/group2.png'
       },
       {
         name: '',
@@ -32,7 +33,9 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-
+      this.setData({
+        employeeObjectID: options.employeeObjectID,
+      })
   },
 
   /**
@@ -42,6 +45,7 @@ Page({
     //查询是否管理员
     var that = this;
     leanCloudManager.isAdmin({
+      employeeObjectID: that.data.employeeObjectID,
       success:function(result){
         if(result){
           //是管理员

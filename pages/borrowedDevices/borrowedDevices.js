@@ -9,6 +9,7 @@ Page({
    * 页面的初始数据
    */
   data: {
+    employeeObjectID:null,
     devices: [],
     showEmptyView:false,
   },
@@ -19,6 +20,10 @@ Page({
   onLoad: function (options) {
     wx.setNavigationBarTitle({
       title: '借入设备',
+    });
+
+    this.setData({
+      employeeObjectID: options.employeeObjectID,
     })
     this.getBorrowedDevices();
   },
@@ -55,82 +60,15 @@ Page({
 
 
   },
-  //ok
-  bindReturnBorrowed:function(e) {
-    var index = e.currentTarget.dataset.index;
-    var device = this.data.devices[index];
-    var that = this;
-    wx.showModal({
-      title: '归还设备',
-      content: '你确定要归还设备 ' + device.model + " ?",
-      success: function (res) {
-        if (res.confirm) {
-          wx.showLoading({
-            title: '',
-            mask: true,
-          });
-          //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-          leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, -3, "returning", {
-            success: function () {
-              wx.showToast({
-                title: '归还提交成功，请等待\"' + device.employeeName + "\"确认",
-                icon: 'none',
-              });
-              that.getBorrowedDevices();
-            },
-            fail: function () {
-              wx.showToast({
-                title: '归还提交失败，请稍后再试',
-                icon: 'none'
-              });
-            }
-          });
-        }
-      }
-    })
-  },
 
-  //ok
-  bindCancelBorrowed:function(e) {
-      console.log('取消申请');
-      var index = e.currentTarget.dataset.index;
-      var device = this.data.devices[index];
-      var that = this;
-      wx.showModal({
-        title: '取消申请',
-        content: '你确定要取消申请 ' + device.model + " ?",
-        success: function (res) {
-          if (res.confirm) {
-            wx.showLoading({
-              title: '',
-              mask: true,
-            });
-            //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-            leanCloudManager.addDoDevicesStatus(device.deviceObjectID, device.borrowEmployeeObjectID, 0,"cancel", {
-              success:function(){
-                wx.showToast({
-                  title: "取消申请成功!",
-                  icon: 'success',
-                });
-                that.getBorrowedDevices();
-              },
-              fail:function(){
-                wx.showToast({
-                  title: '取消申请失败，请稍后再试',
-                  icon: 'none'
-                })
-              }
-            });
-          }
-        }
-      });
-  },
+
 
   
   // ok
   getBorrowedDevices: function () {
     var that = this;
     leanCloudManager.getBorrowedDevices({
+      employeeObjectID: that.data.employeeObjectID,
       success: function (devices) {
         wx.stopPullDownRefresh();
         wx.hideNavigationBarLoading();

@@ -119,11 +119,9 @@
             <view class='status-borrowing'>{{item.status==-1?'申请时间':(item.status==-2 ?"借出时间":(item.status==-3?"归还提交时间":""))}}：{{item.statusActionTimestamp}}</view>
           </view>
 
-          <!-- <button class="weui-btn" type="primary" catchtap="bindPass" data-index="{{index}}" hidden='{{item.status==-1   ? "" : "hidden"}}'>同意借用</button>
-          <view  class='reject-btn' catchtap="bindReject" data-index="{{index}}" hidden='{{item.status==-1   ? "" : "hidden"}}'>拒绝</view>
-          
+          <!-- 二维码 -->
+          <canvas class='qrcode' data-index="{{index}}" canvas-id='{{item.deviceID}}' bindlongtap='save'></canvas>
 
-          <button class="weui-btn" type="primary" catchtap="bindConfirmReturn" data-index="{{index}}" hidden='{{item.status==-3   ? "" : "hidden"}}'>确认归还</button> -->
         </view>
 
 

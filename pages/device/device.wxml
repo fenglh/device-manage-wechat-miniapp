@@ -6,10 +6,10 @@
 
     <view class='hd_scan' bindtap='bindScanClick'>
       <view>
-        <view class="page__title">资产识别</view>
+        <view class="page__title">扫码添加</view>
         <view class="page__desc">点击扫描设备黄色标签</view>
       </view>
-      <image style='width:60px; height:60px' src='../images/scan3.png'>
+      <image style='width:60px; height:60px' src='../images/scan5.png'>
       </image>
       <image style='width:30px; height:30px' src='../images/right.png'>
       </image>

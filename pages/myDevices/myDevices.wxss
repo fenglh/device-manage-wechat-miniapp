@@ -83,8 +83,8 @@
 
 }
 
-.reject-btn {
-  border-bottom: 1px #999 solid; 
-  width: 28px;
+.qrcode {
   margin-top:8px;
+  width: 150px;
+  height: 150px;
 }
