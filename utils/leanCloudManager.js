@@ -544,6 +544,7 @@ var leanCloud = {
     query.include(['dependentDevice.dependentModel']);
     query.include(['dependentDevice.dependentUser']);
     query.include(['dependentActionUser']);
+    query.include(['dependentFromUser']);
 
     query.find().then(function(results){
 
@@ -555,11 +556,8 @@ var leanCloud = {
         var statusActionEmployeeObjectName = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeName') : null;
         var statusActionEmployeeID = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeID') : null;
 
-        var borrowEmployeeName = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeName') : null;
-        var borrowEmployeeID = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeID') : null;
-
-        var borrowEmployeeName = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeName') : null;
-        var borrowEmployeeID = item.get('dependentActionUser') ? item.get('dependentActionUser').get('employeeID') : null;
+        var fromEmployeeName = item.get('dependentFromUser') ? item.get('dependentFromUser').get('employeeName') : null;
+        var fromEmployeeID = item.get('dependentFromUser') ? item.get('dependentFromUser').get('employeeID') : null;
 
         var deviceID = item.get('dependentDevice') ? item.get('dependentDevice').get('deviceID') : null;
         var model = item.get('dependentDevice') ? (item.get('dependentDevice').get('dependentModel') ? item.get('dependentDevice').get('dependentModel').get('model') : null) : null;
@@ -574,8 +572,8 @@ var leanCloud = {
         obj.statusActionTimestamp = that.formatDateTime(statusActionTimestamp);
         obj.statusActionEmployeeID = statusActionEmployeeID;
         obj.statusActionEmployeeObjectName = statusActionEmployeeObjectName;
-        obj.borrowEmployeeID = borrowEmployeeID;
-        obj.borrowEmployeeName = borrowEmployeeName;
+        obj.fromEmployeeID = fromEmployeeID;
+        obj.fromEmployeeName = fromEmployeeName;
         obj.deviceOwnerEmployeeName = deviceOwnerEmployeeName;
         obj.deviceOwnerEmployeeID = deviceOwnerEmployeeID;
         devices.push(obj);

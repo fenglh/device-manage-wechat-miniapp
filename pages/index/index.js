@@ -292,7 +292,8 @@ Page({
                   success: function (res) {
                     if (res.confirm) {
                       //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, that.data.employeeInfo.employeeObjectID, -2, 'borrowed', {
+                      //从归属者中借用
+                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, deviceEmployeeObjectID, -2, 'borrowed', {
                         success: function () {
                           wx.showToast({
                             title: "借用成功!",
@@ -342,7 +343,8 @@ Page({
                   success: function (res) {
                     if (res.confirm) {
                       //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, null, 0, 'returned', {
+                      //从借用人中回收
+                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, curBorrowedUserObjectID, 0, 'returned', {
                         success: function () {
                           wx.showToast({
                             title: "收回成功!",
@@ -372,7 +374,8 @@ Page({
                   success: function (res) {
                     if (res.confirm) {
                       //applying、cancel、rejected、borrowed、returning、returned、add、delete、edit
-                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, that.data.employeeInfo.employeeObjectID, -2, 'borrowed', {
+                      //从借用人中借取
+                      leanCloudManager.addDoDevicesStatus(that.data.employeeInfo.employeeObjectID, result.id, curBorrowedUserObjectID, -2, 'borrowed', {
                         success: function () {
                           wx.showToast({
                             title: "借用成功!",

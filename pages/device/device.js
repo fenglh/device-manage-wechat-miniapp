@@ -342,22 +342,84 @@ Page({
     wx.scanCode({
       success: (res) => {
         console.log("result=", res.result);
-        var param = JSON.parse(res.result)
+        var param = JSON.parse(res.result.trim())
         console.log(param);
         var brand = param["brand"];
         var deviceID = param["deviceID"];
         var companyCode = param["companyCode"];
-        var deviceCode = param["deviceCode"];
+
         var model = param["model"];
         var OSVersion = param["OSVersion"];
         var remark = param["remark"];
         console.log("brand",brand);
         console.log("deviceID", deviceID);
         console.log("companyCode", companyCode);
-        console.log("deviceCode", deviceCode);
         console.log("model", model);
         console.log("OSVersion", OSVersion);
         console.log("remark", remark);
+
+        //匹配品牌对应的索引
+        var brandIndex = null;
+        var iscontain = false;
+        for (var index = 0; index < that.data.brands.length; index++){
+          var item = that.data.brands[index];
+          iscontain = item.brand.indexOf(brand.trim()) == -1 ? false : true;
+          if (iscontain) {
+            brandIndex = index;
+            break;
+          }
+        }
+
+        //匹配品牌对应的型号
+        //加载可选的型号
+
+
+        if(brandIndex != null){
+          var brandObject = that.data.brands[index];
+          that.getBrandModels(brandObject.objectID, {
+            success: function (models) {
+              that.setData({
+                models: models,
+              });
+
+              var modelIndex = null;
+              var isModelContain = false;
+              console.log("models=", models);
+              for (var index = 0; index < models.length; index++) {
+                var item = models[index];
+                var isModelContain = item.model.indexOf(model.trim()) == -1 ? false : true;
+                if (isModelContain) {
+                  modelIndex = index;
+                  break;
+                }
+              }
+              if(isModelContain){
+                that.setData({
+                  modelIndex: modelIndex,
+                })
+              }
+
+            },
+            fail: function () {
+              wx.showToast({
+                title: '加载型号列表失败',
+                icon: 'none',
+              });
+            }
+          });
+        }
+        //版本
+        var versions = OSVersion.split(".") || [];
+        that.setData({
+          deviceCode:deviceID,
+          companyCode:companyCode,
+          brandIndex:brandIndex,
+          systemVersionIndex1: parseInt(versions[0]) - 1,
+          systemVersionIndex2: parseInt(versions[1]),
+          systemVersionIndex3: parseInt(versions[2]),
+          remark:remark,
+        })
+
       },
       fail: (res) => {
         wx.showToast({
